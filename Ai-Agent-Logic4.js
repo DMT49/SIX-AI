@@ -49,15 +49,6 @@ document.addEventListener("DOMContentLoaded", () => {
     textarea.style.height = hiddenDiv.offsetHeight + "px";
   }
 
-  // Sync styles from textarea to hidden div (initial setup)
-  function syncStyles() {
-    const computedStyles = getComputedStyle(textarea);
-    hiddenDiv.style.width = computedStyles.width;
-    hiddenDiv.style.lineHeight = computedStyles.lineHeight;
-    hiddenDiv.style.padding = computedStyles.padding;
-    hiddenDiv.style.boxSizing = computedStyles.boxSizing;
-  }
-
   // Function to reset the textarea height and content
   function resetHeight() {
     textarea.value = "";
@@ -78,8 +69,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Function to create a chat block (user or bot)
   function createChatBlock(isUser, content) {
-    // Preprocess content to remove bullet points before { ... }
-    content = content.replace(/(^|\n)[\s]*[-*]\s*(?=\{)/g, '$1');
     const segments = [];
     const regex = /(\{[\s\S]*?\})/g;
     let lastIndex = 0;
@@ -141,7 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return false;
   }
 
-  // Function to render a text segment in the chat
+  // Function to render text segments
   function renderTextSegment(text, isUser, hideAvatar) {
     if (!text) return;
     const chatBlockWrapper = document.createElement("div");
@@ -161,10 +150,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const chatInnerWrapper = document.createElement("div");
     chatInnerWrapper.className = `chat_inner-wrapper ${isUser ? "user-message" : ""}`;
 
-    const parsedHtml = marked.parse(text);
-    const sanitizedHtml = DOMPurify.sanitize(parsedHtml);
-
-    chatInnerWrapper.innerHTML = sanitizedHtml;
+    chatInnerWrapper.textContent = text;
 
     chatBlock.appendChild(botAvatar);
     chatBlock.appendChild(chatInnerWrapper);
@@ -333,94 +319,12 @@ document.addEventListener("DOMContentLoaded", () => {
     return { chatInnerWrapper, chatBlockWrapper };
   }
 
-  // Attach event listeners
-  textarea.addEventListener("input", adjustHeight);
-  userSubmit.addEventListener("click", async () => {
-    stopVoiceTranscription();
-    const message = textarea.value.trim();
-    if (!message) return;
-
-    // User message
-    createChatBlock(true, message);
-    resetHeight();
-
-    // Loading block
-    const { chatInnerWrapper, chatBlockWrapper } = createLoadingBlock();
-
-    // Response
-    const agentResponse = await startConversation(message);
-
-    // Remove loading block
-    conversationWrapper.removeChild(chatBlockWrapper);
-
-    // Agent response
-    createChatBlock(false, agentResponse);
-  });
-
-  textarea.addEventListener("keydown", (e) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-      e.preventDefault();
-      userSubmit.click();
-    }
-  });
-
-  // Initialize speech recognition
-  const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-  recognition.continuous = true;
-  recognition.interimResults = true;
-  recognition.lang = "en-US";
-
-  recognition.onresult = (event) => {
-    let interimTranscript = "";
-    let finalTranscript = "";
-
-    for (let i = event.resultIndex; i < event.results.length; ++i) {
-      if (event.results[i].isFinal) {
-        finalTranscript += event.results[i][0].transcript;
-        retainedText += event.results[i][0].transcript;
-      } else {
-        interimTranscript += event.results[i][0].transcript;
-      }
-    }
-
-    textarea.value = retainedText + interimTranscript;
-    adjustHeight();
-  };
-
-  recognition.onstart = () => {
-    console.log("Speech recognition started.");
-  };
-
-  recognition.onend = () => {
-    console.log("Speech recognition ended.");
-    micButton.classList.remove("is-active");
-    isListening = false;
-  };
-
-  recognition.onerror = (event) => {
-    console.error("Speech recognition error:", event.error);
-    micButton.classList.remove("is-active");
-    isListening = false;
-  };
-
-  // Attach event listener to micButton
-  if (micButton) {
-    micButton.addEventListener("click", () => {
-      console.log("Mic button clicked.");
-      if (isListening) {
-        recognition.stop();
-        micButton.classList.remove("is-active");
-        console.log("Stopped listening.");
-      } else {
-        retainedText = textarea.value;
-        recognition.start();
-        micButton.classList.add("is-active");
-        console.log("Started listening.");
-      }
-      isListening = !isListening;
-    });
-  } else {
-    console.error("Cannot find #chat-user-input-mic element.");
+  // -----------------------------
+  // Initialize AI Agent
+  // -----------------------------
+  function initializeAgent() {
+    console.log("Initializing AI agent...");
+    startInitialConversation();
   }
 
   // -----------------------------
@@ -452,8 +356,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Call the initial conversation right away
-  syncStyles();
-  textarea.style.height = "30px";
-  startInitialConversation();
+  // Call initializeAgent to start everything
+  initializeAgent();
 });
