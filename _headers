@@ -2,3 +2,15 @@
   Cache-Control: no-cache, no-store, must-revalidate
   Pragma: no-cache
   Expires: 0
+
+/Ai-Agent.html
+  Access-Control-Allow-Origin: https://member.archmarketing.org
+  Access-Control-Allow-Methods: GET, OPTIONS
+
+/Ai-Agent-UI.css
+  Access-Control-Allow-Origin: https://member.archmarketing.org
+  Access-Control-Allow-Methods: GET, OPTIONS
+
+/ConversationHandler.js
+  Access-Control-Allow-Origin: https://member.archmarketing.org
+  Access-Control-Allow-Methods: GET, OPTIONS
