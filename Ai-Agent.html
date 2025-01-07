@@ -118,6 +118,51 @@
       fetchConversationMessages(conversationID);
     }
 
+    // Function to render conversation messages in the chat UI
+    function renderConversationMessages(messages) {
+      if (!Array.isArray(messages) || messages.length === 0) {
+        console.log("No messages to render.");
+        return;
+      }
+    
+      // Reverse the order to render messages in chronological order
+      messages.reverse().forEach((message) => {
+        const role = message?.data?.message?.role;
+        const content = message?.data?.message?.content;
+    
+        if (role && content) {
+          const isUser = role === "user";
+          createChatBlock(isUser, content);
+        }
+      });
+    
+      // Scroll to the bottom of the conversation
+      conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
+    }
+    
+    // Ensure the input wrapper is visible if a conversationID exists
+    const urlParams = new URLSearchParams(window.location.search);
+    const conversationID = urlParams.get('conversationID');
+    if (conversationID) {
+      // Show the input wrapper
+      const chatInputWrapper = document.querySelector(".chat_input-wrapper");
+      if (chatInputWrapper) {
+        chatInputWrapper.style.display = "grid";
+        console.log("Input wrapper displayed.");
+      } else {
+        console.error("Chat input wrapper not found.");
+      }
+    
+      // Fetch and render the conversation messages
+      fetchConversationMessages(conversationID).then((messages) => {
+        if (messages) {
+          renderConversationMessages(messages);
+        } else {
+          console.error("Failed to fetch conversation messages.");
+        }
+      });
+    }
+
     // -----------------------------
     // Hide input UI on load
     // -----------------------------
