@@ -507,12 +507,14 @@
 
     const startConversationButton = document.getElementById("start-new-conversation");
     if (startConversationButton) {
-      startConversationButton.addEventListener("click", () => {
+      startConversationButton.addEventListener("click", (event) => {
+        event.preventDefault(); // Prevent page refresh
         console.log("Starting a new conversation...");
-        startInitialConversation(); // Call the same function, but now triggered by button click
+        startInitialConversation(); // Start the conversation
       });
     } else {
       console.error("Button with id 'start-new-conversation' not found.");
     }
+
   })();
 </script>
