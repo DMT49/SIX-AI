@@ -504,6 +504,15 @@
     // Call the initial conversation right away
     syncStyles();
     textarea.style.height = "30px";
-    startInitialConversation();
+
+    const startConversationButton = document.getElementById("start-new-conversation");
+    if (startConversationButton) {
+      startConversationButton.addEventListener("click", () => {
+        console.log("Starting a new conversation...");
+        startInitialConversation(); // Call the same function, but now triggered by button click
+      });
+    } else {
+      console.error("Button with id 'start-new-conversation' not found.");
+    }
   })();
 </script>
