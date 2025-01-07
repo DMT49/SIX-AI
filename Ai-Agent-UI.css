@@ -3190,3 +3190,24 @@ margin: 0rem !important;
 .chat_input-file.is-active {
 	background-color: #67b8d9;
 	filter: drop-shadow(0px 0px 9px #67b8d9);}
+
+#conversation-list-wrapper {
+  padding: 10px;
+}
+
+.conversation-item {
+  border-bottom: 1px solid #ccc;
+  padding-top: 5px;
+  padding-left: 5px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.conversation-item:hover {
+  background-color: #efefef;
+}
+
+.conversation-item p {
+  margin: 5px 0;
+}
