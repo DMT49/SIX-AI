@@ -2961,6 +2961,13 @@ figcaption {
   padding: 8px;
   margin: 8px 0; /* Slightly more margin for better spacing */
 }
+.chat_inner-wrapper img {
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+
+
 /* Blockquotes */
 .chat_inner-wrapper blockquote {
   margin: 10px 0; /* Increased vertical spacing */
