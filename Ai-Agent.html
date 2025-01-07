@@ -140,9 +140,6 @@
       conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
     }
     
-    // Ensure the input wrapper is visible if a conversationID exists
-    const urlParams = new URLSearchParams(window.location.search);
-    const conversationID = urlParams.get('conversationID');
     if (conversationID) {
       // Show the input wrapper
       const chatInputWrapper = document.querySelector(".chat_input-wrapper");
