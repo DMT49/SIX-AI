@@ -42,17 +42,20 @@
 document.addEventListener("DOMContentLoaded", () => {
   console.log("Chatbot initialized.");
 
-  // -----------------------------
-  // Name and Email Variables (from WordPress)
-  // -----------------------------
-  const email = '%%EMAIL%%';
-  const name = '%%FIRST_NAME%%';
+  // 1) Get the container in which this HTML was injected
+  const container = document.getElementById("ai-agent-container");
+  
+  // 2) Read data attributes (fallback to defaults if missing)
+  const agentId = container?.getAttribute("data-agent-id") || "6a12b1cd-b7d5-4b00-80ee-d2829af810dc";
+  const name    = container?.getAttribute("data-user-name") || "Guest";
+  const email   = container?.getAttribute("data-user-email") || "noemail@domain.com";
+  
+  // Keep all your other existing code (region, projectId, apiKey, etc.) the same
 
   // Configuration for AI agent
   const region = "bcbe5a"; // Replace with your region
   const projectId = "c5bf489c1af9-4886-afba-073965a5ad71"; // Replace with your project ID
   const apiKey = "sk-MGJlOWM0NGEtMjgyNC00MTIwLTg5NGUtN2IwMzljMmNjNDgx"; // Replace with your API key
-  const agentId = "6a12b1cd-b7d5-4b00-80ee-d2829af810dc"; // Replace with your agent ID
 
   // Use base64 encoding for the authorization token
   const authorizationToken = `Basic ${btoa(`${projectId}:${apiKey}`)}`;
