@@ -49,10 +49,10 @@ function initializeChatbot() {
   micButton.addEventListener("click", toggleVoiceRecognition);
 
   // Start initial conversation
-  if (typeof startInitialConversation === "function") {
-    startInitialConversation(conversationWrapper, chatInputWrapper);
+  if (typeof window.startInitialConversation === "function") {
+    window.startInitialConversation(conversationWrapper, chatInputWrapper);
   } else {
-    console.error("startInitialConversation function not found. Make sure it is defined globally.");
+    console.error("startInitialConversation function not found. Make sure it is globally defined.");
   }
 }
 
@@ -113,12 +113,75 @@ function createLoadingBlock(conversationWrapper) {
 
 // Start a conversation with the AI
 async function startConversation(message) {
-  // Replace with your API logic
-  return `Response to: ${message}`;
+  const region = "bcbe5a"; // Replace with your region
+  const projectId = "c5bf489c1af9-4886-afba-073965a5ad71"; // Replace with your project ID
+  const apiKey = "sk-MGJlOWM0NGEtMjgyNC00MTIwLTg5NGUtN2IwMzljMmNjNDgx"; // Replace with your API key
+  const agentId = "6a12b1cd-b7d5-4b00-80ee-d2829af810dc"; // Replace with your agent ID
+
+  const authorizationToken = `Basic ${btoa(`${projectId}:${apiKey}`)}`;
+  const baseUrl = `https://api-${region}.stack.tryrelevance.com/latest`;
+  const headers = {
+    Authorization: authorizationToken,
+    "Content-Type": "application/json",
+  };
+
+  try {
+    const requestBody = {
+      message: { role: "user", content: message },
+      agent_id: agentId,
+    };
+
+    const response = await fetch(`${baseUrl}/agents/trigger`, {
+      method: "POST",
+      headers: headers,
+      body: JSON.stringify(requestBody),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      const { studio_id, job_id } = data.job_info;
+      return await pollAgentResponse(baseUrl, studio_id, job_id, headers);
+    } else {
+      const errorData = await response.json();
+      console.error("Error starting conversation:", errorData);
+      return `Error: ${errorData.message || response.statusText}`;
+    }
+  } catch (error) {
+    console.error("Error during conversation:", error);
+    return "An error occurred while contacting the AI.";
+  }
+}
+
+// Poll for AI response
+async function pollAgentResponse(baseUrl, studio_id, job_id, headers) {
+  const pollUrl = `${baseUrl}/studios/${studio_id}/async_poll/${job_id}`;
+  let done = false;
+
+  while (!done) {
+    try {
+      const response = await fetch(pollUrl, { method: "GET", headers: headers });
+      if (response.ok) {
+        const data = await response.json();
+        for (const update of data.updates) {
+          if (update.type === "chain-success" && update.output.status === "complete") {
+            done = true;
+            return update.output.output.answer;
+          }
+        }
+      } else {
+        console.error("Polling error:", response.statusText);
+        return "Error while polling for response.";
+      }
+    } catch (error) {
+      console.error("Polling error:", error);
+      return "Error while polling for response.";
+    }
+    await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second between polls
+  }
 }
 
 // Start the initial conversation
-function startInitialConversation(conversationWrapper, chatInputWrapper) {
+window.startInitialConversation = function startInitialConversation(conversationWrapper, chatInputWrapper) {
   console.log("Starting initial conversation...");
 
   const initialMessage = "Hello, how can I help you today?";
@@ -127,7 +190,7 @@ function startInitialConversation(conversationWrapper, chatInputWrapper) {
   // Show the input UI after the initial message
   chatInputWrapper.style.display = "grid";
   console.log("Input wrapper displayed.");
-}
+};
 
 // Placeholder for voice recognition toggle
 function toggleVoiceRecognition() {
