@@ -8,48 +8,34 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById('ai-agent-wrapper').innerHTML = html;
       console.log("HTML template loaded.");
 
-      // Reinitialize DOM element references
-      const textarea = document.getElementById("chat-user-input");
-      const micButton = document.getElementById("chat-user-input-mic");
-      const userSubmit = document.getElementById("chat-user-submit");
-      const hiddenDiv = document.getElementById("hidden-div");
-      const conversationWrapper = document.getElementById("chat_conversation-wrapper");
-      const chatInputWrapper = document.querySelector(".chat_input-wrapper");
-
-      // Hide input UI on load
-      if (chatInputWrapper) {
-        chatInputWrapper.style.display = "none";
-        console.log("Input wrapper hidden on load.");
-      } else {
-        console.error("Cannot find .chat_input-wrapper element.");
-      }
-
-      // Initialize chatbot after ensuring all DOM elements are loaded
-      initializeChatbot({
-        textarea,
-        micButton,
-        userSubmit,
-        hiddenDiv,
-        conversationWrapper,
-        chatInputWrapper,
-      });
+      // Reinitialize DOM element references after HTML is loaded
+      initializeChatbot();
     })
     .catch(error => console.error("Error loading HTML template:", error));
 });
 
 // Chatbot initialization function
-function initializeChatbot(elements) {
-  console.log("Chatbot initialization started.");
+function initializeChatbot() {
+  console.log("Initializing chatbot...");
 
-  const { textarea, micButton, userSubmit, hiddenDiv, conversationWrapper, chatInputWrapper } = elements;
+  const textarea = document.getElementById("chat-user-input");
+  const micButton = document.getElementById("chat-user-input-mic");
+  const userSubmit = document.getElementById("chat-user-submit");
+  const hiddenDiv = document.getElementById("hidden-div");
+  const conversationWrapper = document.getElementById("chat_conversation-wrapper");
+  const chatInputWrapper = document.querySelector(".chat_input-wrapper");
 
-  // Check if necessary elements exist
-  if (!textarea || !userSubmit || !micButton || !conversationWrapper) {
-    console.error("Some required DOM elements are missing. Chatbot cannot initialize.");
+  // Check if all necessary elements exist
+  if (!textarea || !micButton || !userSubmit || !hiddenDiv || !conversationWrapper || !chatInputWrapper) {
+    console.error("Required DOM elements are missing. Chatbot cannot initialize.");
     return;
   }
 
-  // Attach event listeners to the elements
+  // Hide input UI on load
+  chatInputWrapper.style.display = "none";
+  console.log("Input wrapper hidden on load.");
+
+  // Attach event listeners to DOM elements
   textarea.addEventListener("input", () => adjustHeight(hiddenDiv, textarea));
   userSubmit.addEventListener("click", () => handleSubmit(textarea, conversationWrapper));
 
@@ -60,12 +46,14 @@ function initializeChatbot(elements) {
     }
   });
 
-  if (micButton) {
-    micButton.addEventListener("click", toggleVoiceRecognition);
-  }
+  micButton.addEventListener("click", toggleVoiceRecognition);
 
-  // Start the initial conversation
-  startInitialConversation(conversationWrapper, chatInputWrapper);
+  // Start initial conversation
+  if (typeof startInitialConversation === "function") {
+    startInitialConversation(conversationWrapper, chatInputWrapper);
+  } else {
+    console.error("startInitialConversation function not found. Make sure it is defined globally.");
+  }
 }
 
 // Adjust textarea height dynamically
@@ -137,10 +125,8 @@ function startInitialConversation(conversationWrapper, chatInputWrapper) {
   createChatBlock(false, initialMessage, conversationWrapper);
 
   // Show the input UI after the initial message
-  if (chatInputWrapper) {
-    chatInputWrapper.style.display = "grid";
-    console.log("Input wrapper displayed.");
-  }
+  chatInputWrapper.style.display = "grid";
+  console.log("Input wrapper displayed.");
 }
 
 // Placeholder for voice recognition toggle
