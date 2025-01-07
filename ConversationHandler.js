@@ -1,6 +1,7 @@
 (async () => {
-  // Step 1: Retrieve user's email
-  const userEmail = '%%EMAIL%%';
+  // Step 1: Retrieve user's email from the container's attribute
+  const container = document.getElementById('ai-agent-container');
+  const userEmail = container.getAttribute('data-user-email');
 
   // Step 2: Define Airtable API URLs and headers
   const clientsTableUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/clients';
