@@ -7,7 +7,7 @@
 }
 [class^="w-icon-"],
 [class*=" w-icon-"] {
-  /* use !important to prevent issues with browser extensions that change fonts */
+  /* use !important to prevent issues with browser extensions that change fonts bannana */
   font-family: 'webflow-icons' !important;
   speak: none;
   font-style: normal;
