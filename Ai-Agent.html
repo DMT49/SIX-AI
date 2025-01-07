@@ -74,7 +74,50 @@
     const hiddenDiv = document.getElementById("hidden-div");
     const conversationWrapper = document.getElementById("chat_conversation-wrapper");
     const chatInputWrapper = document.querySelector(".chat_input-wrapper");
+
+    // Function to fetch and log conversation messages
+    async function fetchConversationMessages(conversationID) {
+      if (!conversationID) {
+        console.log("No conversationID provided.");
+        return;
+      }
     
+      try {
+        const response = await fetch(`${baseUrl}/knowledge/list`, {
+          method: "POST",
+          headers: {
+            Authorization: authorizationToken,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            knowledge_set: conversationID,
+            page_size: 20, // Adjust as needed
+            sort: [{ insert_date_: "desc" }], // Newest message first
+          }),
+        });
+    
+        if (!response.ok) {
+          console.error("Error fetching conversation:", await response.text());
+          return;
+        }
+    
+        const data = await response.json();
+        const messages = data.results || [];
+    
+        console.log("Fetched conversation messages:", messages);
+        return messages;
+      } catch (error) {
+        console.error("Error accessing Relevance API:", error);
+      }
+    }
+    
+    // Check for conversationID in the URL and fetch messages
+    const urlParams = new URLSearchParams(window.location.search);
+    const conversationID = urlParams.get('conversationID');
+    if (conversationID) {
+      fetchConversationMessages(conversationID);
+    }
+
     // -----------------------------
     // Hide input UI on load
     // -----------------------------
