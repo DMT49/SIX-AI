@@ -2371,7 +2371,6 @@ figcaption {
   width: 55px;
   height: 55px;
   padding: 0;
-  font-family: Merriweather, serif;
   transition-duration: .3s;
   display: flex;
 }
@@ -2581,7 +2580,6 @@ figcaption {
 
 .chat_inner-wrapper {
   padding: 15px 10% 5px 5px;
-  font-family: Merriweather, serif;
   font-size: 1.1rem;
 }
 
