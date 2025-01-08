@@ -139,22 +139,26 @@
       // Scroll to the bottom of the conversation
       conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
     }
-        
+
     if (conversationID) {
-      chatInputWrapper.style.display = "grid"; // Ensure input wrapper is shown
-      console.log("Input wrapper displayed.");
+      console.log("Conversation ID found:", conversationID);
     
+      // Fetch and render messages
       fetchConversationMessages(conversationID).then((messages) => {
         if (messages) {
           renderConversationMessages(messages);
         } else {
           console.error("Failed to fetch conversation messages.");
         }
+        // Show the input wrapper after messages are loaded
+        chatInputWrapper.style.display = "grid";
+        console.log("Input wrapper displayed.");
       });
     } else {
-      chatInputWrapper.style.display = "none"; // Hide input wrapper if no conversationID
-      console.log("Input wrapper hidden.");
+      console.log("No conversation ID found. Hiding input wrapper.");
+      chatInputWrapper.style.display = "none";
     }
+
 
 
     // -----------------------------
