@@ -550,13 +550,24 @@
     // Automatically Start Conversation
     // -----------------------------
     async function startInitialConversation() {
+      // Clear existing chat blocks
+      while (conversationWrapper.firstChild) {
+        conversationWrapper.removeChild(conversationWrapper.firstChild);
+      }
+      console.log("Cleared existing chat blocks.");
+    
+      // Remove conversationID from the URL
+      const url = new URL(window.location.href);
+      url.searchParams.delete('conversationID');
+      window.history.replaceState({}, '', url);
+      console.log("Removed conversationID from URL.");
+    
       // Create loading block
       const { chatInnerWrapper, chatBlockWrapper } = createLoadingBlock();
     
       // Construct the initial message
       const currentTime = new Date().toLocaleString();
       const initialMessage = `conversation_name=${currentTime}, current_username=${name}, current_user_email=${email}`;
-    
       console.log("Sending initial message to AI:", initialMessage);
     
       // Send initial message to AI (not shown as user's message)
@@ -568,12 +579,13 @@
       // Display only the AI's response
       createChatBlock(false, agentResponse);
     
-      // Now show the input UI so the user can continue
+      // Show the input UI so the user can continue
       if (chatInputWrapper) {
-        chatInputWrapper.style.display = "grid"; // Changed from "block" to "grid"
+        chatInputWrapper.style.display = "grid";
         console.log("Input wrapper displayed as grid.");
       }
     }
+
     
     // Call the initial conversation right away
     syncStyles();
