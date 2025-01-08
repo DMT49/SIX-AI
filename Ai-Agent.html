@@ -158,18 +158,6 @@
       console.log("No conversation ID found. Hiding input wrapper.");
       chatInputWrapper.style.display = "none";
     }
-
-
-
-    // -----------------------------
-    // Hide input UI on load
-    // -----------------------------
-    if (chatInputWrapper) {
-      chatInputWrapper.style.display = "none";
-      console.log("Input wrapper hidden on load.");
-    } else {
-      console.error("Cannot find .chat_input-wrapper element.");
-    }
     
     let conversationId = null;
     let isListening = false;
