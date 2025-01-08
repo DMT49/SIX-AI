@@ -3209,3 +3209,11 @@ margin: 0rem !important;
 .conversation-item p {
   margin: 5px 0;
 }
+
+.f-hw {
+  display: none;
+}
+
+.entry-title {
+  display: none;
+}
