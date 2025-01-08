@@ -336,7 +336,7 @@
           // Create loading block
           const { chatInnerWrapper: loadingWrapper, chatBlockWrapper: loadingBlockWrapper } = createLoadingBlock();
           // Get response
-          const agentResponse = await startConversation(optionText);
+          const agentResponse = await versation(optionText);
           // Remove loading block
           conversationWrapper.removeChild(loadingBlockWrapper);
           // Show agent response
@@ -362,7 +362,7 @@
         const requestBody = {
           message: { role: "user", content: message },
           agent_id: agentId,
-          ...(conversationId && { conversation_id: conversationId }),
+          ...(conversationId && { conversation_id: conversationId }), // Use existing conversationId if available
         };
     
         const response = await fetch(`${baseUrl}/agents/trigger`, {
@@ -373,10 +373,13 @@
     
         if (response.ok) {
           const data = await response.json();
+    
+          // Set conversationId if it's a new conversation
           if (!conversationId) {
             conversationId = data.conversation_id;
             console.log(`New conversation started with ID: ${conversationId}`);
           }
+    
           const { studio_id, job_id } = data.job_info;
           const agentResponse = await pollAgentResponse(studio_id, job_id);
           return agentResponse;
@@ -390,6 +393,7 @@
         return "Sorry, something went wrong.";
       }
     }
+
     
     // Function to poll the AI for a response
     async function pollAgentResponse(studio_id, job_id) {
