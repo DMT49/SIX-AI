@@ -2,6 +2,7 @@
   // Step 1: Retrieve user's email from the container's attribute
   const container = document.getElementById('ai-agent-container');
   const userEmail = container.getAttribute('data-user-email');
+  const agentID = container.getAttribute('data-agent-id');
 
   // Step 2: Define Airtable API URLs and headers
   const clientsTableUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/clients';
@@ -38,7 +39,7 @@
 
       // Step 4: Fetch matching conversations from Conversations table
       const conversationsResponse = await fetch(
-        `${conversationsTableUrl}?filterByFormula=AND({user-ID}='${userId}', {Agent-ID}='a60e7386-b17c-43b8-9a37-6d68eeb88eef')`,
+        `${conversationsTableUrl}?filterByFormula=AND({user-ID}='${userId}', {Agent-ID}='${agentID}')`,
         { headers }
       );
       const conversationsData = await conversationsResponse.json();
