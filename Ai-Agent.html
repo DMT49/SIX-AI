@@ -75,10 +75,16 @@
     const conversationWrapper = document.getElementById("chat_conversation-wrapper");
     const chatInputWrapper = document.querySelector(".chat_input-wrapper");
 
-    // Define URL parameters and extract conversationID once
     const urlParams = new URLSearchParams(window.location.search);
     const conversationID = urlParams.get('conversationID');
-    console.log("Extracted conversation ID:", conversationID);
+    
+    // Assign to global variable if not already set
+    if (conversationID && !conversationId) {
+      conversationId = conversationID;
+      console.log("Using existing conversation ID:", conversationId);
+    } else {
+      console.log("No conversation ID found in URL. Starting a new conversation.");
+    }
 
 
     // Function to fetch and log conversation messages
@@ -362,7 +368,7 @@
         const requestBody = {
           message: { role: "user", content: message },
           agent_id: agentId,
-          ...(conversationId && { conversation_id: conversationId }), // Use existing conversationId if available
+          ...(conversationId && { conversation_id: conversationId }) // Include conversationId if it exists
         };
     
         const response = await fetch(`${baseUrl}/agents/trigger`, {
@@ -374,7 +380,7 @@
         if (response.ok) {
           const data = await response.json();
     
-          // Set conversationId if it's a new conversation
+          // Set conversationId only if it's a new conversation
           if (!conversationId) {
             conversationId = data.conversation_id;
             console.log(`New conversation started with ID: ${conversationId}`);
@@ -393,6 +399,7 @@
         return "Sorry, something went wrong.";
       }
     }
+
 
     
     // Function to poll the AI for a response
