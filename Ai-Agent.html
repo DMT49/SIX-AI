@@ -562,6 +562,10 @@
       window.history.replaceState({}, '', url);
       console.log("Removed conversationID from URL.");
     
+      // Reset the global conversationId variable
+      conversationId = null;
+      console.log("Reset conversationId to null.");
+    
       // Create loading block
       const { chatInnerWrapper, chatBlockWrapper } = createLoadingBlock();
     
@@ -585,6 +589,7 @@
         console.log("Input wrapper displayed as grid.");
       }
     }
+
 
     
     // Call the initial conversation right away
