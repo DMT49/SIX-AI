@@ -77,14 +77,6 @@
 
     const urlParams = new URLSearchParams(window.location.search);
     const conversationID = urlParams.get('conversationID');
-    
-    // Assign to global variable if not already set
-    if (conversationID && !conversationId) {
-      conversationId = conversationID;
-      console.log("Using existing conversation ID:", conversationId);
-    } else {
-      console.log("No conversation ID found in URL. Starting a new conversation.");
-    }
 
 
     // Function to fetch and log conversation messages
@@ -153,9 +145,12 @@
       fetchConversationMessages(conversationID).then((messages) => {
         if (messages) {
           renderConversationMessages(messages);
+          conversationId = conversationID; // Set global conversationId here
+          console.log("Global conversationId set to:", conversationId);
         } else {
           console.error("Failed to fetch conversation messages.");
         }
+    
         // Show the input wrapper after messages are loaded
         chatInputWrapper.style.display = "grid";
         console.log("Input wrapper displayed.");
@@ -164,6 +159,7 @@
       console.log("No conversation ID found. Hiding input wrapper.");
       chatInputWrapper.style.display = "none";
     }
+
     
     let conversationId = null;
     let isListening = false;
