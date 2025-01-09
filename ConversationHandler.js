@@ -1,5 +1,7 @@
+let userId = null; // Declare userId globally
+
 (async () => {
-  // Step 1: Retrieve user's email from the container's attribute
+  // Step 1: Retrieve user's email, name, and agent ID from the container's attributes
   const container = document.getElementById('ai-agent-container');
   const userEmail = container.getAttribute('data-user-email');
   const userName = container.getAttribute('data-user-name');
@@ -10,7 +12,7 @@
   const conversationsTableUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/conversations';
   const headers = {
     Authorization: 'Bearer patTeuxUuzgG0ZU8Q.2eb9ff7f31afe3e06f3c128c5b5b832bcc4e4e85bd58a5007a8368f218d28b83',
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
   };
 
   // Function to calculate relative time
@@ -36,7 +38,8 @@
     const clientsData = await clientsResponse.json();
 
     if (clientsData.records && clientsData.records.length > 0) {
-      const userId = clientsData.records[0].fields['User-ID'];
+      userId = clientsData.records[0].fields['User-ID']; // Assign User-ID to global variable
+      console.log('Retrieved User-ID:', userId);
 
       // Step 4: Fetch matching conversations from Conversations table
       const conversationsResponse = await fetch(
@@ -57,7 +60,7 @@
           return timeB - timeA; // Descending order
         });
 
-        sortedRecords.forEach(record => {
+        sortedRecords.forEach((record) => {
           const timeStamp = record.fields['Time-Stamp'];
           const conversationId = record.fields['Conversation-ID'];
           const conversationDate = new Date(timeStamp).toLocaleDateString(); // Format as date
