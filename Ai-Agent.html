@@ -381,7 +381,7 @@
           // Create loading block
           const { chatInnerWrapper: loadingWrapper, chatBlockWrapper: loadingBlockWrapper } = createLoadingBlock();
           // Get response
-          const agentResponse = await versation(optionText);
+          const agentResponse = await startConversation(optionText);
           // Remove loading block
           conversationWrapper.removeChild(loadingBlockWrapper);
           // Show agent response
