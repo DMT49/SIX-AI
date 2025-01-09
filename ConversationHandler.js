@@ -2,6 +2,7 @@
   // Step 1: Retrieve user's email from the container's attribute
   const container = document.getElementById('ai-agent-container');
   const userEmail = container.getAttribute('data-user-email');
+  const userName = container.getAttribute('data-user-name');
   const agentID = container.getAttribute('data-agent-id');
 
   // Step 2: Define Airtable API URLs and headers
