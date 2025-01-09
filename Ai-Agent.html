@@ -78,13 +78,13 @@
     const urlParams = new URLSearchParams(window.location.search);
     const conversationID = urlParams.get('conversationID');
     
-    const conversationsTableUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/conversations';
-    const airtableHeaders = {
-      Authorization: 'Bearer patTeuxUuzgG0ZU8Q.2eb9ff7f31afe3e06f3c128c5b5b832bcc4e4e85bd58a5007a8368f218d28b83',
-      'Content-Type': 'application/json',
-    };
-
     async function saveConversationToAirtable(metadata) {
+      const conversationsTableUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/cool_conversations';
+      const airtableHeaders = {
+        Authorization: 'Bearer patTeuxUuzgG0ZU8Q.2eb9ff7f31afe3e06f3c128c5b5b832bcc4e4e85bd58a5007a8368f218d28b83',
+        'Content-Type': 'application/json',
+      };
+    
       try {
         const response = await fetch(conversationsTableUrl, {
           method: 'POST',
@@ -95,6 +95,7 @@
               'Agent-ID': metadata.agentID,
               'Conversation-ID': metadata.conversationID,
               'Time-Stamp': metadata.timeStamp,
+              'User-ID': metadata.userId, // Include the User-ID
             },
           }),
         });
@@ -108,8 +109,6 @@
         console.error('Error saving conversation metadata to Airtable:', error);
       }
     }
-
-
 
     // Function to fetch and log conversation messages
     async function fetchConversationMessages(conversationID) {
@@ -638,7 +637,7 @@
     const startConversationButton = document.getElementById('start-new-conversation');
     if (startConversationButton) {
       startConversationButton.addEventListener('click', async (event) => {
-        event.preventDefault(); // Prevent page refresh
+        event.preventDefault();
         console.log('Starting a new conversation...');
     
         // Start a new conversation
@@ -648,22 +647,23 @@
         const container = document.getElementById('ai-agent-container');
         const userName = container.getAttribute('data-user-name') || 'Guest';
         const agentID = container.getAttribute('data-agent-id') || 'Unknown Agent';
-        const timeStamp = new Date().toISOString(); // ISO 24-hour format
+        const timeStamp = new Date().toISOString(); // Current date/time in ISO format
     
-        // Use global conversationId set after starting the conversation
         const metadata = {
           userName,
           agentID,
           conversationID: conversationId || 'Unknown Conversation ID',
           timeStamp,
+          userId, // Include globally accessible User-ID
         };
     
-        // Save metadata to Airtable
+        // Save conversation metadata to Airtable
         await saveConversationToAirtable(metadata);
       });
     } else {
       console.error("Button with id 'start-new-conversation' not found.");
     }
+
 
   })();
 </script>
