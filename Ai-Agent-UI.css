@@ -3217,3 +3217,11 @@ margin: 0rem !important;
 .entry-title {
   display: none;
 }
+
+.menu-item{
+  margin-bottom: 8px;
+}
+
+.menu-item.current_page_item{
+  color: #000000;
+}
