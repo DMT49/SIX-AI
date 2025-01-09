@@ -126,7 +126,7 @@
           },
           body: JSON.stringify({
             knowledge_set: conversationID,
-            page_size: 20, // Adjust as needed
+            page_size: 999, // Adjust as needed
             sort: [{ insert_date_: "desc" }], // Newest message first
           }),
         });
@@ -155,7 +155,17 @@
       }
     
       // Reverse the order to render messages in chronological order
-      messages.reverse().forEach((message) => {
+      messages.reverse();
+    
+      // Skip the first user message if it exists
+      const filteredMessages = messages.filter((message, index) => {
+        const role = message?.data?.message?.role;
+        // Exclude the very first user message
+        return !(index === 0 && role === "user");
+      });
+    
+      // Render the remaining messages
+      filteredMessages.forEach((message) => {
         const role = message?.data?.message?.role;
         const content = message?.data?.message?.content;
     
@@ -169,6 +179,8 @@
       conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
     }
 
+
+    
     if (conversationID) {
       console.log("Conversation ID found:", conversationID);
     
