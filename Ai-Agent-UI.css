@@ -2630,7 +2630,7 @@ figcaption {
     flex-direction: column;
   }
 
-  .chat_dashboard-heading, .chat-button-text, .chat_dashboard-sub-heading {
+  .chat_dashboard-heading, .chat_dashboard-sub-heading {
     font-size: 1.75rem;
   }
 }
