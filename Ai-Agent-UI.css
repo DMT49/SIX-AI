@@ -2655,7 +2655,7 @@ figcaption {
     font-size: 2rem;
   }
 
-  .chat_dashboard-heading, .chat-button-text, .chat_dashboard-sub-heading {
+  .chat_dashboard-heading, .chat_dashboard-sub-heading {
     font-size: 1.5rem;
     line-height: 1.4;
   }
