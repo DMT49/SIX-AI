@@ -358,9 +358,11 @@
         const optionDiv = document.createElement("div");
         optionDiv.className = "chat_multi-choice-option";
     
-        const optionHeading = document.createElement("h3");
-        optionHeading.className = "chat-button-text";
-        optionHeading.textContent = optionText;
+      const optionHeading = document.createElement("span");
+      optionHeading.className = "chat-button-text";
+      optionHeading.style.fontWeight = "bold"; // Apply bold styling
+      optionHeading.textContent = optionText;
+
     
         optionDiv.appendChild(optionHeading);
         chatBlock.appendChild(optionDiv);
