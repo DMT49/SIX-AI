@@ -2401,10 +2401,6 @@ figcaption {
   font-size: 1.4rem;
 }
 
-.chat_inner-wrapper p {
-  margin-bottom: 0 !important;
-}
-
 .chat_greeting-wrapper {
   margin-top: 66px;
 }
