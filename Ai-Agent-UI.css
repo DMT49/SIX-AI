@@ -2959,23 +2959,23 @@ margin: 0rem !important;
 }
 
 .chat_conversation-wrapper h1 {
-  font-size: 2.5em !important;
-}
-
-.chat_conversation-wrapper h2 {
-  font-size: 2em !important;
-}
-
-.chat_conversation-wrapper h3 {
-  font-size: 1.75em !important;
-}
-
-.chat_conversation-wrapper h4 {
   font-size: 1.5em !important;
 }
 
+.chat_conversation-wrapper h2 {
+  font-size: 1.5em !important;
+}
+
+.chat_conversation-wrapper h3 {
+  font-size: 1.2em !important;
+}
+
+.chat_conversation-wrapper h4 {
+  font-size: 1.2em !important;
+}
+
 .chat_conversation-wrapper h5 {
-  font-size: 1.25em !important;
+  font-size: 1em !important;
 }
 
 .chat_conversation-wrapper h6 {
