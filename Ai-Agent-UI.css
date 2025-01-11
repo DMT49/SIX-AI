@@ -2961,8 +2961,12 @@ margin: 0rem !important;
 /* Paragraphs */
 .chat_conversation-wrapper p {
   margin-top: 0 !important;
-  margin-bottom: 16 !important;
+  margin-bottom: 16px !important;
   color: #000 !important;
+}
+
+.chat_inner-wrapper p:last-child {
+  margin-bottom: 0 !important;
 }
 
 /* Blockquotes */
