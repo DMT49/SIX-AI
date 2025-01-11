@@ -671,8 +671,12 @@
           userId, // Include globally accessible User-ID
         };
     
-        // Save conversation metadata to Airtable
-        await saveConversationToAirtable(metadata);
+        // Only save to Airtable if userId is not null
+        if (userId) {
+          await saveConversationToAirtable(metadata);
+        } else {
+          console.log('User-ID is null. Skipping metadata save to Airtable.');
+        }
       });
     } else {
       console.error("Button with id 'start-new-conversation' not found.");
