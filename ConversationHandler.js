@@ -33,8 +33,8 @@ let userId = null; // Declare userId globally
   };
 
   try {
-    // Step 3: Fetch User ID from Clients table
-    const clientsResponse = await fetch(`${clientsTableUrl}?filterByFormula=({Email}='${userEmail}')`, { headers });
+    // Step 3: Fetch User ID from Clients table using partial email match
+    const clientsResponse = await fetch(`${clientsTableUrl}?filterByFormula=SEARCH('${userEmail}', ARRAYJOIN({Email}, ','))`, { headers });
     const clientsData = await clientsResponse.json();
 
     if (clientsData.records && clientsData.records.length > 0) {
@@ -84,13 +84,13 @@ let userId = null; // Declare userId globally
           listWrapper.appendChild(conversationItem);
         });
       } else {
-        listWrapper.innerHTML = '<p>No conversations found.</p>';
+        listWrapper.innerHTML = '<p>No matching conversations found.</p>';
       }
     } else {
       // No user found: display "No matching conversations found" message
       console.log('No matching user found for email:', userEmail);
       const listWrapper = document.getElementById('conversation-list-wrapper');
-      listWrapper.innerHTML = '<p>No conversations found.</p>'; // Same message as no conversations
+      listWrapper.innerHTML = '<p>No matching conversations found.</p>'; // Same message as no conversations
     }
   } catch (error) {
     console.error('Error fetching data from Airtable:', error);
