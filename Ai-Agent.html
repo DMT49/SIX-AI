@@ -397,11 +397,12 @@
     
     // Function to clean option text
     function cleanOptionText(text) {
-      text = text.replace(/^[\s]*([-*]|(\d+\.)|(\d+\))|[A-Z]\.)\s*/, "");
-      text = text.replace(/[*#_`~>-]/g, "");
-      text = text.replace(/\s+/g, " ").trim();
+      text = text.replace(/^[\s]*([-*]|(\d+\.)|(\d+\))|[A-Z]\.)\s*/, ""); // Removes leading markers
+      text = text.replace(/[*#_`~>]/g, ""); // Retain dashes, remove other unwanted symbols
+      text = text.replace(/\s+/g, " ").trim(); // Normalizes whitespace
       return text;
     }
+
     
     // Function to start a conversation with the AI
     async function startConversation(message) {
