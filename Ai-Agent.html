@@ -270,6 +270,13 @@
       textarea.style.height = 'auto'; // Reset height
       textarea.style.height = `${textarea.scrollHeight}px`; // Set height based on scrollHeight
     }
+
+        // Function to reset the textarea height and content
+    function resetHeight() {
+      textarea.value = "";
+      textarea.style.height = "30px";
+      hiddenDiv.textContent = "\u200b";
+    }
     
     
     // Function to stop voice transcription
