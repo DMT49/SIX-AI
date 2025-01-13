@@ -2690,14 +2690,6 @@ figcaption {
     height: 38px;
   }
 
-#hidden-div {
-  position: absolute;
-  visibility: hidden;
-  white-space: pre-wrap; /* Preserve line breaks and spaces */
-  word-wrap: break-word; /* Handle long words */
-  overflow: hidden; /* Ensure no scrollbars */
-}
-
 /* Set color style to inherit */
 .inherit-color * {
     color: inherit;
