@@ -214,7 +214,6 @@
       textarea.style.height = hiddenDiv.offsetHeight + "px";
     }
     
-    // Sync styles from textarea to hidden div (initial setup)
     function syncStyles() {
       const computedStyles = getComputedStyle(textarea);
       const styleProperties = [
@@ -226,13 +225,16 @@
         'line-height',
         'padding',
         'border-width',
+        'border-style',
+        'border-color',
         'box-sizing',
         'width',
         'letter-spacing',
         'word-spacing',
         'white-space',
         'text-transform',
-        'overflow',
+        'overflow-wrap', // Handle long words
+        'word-break',    // Handle word breaks
         'visibility',
       ];
     
@@ -240,7 +242,6 @@
         hiddenDiv.style[property] = computedStyles[property];
       });
     
-      // Ensure hiddenDiv width adjusts properly
       hiddenDiv.style.position = 'absolute';
       hiddenDiv.style.visibility = 'hidden';
       hiddenDiv.style.whiteSpace = 'pre-wrap'; // Preserve line breaks and spaces
