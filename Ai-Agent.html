@@ -138,8 +138,8 @@
     })();
 
 
-    // Function to fetch user profile image from Airtable
-    async function fetchUserProfileImage(userId) {
+    // Function to fetch user profile image from Airtable using Email
+    async function fetchUserProfileImageByEmail(email) {
       try {
         const airtableBaseUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/Users'; // Replace with your actual base
         const airtableHeaders = {
@@ -147,7 +147,8 @@
           'Content-Type': 'application/json',
         };
     
-        const response = await fetch(`${airtableBaseUrl}?filterByFormula={User-ID}="${userId}"`, {
+        // Use the email to filter records
+        const response = await fetch(`${airtableBaseUrl}?filterByFormula={Email}="${email}"`, {
           method: 'GET',
           headers: airtableHeaders,
         });
@@ -159,7 +160,7 @@
             console.log("User Profile Image URL:", profileImage);
             return profileImage;
           } else {
-            console.log("No record found for User-ID:", userId);
+            console.log("No record found for Email:", email);
             return null;
           }
         } else {
@@ -193,8 +194,7 @@
     
     // Initialize the process for user profile image
     (async function initializeUserAvatar() {
-      const userId = container?.getAttribute("data-user-id") || "default-user-id"; // Replace with actual user ID logic
-      const userProfileImage = await fetchUserProfileImage(userId);
+      const userProfileImage = await fetchUserProfileImageByEmail(email); // Use the email variable defined in the code
       updateChatUserAvatarStyle(userProfileImage);
     })();
 
