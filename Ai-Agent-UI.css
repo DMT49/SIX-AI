@@ -2679,7 +2679,7 @@ figcaption {
   .textarea-dynamic {
     width: 100%;
     min-height: 30px; /* Baseline height */
-    line-height: 20px; /* Consistent line height */
+    line-height: 28px; /* Consistent line height */
     resize: none; /* Prevent manual resizing */
     overflow: hidden; /* No scrollbars */
     padding: 5px; /* Padding for better spacing */
@@ -2695,7 +2695,7 @@ figcaption {
     word-wrap: break-word; /* Allow long words to break */
     overflow-wrap: break-word;
     position: absolute; /* Take it out of the layout flow */
-    line-height: 20px; /* Match the textarea line height */
+    line-height: 28px; /* Match the textarea line height */
     width: 100%; /* Match the textarea width */
     box-sizing: border-box; /* Match the textarea box-sizing */
     padding: 5px; /* Match the textarea padding */
