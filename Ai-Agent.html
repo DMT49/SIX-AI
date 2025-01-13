@@ -77,7 +77,7 @@
     const conversationID = urlParams.get('conversationID');
 
 
-    // Function to fetch profile image from Airtable
+        // Function to fetch profile image from Airtable
     async function fetchAgentProfileImage(agentId) {
       try {
         const airtableBaseUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/Agents';
@@ -94,7 +94,7 @@
         if (response.ok) {
           const data = await response.json();
           if (data.records && data.records.length > 0) {
-            const profileImage = data.records[0].fields['Profile-Image'][0].url; // Retrieve the first image URL
+            const profileImage = data.records[0].fields['Profile-Image'][0].url;
             console.log("Profile Image URL:", profileImage);
             return profileImage;
           } else {
@@ -111,24 +111,32 @@
       }
     }
     
-    // Function to update chat bot avatar with the profile image
-    async function updateChatBotAvatar(agentId) {
-      const profileImage = await fetchAgentProfileImage(agentId);
+    // Function to update the global style for chat_bot-avatar
+    function updateChatBotAvatarStyle(profileImage) {
       if (profileImage) {
-        const botAvatar = document.querySelector('.chat_bot-avatar');
-        if (botAvatar) {
-          botAvatar.style.backgroundImage = `url(${profileImage})`;
-          console.log("Chat bot avatar updated with profile image.");
-        } else {
-          console.error("Chat bot avatar element not found.");
-        }
+        const style = document.createElement('style');
+        style.textContent = `
+          .chat_bot-avatar {
+            background-image: url("${profileImage}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+          }
+        `;
+        document.head.appendChild(style);
+        console.log("Updated chat_bot-avatar style globally.");
       } else {
-        console.log("No profile image available, avatar style unchanged.");
+        console.log("No profile image provided, skipping style update.");
       }
     }
     
-    // Call the function to update the avatar
-    updateChatBotAvatar(agentId);
+    // Initialize the process
+    (async function initializeChatBot() {
+      const agentId = container?.getAttribute("data-agent-id") || "6a12b1cd-b7d5-4b00-80ee-d2829af810dc";
+      const profileImage = await fetchAgentProfileImage(agentId);
+      updateChatBotAvatarStyle(profileImage);
+    })();
+
 
 
 
