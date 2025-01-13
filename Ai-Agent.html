@@ -118,8 +118,6 @@
         const botAvatar = document.querySelector('.chat_bot-avatar');
         if (botAvatar) {
           botAvatar.style.backgroundImage = `url(${profileImage})`;
-          botAvatar.style.backgroundSize = 'cover';
-          botAvatar.style.backgroundPosition = 'center';
           console.log("Chat bot avatar updated with profile image.");
         } else {
           console.error("Chat bot avatar element not found.");
@@ -131,6 +129,7 @@
     
     // Call the function to update the avatar
     updateChatBotAvatar(agentId);
+
 
 
 
