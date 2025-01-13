@@ -264,13 +264,14 @@ function syncStyles() {
   ];
 
   styleProperties.forEach((property) => {
-    hiddenDiv.style.setProperty(property, computedStyles[property], 'important');
+    hiddenDiv.style[property] = computedStyles[property];
   });
 
-  hiddenDiv.style.setProperty('position', 'absolute', 'important');
-  hiddenDiv.style.setProperty('visibility', 'hidden', 'important');
-  hiddenDiv.style.setProperty('white-space', 'pre-wrap', 'important'); // Preserve line breaks
+  hiddenDiv.style.position = 'absolute';
+  hiddenDiv.style.visibility = 'hidden';
+  hiddenDiv.style.whiteSpace = 'pre-wrap'; // Preserve line breaks and spaces
 }
+
 
     
     // Function to reset the textarea height and content
