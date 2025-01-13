@@ -75,64 +75,6 @@
 
     const urlParams = new URLSearchParams(window.location.search);
     const conversationID = urlParams.get('conversationID');
-
-
-
-     // Function to fetch profile image from Airtable
-    async function fetchAgentProfileImage(agentId) {
-      try {
-        const airtableBaseUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/Agents';
-        const airtableHeaders = {
-          Authorization: 'Bearer patTeuxUuzgG0ZU8Q.2eb9ff7f31afe3e06f3c128c5b5b832bcc4e4e85bd58a5007a8368f218d28b83',
-          'Content-Type': 'application/json',
-        };
-    
-        const response = await fetch(`${airtableBaseUrl}?filterByFormula={Agent-ID}="${agentId}"`, {
-          method: 'GET',
-          headers: airtableHeaders,
-        });
-    
-        if (response.ok) {
-          const data = await response.json();
-          if (data.records && data.records.length > 0) {
-            const profileImage = data.records[0].fields['Profile-Image'][0].url; // Retrieve the first image URL
-            console.log("Profile Image URL:", profileImage);
-            return profileImage;
-          } else {
-            console.log("No record found for Agent-ID:", agentId);
-            return null;
-          }
-        } else {
-          console.error("Failed to fetch data from Airtable:", await response.text());
-          return null;
-        }
-      } catch (error) {
-        console.error("Error fetching profile image from Airtable:", error);
-        return null;
-      }
-    }
-    
-    // Function to update chat bot avatar with the profile image
-    async function updateChatBotAvatar(agentId) {
-      const profileImage = await fetchAgentProfileImage(agentId);
-      if (profileImage) {
-        const botAvatar = document.querySelector('.chat_bot-avatar');
-        if (botAvatar) {
-          botAvatar.style.backgroundImage = `url(${profileImage})`;
-          botAvatar.style.backgroundSize = 'cover';
-          botAvatar.style.backgroundPosition = 'center';
-          console.log("Chat bot avatar updated with profile image.");
-        } else {
-          console.error("Chat bot avatar element not found.");
-        }
-      } else {
-        console.log("No profile image available, avatar style unchanged.");
-      }
-    }
-    
-    // Call the function to update the avatar
-    updateChatBotAvatar(agentId);
-
     
     async function saveConversationToAirtable(metadata) {
       const conversationsTableUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/conversations';
