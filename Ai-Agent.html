@@ -208,10 +208,9 @@
     let isListening = false;
     let retainedText = "";
     
-    // Function to dynamically adjust textarea height
     function adjustHeight() {
-      hiddenDiv.textContent = textarea.value + "\u200b";
-      textarea.style.height = hiddenDiv.offsetHeight + "px";
+      textarea.style.height = 'auto'; // Reset height
+      textarea.style.height = `${textarea.scrollHeight}px`; // Set height based on scrollHeight
     }
     
     // Sync styles from textarea to hidden div (initial setup)
