@@ -214,38 +214,64 @@
       textarea.style.height = hiddenDiv.offsetHeight + "px";
     }
     
-    function syncStyles() {
-      const computedStyles = getComputedStyle(textarea);
-      const styleProperties = [
-        'font-family',
-        'font-size',
-        'font-style',
-        'font-variant',
-        'font-weight',
-        'line-height',
-        'padding',
-        'border-width',
-        'border-style',
-        'border-color',
-        'box-sizing',
-        'width',
-        'letter-spacing',
-        'word-spacing',
-        'white-space',
-        'text-transform',
-        'overflow-wrap', // Handle long words
-        'word-break',    // Handle word breaks
-        'visibility',
-      ];
-    
-      styleProperties.forEach((property) => {
-        hiddenDiv.style[property] = computedStyles[property];
-      });
-    
-      hiddenDiv.style.position = 'absolute';
-      hiddenDiv.style.visibility = 'hidden';
-      hiddenDiv.style.whiteSpace = 'pre-wrap'; // Preserve line breaks and spaces
-    }
+function syncStyles() {
+  const computedStyles = getComputedStyle(textarea);
+  const styleProperties = [
+    'font-family',
+    'font-size',
+    'font-style',
+    'font-variant',
+    'font-weight',
+    'letter-spacing',
+    'line-height',
+    'word-spacing',
+    'white-space',
+    'text-transform',
+    'direction',
+    'unicode-bidi',
+    'padding-top',
+    'padding-right',
+    'padding-bottom',
+    'padding-left',
+    'margin-top',
+    'margin-right',
+    'margin-bottom',
+    'margin-left',
+    'border-top-width',
+    'border-right-width',
+    'border-bottom-width',
+    'border-left-width',
+    'border-style',
+    'border-color',
+    'box-sizing',
+    'width',
+    'height',
+    'min-width',
+    'max-width',
+    'min-height',
+    'max-height',
+    'overflow',
+    'overflow-x',
+    'overflow-y',
+    'overflow-wrap',
+    'word-break',
+    'text-align',
+    'text-indent',
+    'background-color',
+    'visibility',
+    'opacity',
+    'vertical-align',
+  ];
+
+  styleProperties.forEach((property) => {
+    hiddenDiv.style.setProperty(property, computedStyles[property], 'important');
+  });
+
+  hiddenDiv.style.setProperty('position', 'absolute', 'important');
+  hiddenDiv.style.setProperty('visibility', 'hidden', 'important');
+  hiddenDiv.style.setProperty('white-space', 'pre-wrap', 'important'); // Preserve line breaks
+}
+
 
     
     // Function to reset the textarea height and content
