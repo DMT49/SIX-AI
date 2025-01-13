@@ -2687,7 +2687,6 @@ figcaption {
     border: none; /* No borders */
     outline: none; /* No focus outline */
     box-sizing: border-box; /* Consistent box-sizing */
-    height: 30px; /* Explicitly set the initial height */
   }
 
 #hidden-div {
