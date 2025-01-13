@@ -217,11 +217,35 @@
     // Sync styles from textarea to hidden div (initial setup)
     function syncStyles() {
       const computedStyles = getComputedStyle(textarea);
-      hiddenDiv.style.width = computedStyles.width;
-      hiddenDiv.style.lineHeight = computedStyles.lineHeight;
-      hiddenDiv.style.padding = computedStyles.padding;
-      hiddenDiv.style.boxSizing = computedStyles.boxSizing;
+      const styleProperties = [
+        'font-family',
+        'font-size',
+        'font-style',
+        'font-variant',
+        'font-weight',
+        'line-height',
+        'padding',
+        'border-width',
+        'box-sizing',
+        'width',
+        'letter-spacing',
+        'word-spacing',
+        'white-space',
+        'text-transform',
+        'overflow',
+        'visibility',
+      ];
+    
+      styleProperties.forEach((property) => {
+        hiddenDiv.style[property] = computedStyles[property];
+      });
+    
+      // Ensure hiddenDiv width adjusts properly
+      hiddenDiv.style.position = 'absolute';
+      hiddenDiv.style.visibility = 'hidden';
+      hiddenDiv.style.whiteSpace = 'pre-wrap'; // Preserve line breaks and spaces
     }
+
     
     // Function to reset the textarea height and content
     function resetHeight() {
