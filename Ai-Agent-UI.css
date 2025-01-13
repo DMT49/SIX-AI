@@ -2676,37 +2676,30 @@ figcaption {
   .chat_inner-wrapper.user-message {
     justify-self: end; /* Aligns the grid child to the right */
   }
-.textarea-dynamic {
-  all: unset; /* Reset all inherited styles for consistency */
-  width: 100%; /* Full width */
-  min-height: 30px; /* Baseline height */
-  line-height: 28px; /* Consistent line height */
-  resize: none; /* Prevent manual resizing */
-  overflow: hidden; /* No scrollbars */
-  padding: 5px; /* Padding for better spacing */
-  font-size: 16px; /* Font size for consistency */
-  font-family: Arial, sans-serif; /* Match font family */
-  box-sizing: border-box; /* Include padding and border in size */
-  background: none; /* Transparent background */
-  border: none; /* No border */
-  outline: none; /* No focus outline */
-}
-
-#hidden-div {
-  all: unset; /* Reset all inherited styles for consistency */
-  visibility: hidden; /* Keep it invisible */
-  position: absolute; /* Take it out of layout flow */
-  width: 100%; /* Match textarea width */
-  line-height: 28px; /* Match textarea line height */
-  padding: 5px; /* Match textarea padding */
-  font-size: 16px; /* Match textarea font size */
-  font-family: Arial, sans-serif; /* Match textarea font family */
-  box-sizing: border-box; /* Match textarea box-sizing */
-  white-space: pre-wrap; /* Preserve spaces and line breaks */
-  word-wrap: break-word; /* Allow long words to break */
-  overflow-wrap: break-word; /* Break words when necessary */
-}
-
+  .textarea-dynamic {
+    width: 100%;
+    min-height: 30px; /* Baseline height */
+    line-height: 28px; /* Consistent line height */
+    resize: none; /* Prevent manual resizing */
+    overflow: hidden; /* No scrollbars */
+    padding: 5px; /* Padding for better spacing */
+    background: none; /* Transparent background */
+    border: none; /* No borders */
+    outline: none; /* No focus outline */
+    box-sizing: border-box; /* Consistent box-sizing */
+    height: 30px; /* Explicitly set the initial height */
+  }
+  #hidden-div {
+    visibility: hidden;
+    white-space: pre-wrap; /* Preserve spaces and line breaks */
+    word-wrap: break-word; /* Allow long words to break */
+    overflow-wrap: break-word;
+    position: absolute; /* Take it out of the layout flow */
+    line-height: 28px; /* Match the textarea line height */
+    width: 100%; /* Match the textarea width */
+    box-sizing: border-box; /* Match the textarea box-sizing */
+    padding: 5px; /* Match the textarea padding */
+  }
 /* Set color style to inherit */
 .inherit-color * {
     color: inherit;
@@ -3082,4 +3075,3 @@ margin: 0rem !important;
 .chat_conversation-wrapper tr:nth-child(even) {
   background: #f9f9f9 !important; /* Slightly lighter gray */
 }
-
