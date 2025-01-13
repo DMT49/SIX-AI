@@ -111,24 +111,24 @@
       }
     }
     
-    // Function to update the global style for chat_bot-avatar
     function updateChatBotAvatarStyle(profileImage) {
       if (profileImage) {
         const style = document.createElement('style');
         style.textContent = `
           .chat_bot-avatar {
-            background-image: url("${profileImage}");
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
+            background-image: url("${profileImage}") !important;
+            background-size: cover !important;
+            background-position: center !important;
+            background-repeat: no-repeat !important;
           }
         `;
         document.head.appendChild(style);
-        console.log("Updated chat_bot-avatar style globally.");
+        console.log("Updated chat_bot-avatar style globally with !important.");
       } else {
         console.log("No profile image provided, skipping style update.");
       }
     }
+
     
     // Initialize the process
     (async function initializeChatBot() {
