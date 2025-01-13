@@ -138,6 +138,65 @@
     })();
 
 
+    // Function to fetch user profile image from Airtable
+    async function fetchUserProfileImage(userId) {
+      try {
+        const airtableBaseUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/Users'; // Replace with your actual base
+        const airtableHeaders = {
+          Authorization: 'Bearer patTeuxUuzgG0ZU8Q.2eb9ff7f31afe3e06f3c128c5b5b832bcc4e4e85bd58a5007a8368f218d28b83',
+          'Content-Type': 'application/json',
+        };
+    
+        const response = await fetch(`${airtableBaseUrl}?filterByFormula={User-ID}="${userId}"`, {
+          method: 'GET',
+          headers: airtableHeaders,
+        });
+    
+        if (response.ok) {
+          const data = await response.json();
+          if (data.records && data.records.length > 0) {
+            const profileImage = data.records[0].fields['Profile-Image'][0].url;
+            console.log("User Profile Image URL:", profileImage);
+            return profileImage;
+          } else {
+            console.log("No record found for User-ID:", userId);
+            return null;
+          }
+        } else {
+          console.error("Failed to fetch data from Airtable:", await response.text());
+          return null;
+        }
+      } catch (error) {
+        console.error("Error fetching user profile image from Airtable:", error);
+        return null;
+      }
+    }
+    
+    // Function to update the global style for chat_user-avatar
+    function updateChatUserAvatarStyle(profileImage) {
+      if (profileImage) {
+        const style = document.createElement('style');
+        style.textContent = `
+          .chat_user-avatar {
+            background-image: url("${profileImage}") !important;
+            background-size: cover !important;
+            background-position: center !important;
+            background-repeat: no-repeat !important;
+          }
+        `;
+        document.head.appendChild(style);
+        console.log("Updated chat_user-avatar style globally with !important.");
+      } else {
+        console.log("No user profile image provided, skipping style update.");
+      }
+    }
+    
+    // Initialize the process for user profile image
+    (async function initializeUserAvatar() {
+      const userId = container?.getAttribute("data-user-id") || "default-user-id"; // Replace with actual user ID logic
+      const userProfileImage = await fetchUserProfileImage(userId);
+      updateChatUserAvatarStyle(userProfileImage);
+    })();
 
 
 
