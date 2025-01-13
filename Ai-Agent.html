@@ -78,7 +78,7 @@
 
 
 
-        // Function to fetch profile image from Airtable
+     // Function to fetch profile image from Airtable
     async function fetchAgentProfileImage(agentId) {
       try {
         const airtableBaseUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/Agents';
@@ -95,11 +95,11 @@
         if (response.ok) {
           const data = await response.json();
           if (data.records && data.records.length > 0) {
-            const profileImage = data.records[0].fields['Profile-Image'];
+            const profileImage = data.records[0].fields['Profile-Image'][0].url; // Retrieve the first image URL
             console.log("Profile Image URL:", profileImage);
             return profileImage;
           } else {
-            console.error("No record found for Agent-ID:", agentId);
+            console.log("No record found for Agent-ID:", agentId);
             return null;
           }
         } else {
@@ -121,9 +121,12 @@
           botAvatar.style.backgroundImage = `url(${profileImage})`;
           botAvatar.style.backgroundSize = 'cover';
           botAvatar.style.backgroundPosition = 'center';
+          console.log("Chat bot avatar updated with profile image.");
         } else {
           console.error("Chat bot avatar element not found.");
         }
+      } else {
+        console.log("No profile image available, avatar style unchanged.");
       }
     }
     
