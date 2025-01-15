@@ -1,13 +1,11 @@
 let userId = null; // Declare userId globally
 
 (async () => {
-  // Step 1: Retrieve user's email, name, and agent ID from the container's attributes
   const container = document.getElementById('ai-agent-container');
   const userEmail = container.getAttribute('data-user-email');
   const userName = container.getAttribute('data-user-name');
   const agentID = container.getAttribute('data-agent-id');
 
-  // Step 2: Define Airtable API URLs and headers
   const clientsTableUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/clients';
   const conversationsTableUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/conversations';
   const headers = {
@@ -15,7 +13,6 @@ let userId = null; // Declare userId globally
     'Content-Type': 'application/json',
   };
 
-  // Function to calculate relative time
   const getRelativeTime = (timestamp) => {
     const now = new Date();
     const conversationDate = new Date(timestamp);
@@ -33,50 +30,44 @@ let userId = null; // Declare userId globally
   };
 
   try {
-    // Step 3: Fetch User ID from Clients table using partial email match
     const clientsResponse = await fetch(`${clientsTableUrl}?filterByFormula=SEARCH('${userEmail}', ARRAYJOIN({Email}, ','))`, { headers });
     const clientsData = await clientsResponse.json();
 
     if (clientsData.records && clientsData.records.length > 0) {
-      userId = clientsData.records[0].fields['User-ID']; // Assign User-ID to global variable
+      userId = clientsData.records[0].fields['User-ID'];
       console.log('Retrieved User-ID:', userId);
 
-      // Step 4: Fetch matching conversations from Conversations table
       const conversationsResponse = await fetch(
         `${conversationsTableUrl}?filterByFormula=AND({user-ID}='${userId}', {Agent-ID}='${agentID}')`,
         { headers }
       );
       const conversationsData = await conversationsResponse.json();
 
-      // Step 5: Populate conversation list dynamically
       const listWrapper = document.getElementById('conversation-list-wrapper');
-      listWrapper.innerHTML = ''; // Clear previous content
+      listWrapper.innerHTML = '';
 
       if (conversationsData.records && conversationsData.records.length > 0) {
-        // Sort records by Time-Stamp in descending order
         const sortedRecords = conversationsData.records.sort((a, b) => {
           const timeA = new Date(a.fields['Time-Stamp']);
           const timeB = new Date(b.fields['Time-Stamp']);
-          return timeB - timeA; // Descending order
+          return timeB - timeA;
         });
 
         sortedRecords.forEach((record) => {
           const timeStamp = record.fields['Time-Stamp'];
           const conversationId = record.fields['Conversation-ID'];
-          const clientName = record.fields['Client-Name']; // Retrieve client name
-          const conversationDate = new Date(timeStamp).toLocaleDateString(); // Format as date
-          const relativeTime = getRelativeTime(timeStamp);
+          const clientName = record.fields['Client-Name'] || ''; // Leave blank if missing
+          const conversationDate = new Date(timeStamp).toLocaleDateString();
 
-          // Create conversation element
           const conversationItem = document.createElement('div');
           conversationItem.className = 'conversation-item';
           conversationItem.innerHTML = `
-            <p>${clientName}</p> <!-- Display client name -->
-            <p>${conversationDate}</p>
-            <p>${relativeTime}</p>
+            <p>
+              ${conversationDate} - 
+              <span style="color: #117BB8;">${clientName}</span>
+            </p>
           `;
 
-          // Add click event to redirect with query parameter
           conversationItem.addEventListener('click', () => {
             const currentUrl = new URL(window.location.href);
             currentUrl.searchParams.set('conversationID', conversationId);
@@ -89,10 +80,9 @@ let userId = null; // Declare userId globally
         listWrapper.innerHTML = '<p>No matching conversations found.</p>';
       }
     } else {
-      // No user found: display "No matching conversations found" message
       console.log('No matching user found for email:', userEmail);
       const listWrapper = document.getElementById('conversation-list-wrapper');
-      listWrapper.innerHTML = '<p>No matching conversations found.</p>'; // Same message as no conversations
+      listWrapper.innerHTML = '<p>No matching conversations found.</p>';
     }
   } catch (error) {
     console.error('Error fetching data from Airtable:', error);
