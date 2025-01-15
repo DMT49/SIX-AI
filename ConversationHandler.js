@@ -58,13 +58,15 @@ let userId = null; // Declare userId globally
           const conversationId = record.fields['Conversation-ID'];
           const clientName = record.fields['Client-Name'] || ''; // Leave blank if missing
           const conversationDate = new Date(timeStamp).toLocaleDateString();
+          const relativeTime = getRelativeTime(timeStamp);
 
           const conversationItem = document.createElement('div');
           conversationItem.className = 'conversation-item';
           conversationItem.innerHTML = `
             <p>
               ${conversationDate} - 
-              <span style="color: #117BB8;">${clientName}</span>
+              <span style="color: #67b8d9;">${clientName}</span>
+              <span>(${relativeTime})</span>
             </p>
           `;
 
