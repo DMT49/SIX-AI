@@ -621,73 +621,7 @@
       return { chatInnerWrapper, chatBlockWrapper };
     }
     
-    let airtableRecordId = null; // Global variable to store the Airtable record ID
-    
-    // Fetch the Airtable record ID during initialization
-    if (conversationID) {
-      console.log("Conversation ID found:", conversationID);
-    
-      // Fetch the record ID from Airtable
-      (async function fetchAirtableRecordId() {
-        const airtableBaseUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/Conversations';
-        const airtableHeaders = {
-          Authorization: 'Bearer patTeuxUuzgG0ZU8Q.2eb9ff7f31afe3e06f3c128c5b5b832bcc4e4e85bd58a5007a8368f218d28b83',
-          'Content-Type': 'application/json',
-        };
-    
-        try {
-          const response = await fetch(`${airtableBaseUrl}?filterByFormula={Conversation-ID}="${conversationID}"`, {
-            method: 'GET',
-            headers: airtableHeaders,
-          });
-    
-          if (response.ok) {
-            const data = await response.json();
-            if (data.records && data.records.length > 0) {
-              airtableRecordId = data.records[0].id; // Store the record ID
-              console.log("Fetched Airtable Record ID:", airtableRecordId);
-            } else {
-              console.log("No matching Airtable record found for Conversation-ID:", conversationID);
-            }
-          } else {
-            console.error("Error fetching Airtable record:", await response.text());
-          }
-        } catch (error) {
-          console.error("Error during Airtable record fetch:", error);
-        }
-      })();
-    }
-    
-    // Function to update Time-Last-Edited in Airtable
-    async function updateTimeLastEdited(recordId) {
-      const airtableBaseUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/Conversations';
-      const airtableHeaders = {
-        Authorization: 'Bearer patTeuxUuzgG0ZU8Q.2eb9ff7f31afe3e06f3c128c5b5b832bcc4e4e85bd58a5007a8368f218d28b83',
-        'Content-Type': 'application/json',
-      };
-    
-      try {
-        const response = await fetch(`${airtableBaseUrl}/${recordId}`, {
-          method: 'PATCH',
-          headers: airtableHeaders,
-          body: JSON.stringify({
-            fields: {
-              'Time-Last-Edited': new Date().toISOString(), // Current time in GMT
-            },
-          }),
-        });
-    
-        if (response.ok) {
-          console.log('Successfully updated Time-Last-Edited:', await response.json());
-        } else {
-          console.error('Error updating Time-Last-Edited:', await response.text());
-        }
-      } catch (error) {
-        console.error('Error during PATCH request:', error);
-      }
-    }
-    
-    // Modify handleSubmit to update Time-Last-Edited
+    // Function to handle user message submission
     async function handleSubmit() {
       stopVoiceTranscription();
       const message = textarea.value.trim();
@@ -696,11 +630,6 @@
       // User message
       createChatBlock(true, message);
       resetHeight();
-    
-      // Update Airtable Time-Last-Edited if recordId exists
-      if (airtableRecordId) {
-        await updateTimeLastEdited(airtableRecordId);
-      }
     
       // Loading block
       const { chatInnerWrapper, chatBlockWrapper } = createLoadingBlock();
@@ -714,7 +643,18 @@
       // Agent response
       createChatBlock(false, agentResponse);
     }
-
+    
+    // Attach event listeners
+    textarea.addEventListener("input", adjustHeight);
+    userSubmit.addEventListener("click", handleSubmit);
+    
+    textarea.addEventListener("keydown", (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+        e.preventDefault();
+        handleSubmit();
+      }
+    });
+    
     // Initialize speech recognition
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.continuous = true;
