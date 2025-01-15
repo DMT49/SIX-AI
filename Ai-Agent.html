@@ -76,7 +76,76 @@
     const urlParams = new URLSearchParams(window.location.search);
     const conversationID = urlParams.get('conversationID');
 
+    async function updateTimeLastEdited(recordId) {
+      const airtableBaseUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/Conversations'; // Replace with your Airtable base URL
+      const airtableHeaders = {
+        Authorization: 'Bearer patTeuxUuzgG0ZU8Q.2eb9ff7f31afe3e06f3c128c5b5b832bcc4e4e85bd58a5007a8368f218d28b83', // Replace with your Airtable API Key
+        'Content-Type': 'application/json',
+      };
+    
+      try {
+        const response = await fetch(`${airtableBaseUrl}/${recordId}`, {
+          method: 'PATCH',
+          headers: airtableHeaders,
+          body: JSON.stringify({
+            fields: {
+              'Time-Last-Edited': new Date().toISOString(), // Current GMT time
+            },
+          }),
+        });
+    
+        if (response.ok) {
+          console.log('Successfully updated Time-Last-Edited in Airtable.');
+        } else {
+          const errorText = await response.text();
+          console.error('Error updating Time-Last-Edited:', errorText);
+        }
+      } catch (error) {
+        console.error('Error during Airtable PATCH request:', error);
+      }
+    }
 
+    async function fetchRecordIdByConversationId(conversationID) {
+      if (window.currentRecordId) {
+        console.log('Using cached record ID:', window.currentRecordId);
+        return window.currentRecordId;
+      }
+    
+      const airtableBaseUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/Conversations'; // Replace with your Airtable base URL
+      const airtableHeaders = {
+        Authorization: 'Bearer patTeuxUuzgG0ZU8Q.2eb9ff7f31afe3e06f3c128c5b5b832bcc4e4e85bd58a5007a8368f218d28b83', // Replace with your Airtable API Key
+        'Content-Type': 'application/json',
+      };
+    
+      try {
+        const response = await fetch(`${airtableBaseUrl}?filterByFormula={Conversation-ID}="${conversationID}"`, {
+          method: 'GET',
+          headers: airtableHeaders,
+        });
+    
+        if (response.ok) {
+          const data = await response.json();
+          if (data.records && data.records.length > 0) {
+            const recordId = data.records[0].id; // Get the first matching record ID
+            window.currentRecordId = recordId; // Cache the record ID globally
+            console.log('Fetched record ID:', recordId);
+            return recordId;
+          } else {
+            console.log('No matching record found for Conversation-ID:', conversationID);
+            return null;
+          }
+        } else {
+          const errorText = await response.text();
+          console.error('Error fetching record ID:', errorText);
+          return null;
+        }
+      } catch (error) {
+        console.error('Error during Airtable GET request:', error);
+        return null;
+      }
+    }
+
+    
         // Function to fetch profile image from Airtable
     async function fetchAgentProfileImage(agentId) {
       try {
@@ -621,7 +690,6 @@
       return { chatInnerWrapper, chatBlockWrapper };
     }
     
-    // Function to handle user message submission
     async function handleSubmit() {
       stopVoiceTranscription();
       const message = textarea.value.trim();
@@ -630,6 +698,14 @@
       // User message
       createChatBlock(true, message);
       resetHeight();
+    
+      // Check if the conversationID exists (for resumed conversations)
+      if (conversationID) {
+        const recordId = await fetchRecordIdByConversationId(conversationID); // Retrieve or use cached record ID
+        if (recordId) {
+          await updateTimeLastEdited(recordId); // Update Time-Last-Edited in Airtable
+        }
+      }
     
       // Loading block
       const { chatInnerWrapper, chatBlockWrapper } = createLoadingBlock();
@@ -643,6 +719,7 @@
       // Agent response
       createChatBlock(false, agentResponse);
     }
+
     
     // Attach event listeners
     textarea.addEventListener("input", adjustHeight);
