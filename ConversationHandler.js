@@ -62,7 +62,7 @@ let userId = null; // Declare userId globally
 
           const conversationItem = document.createElement('div');
           conversationItem.className = 'conversation-item';
-          conversationItem.style.padding = '10px 3px'; // Add padding to top and bottom
+          conversationItem.style.padding = '10px 5px'; // Add padding to top and bottom
           conversationItem.innerHTML = `
             <p>
               <span style="color: #67b8d9;">${clientName}</span>
