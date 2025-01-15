@@ -699,11 +699,21 @@
       createChatBlock(true, message);
       resetHeight();
     
+      // Debugging: Log conversationID
+      console.log("Retrieved conversationID:", conversationID);
+    
       // Check if the conversationID exists (for resumed conversations)
       if (conversationID) {
-        const recordId = await fetchRecordIdByConversationId(conversationID); // Retrieve or use cached record ID
+        // Retrieve or use cached record ID
+        const recordId = await fetchRecordIdByConversationId(conversationID);
+        console.log("Using recordId:", recordId); // Debugging: Log the record ID
+    
+        // If the record ID is valid, update Airtable
         if (recordId) {
-          await updateTimeLastEdited(recordId); // Update Time-Last-Edited in Airtable
+          console.log("Updating Time-Last-Edited for recordId:", recordId); // Debugging
+          await updateTimeLastEdited(recordId);
+        } else {
+          console.error("Record ID could not be retrieved for conversationID:", conversationID);
         }
       }
     
@@ -719,6 +729,7 @@
       // Agent response
       createChatBlock(false, agentResponse);
     }
+
 
     
     // Attach event listeners
