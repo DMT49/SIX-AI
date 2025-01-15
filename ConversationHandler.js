@@ -63,6 +63,7 @@ let userId = null; // Declare userId globally
         sortedRecords.forEach((record) => {
           const timeStamp = record.fields['Time-Stamp'];
           const conversationId = record.fields['Conversation-ID'];
+          const clientName = record.fields['Client-Name']; // Retrieve client name
           const conversationDate = new Date(timeStamp).toLocaleDateString(); // Format as date
           const relativeTime = getRelativeTime(timeStamp);
 
@@ -70,6 +71,7 @@ let userId = null; // Declare userId globally
           const conversationItem = document.createElement('div');
           conversationItem.className = 'conversation-item';
           conversationItem.innerHTML = `
+            <p>${clientName}</p> <!-- Display client name -->
             <p>${conversationDate}</p>
             <p>${relativeTime}</p>
           `;
