@@ -541,11 +541,10 @@
         const optionDiv = document.createElement("div");
         optionDiv.className = "chat_multi-choice-option";
     
-      const optionHeading = document.createElement("span");
-      optionHeading.className = "chat-button-text";
-      optionHeading.style.fontWeight = "bold"; // Apply bold styling
-      optionHeading.textContent = optionText;
-
+        const optionHeading = document.createElement("span");
+        optionHeading.className = "chat-button-text";
+        optionHeading.style.fontWeight = "bold"; // Apply bold styling
+        optionHeading.textContent = optionText;
     
         optionDiv.appendChild(optionHeading);
         chatBlock.appendChild(optionDiv);
@@ -561,14 +560,25 @@
               child.style.pointerEvents = "none";
             }
           });
+    
           // Show the user's chosen option as their message
           createChatBlock(true, optionText);
+    
+          // Update Airtable Time-Last-Edited if record ID exists
+          if (airtableRecordId) {
+            console.log("Updating Time-Last-Edited for record ID:", airtableRecordId);
+            await updateTimeLastEdited(airtableRecordId);
+          }
+    
           // Create loading block
           const { chatInnerWrapper: loadingWrapper, chatBlockWrapper: loadingBlockWrapper } = createLoadingBlock();
+    
           // Get response
           const agentResponse = await startConversation(optionText);
+    
           // Remove loading block
           conversationWrapper.removeChild(loadingBlockWrapper);
+    
           // Show agent response
           createChatBlock(false, agentResponse);
         });
@@ -577,6 +587,7 @@
       chatBlockWrapper.appendChild(chatBlock);
       conversationWrapper.appendChild(chatBlockWrapper);
     }
+
     
     // Function to clean option text
     function cleanOptionText(text) {
