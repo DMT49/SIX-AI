@@ -29,6 +29,14 @@ let userId = null; // Declare userId globally
     return diffWeeks > 1 ? `${diffWeeks} weeks ago` : '1 week ago';
   };
 
+  const formatTime12Hour = (date) => {
+    const hours = date.getHours();
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const formattedHours = hours % 12 || 12;
+    return `${formattedHours}:${minutes} ${period}`;
+  };
+
   try {
     const clientsResponse = await fetch(`${clientsTableUrl}?filterByFormula=SEARCH('${userEmail}', ARRAYJOIN({Email}, ','))`, { headers });
     const clientsData = await clientsResponse.json();
@@ -59,7 +67,9 @@ let userId = null; // Declare userId globally
           const conversationId = record.fields['Conversation-ID'];
           const clientName = record.fields['Client-Name'] || ''; // Leave blank if missing
           const summary = record.fields['Summary'] || 'No summary available'; // Default if summary is missing
-          const conversationDate = new Date(timeStamp).toLocaleDateString('en-GB'); // Format as DD/MM/YYYY
+          const conversationDate = new Date(timeStamp);
+          const formattedDate = conversationDate.toLocaleDateString('en-GB'); // Format as DD/MM/YYYY
+          const formattedTime = formatTime12Hour(conversationDate);
           const relativeTime = getRelativeTime(timeLastEdited);
 
           const conversationItem = document.createElement('div');
@@ -69,8 +79,8 @@ let userId = null; // Declare userId globally
 
           conversationItem.innerHTML = `
             <p style="color: #404040; margin: 0;">
-              <span>${clientName}</span>
-              <span>(${relativeTime})</span> - ${conversationDate}
+              <span style="color: #67b8d9;">${clientName}</span>
+              <span>(${relativeTime})</span> - ${formattedDate} ${formattedTime}
             </p>
             <p class="summary-text" style="margin: 5px 0 0; color: #a2a2a2; transition: color 0.3s;">
               ${summary}
