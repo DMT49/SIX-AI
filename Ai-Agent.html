@@ -817,8 +817,8 @@
     
       // Remove conversationID from the URL
       const url = new URL(window.location.href);
-      url.searchParams.delete('conversationID');
-      window.history.replaceState({}, '', url);
+      url.searchParams.delete("conversationID");
+      window.history.replaceState({}, "", url);
       console.log("Removed conversationID from URL.");
     
       // Reset the global conversationId variable
@@ -833,8 +833,15 @@
       const initialMessage = `conversation_name=${currentTime}, current_username=${name}, current_user_email=${email}`;
       console.log("Sending initial message to AI:", initialMessage);
     
-      // Send initial message to AI (not shown as user's message)
+      // Send initial message to AI and fetch Airtable recordID
       const agentResponse = await startConversation(initialMessage);
+    
+      // Save Airtable recordID from API response if available
+      if (conversationId) {
+        console.log(`Conversation ID: ${conversationId}`);
+        // Fetch the Airtable record ID using the conversationId
+        await fetchAirtableRecordId(conversationId);
+      }
     
       // Remove loading block
       conversationWrapper.removeChild(chatBlockWrapper);
@@ -848,6 +855,7 @@
         console.log("Input wrapper displayed as grid.");
       }
     }
+
 
     
     const startConversationButton = document.getElementById('start-new-conversation');
