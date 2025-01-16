@@ -79,6 +79,36 @@
     let airtableRecordId = null;
 
 
+
+    async function updateTimeLastEdited(recordId) {
+      const airtableBaseUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/Conversations';
+      const airtableHeaders = {
+        Authorization: 'Bearer YOUR_AIRTABLE_API_KEY', // Replace with your actual API key
+        'Content-Type': 'application/json',
+      };
+    
+      try {
+        const response = await fetch(`${airtableBaseUrl}/${recordId}`, {
+          method: 'PATCH',
+          headers: airtableHeaders,
+          body: JSON.stringify({
+            fields: {
+              'Time-Last-Edited': new Date().toISOString(), // Current time in ISO format
+            },
+          }),
+        });
+    
+        if (response.ok) {
+          console.log('Successfully updated Time-Last-Edited:', await response.json());
+        } else {
+          console.error('Error updating Time-Last-Edited:', await response.text());
+        }
+      } catch (error) {
+        console.error('Error during PATCH request:', error);
+      }
+    }
+
+
         // Function to fetch profile image from Airtable
     async function fetchAgentProfileImage(agentId) {
       try {
