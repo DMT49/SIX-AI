@@ -78,13 +78,6 @@
 
     let airtableRecordId = null;
 
-    if (conversationID) {
-      console.log("Fetching Airtable record ID for conversation:", conversationID);
-      fetchAirtableRecordId(conversationID);
-    } else {
-      console.log("No conversation ID provided in the URL.");
-    }
-
 
         // Function to fetch profile image from Airtable
     async function fetchAgentProfileImage(agentId) {
