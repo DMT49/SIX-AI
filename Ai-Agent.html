@@ -75,45 +75,10 @@
 
     const urlParams = new URLSearchParams(window.location.search);
     const conversationID = urlParams.get('conversationID');
-    
-    if (conversationID) {
-      console.log("Conversation ID found in URL:", conversationID);
-      await fetchAirtableRecordId(conversationID); // Fetch the Airtable record ID
-    } else {
-      console.log("No conversation ID provided in the URL.");
-    }
-
 
     let airtableRecordId = null;
 
-    async function fetchAirtableRecordId(conversationID) {
-      const airtableBaseUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/Conversations';
-      const airtableHeaders = {
-        Authorization: 'Bearer YOUR_AIRTABLE_API_KEY', // Replace with your API key
-        'Content-Type': 'application/json',
-      };
-    
-      try {
-        const response = await fetch(`${airtableBaseUrl}?filterByFormula={Conversation-ID}="${conversationID}"`, {
-          method: 'GET',
-          headers: airtableHeaders,
-        });
-    
-        if (response.ok) {
-          const data = await response.json();
-          if (data.records && data.records.length > 0) {
-            airtableRecordId = data.records[0].id; // Set the global record ID
-            console.log("Fetched Airtable Record ID:", airtableRecordId);
-          } else {
-            console.log("No matching Airtable record found for Conversation-ID:", conversationID);
-          }
-        } else {
-          console.error("Error fetching Airtable record ID:", await response.text());
-        }
-      } catch (error) {
-        console.error("Error during Airtable record ID fetch:", error);
-      }
-    }
+
 
     async function updateTimeLastEdited(recordId) {
       const airtableBaseUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/Conversations';
@@ -712,10 +677,10 @@
       console.log("User submitted message:", message);
     
       // Update Time-Last-Edited in Airtable if recordId exists
-    if (airtableRecordId) {
-      console.log("Updating Time-Last-Edited for record ID:", airtableRecordId);
-      await updateTimeLastEdited(airtableRecordId);
-    }
+      if (airtableRecordId) {
+        console.log("Updating Time-Last-Edited for record ID:", airtableRecordId);
+        await updateTimeLastEdited(airtableRecordId);
+      }
     
       // Existing functionality to handle message submission
       createChatBlock(true, message); // Render user message
