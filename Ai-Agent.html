@@ -268,13 +268,10 @@
 
 
 
-
-    
-    
     async function saveConversationToAirtable(metadata) {
       const conversationsTableUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/conversations';
       const airtableHeaders = {
-        Authorization: 'Bearer patTeuxUuzgG0ZU8Q.2eb9ff7f31afe3e06f3c128c5b5b832bcc4e4e85bd58a5007a8368f218d28b83',
+        Authorization: 'Bearer YOUR_AIRTABLE_API_KEY', // Replace with your Airtable API key
         'Content-Type': 'application/json',
       };
     
@@ -282,26 +279,25 @@
         const response = await fetch(conversationsTableUrl, {
           method: 'POST',
           headers: airtableHeaders,
-          body: JSON.stringify({
-            fields: {
-              'Client-Name': metadata.userName,
-              'Agent-ID': metadata.agentID,
-              'Conversation-ID': metadata.conversationID,
-              'Time-Stamp': metadata.timeStamp,
-              'User-ID': metadata.userId, // Include the User-ID
-            },
-          }),
+          body: JSON.stringify({ fields: metadata }),
         });
     
         if (response.ok) {
-          console.log('Conversation metadata saved successfully:', await response.json());
+          const data = await response.json();
+          console.log('Conversation metadata saved successfully:', data);
+          return data.id; // Return the record ID
         } else {
           console.error('Failed to save conversation metadata:', await response.text());
+          return null;
         }
       } catch (error) {
         console.error('Error saving conversation metadata to Airtable:', error);
+        return null;
       }
     }
+
+
+
 
     // Function to fetch and log conversation messages
     async function fetchConversationMessages(conversationID) {
@@ -700,36 +696,28 @@
       return { chatInnerWrapper, chatBlockWrapper };
     }
     
-    // Function to handle user message submission
     async function handleSubmit() {
-      stopVoiceTranscription();
       const message = textarea.value.trim();
       if (!message) return;
     
-      console.log("User submitted message:", message);
+      console.log('User submitted message:', message);
     
-      // Update Time-Last-Edited in Airtable if recordId exists
+      // Update last edited time if record ID exists
       if (airtableRecordId) {
-        console.log("Updating Time-Last-Edited for record ID:", airtableRecordId);
+        console.log('Updating Time-Last-Edited for record ID:', airtableRecordId);
         await updateTimeLastEdited(airtableRecordId);
       }
     
-      // Existing functionality to handle message submission
-      createChatBlock(true, message); // Render user message
-      resetHeight(); // Reset textarea height
+      // Existing message handling
+      createChatBlock(true, message);
+      resetHeight();
     
-      // Display loading block
       const { chatInnerWrapper, chatBlockWrapper } = createLoadingBlock();
-    
-      // Get AI response
       const agentResponse = await startConversation(message);
-    
-      // Remove loading block
       conversationWrapper.removeChild(chatBlockWrapper);
-    
-      // Render AI response
       createChatBlock(false, agentResponse);
     }
+
 
     
     // Attach event listeners
@@ -806,45 +794,31 @@
     // Automatically Start Conversation
     // -----------------------------
     async function startInitialConversation() {
-      // Clear existing chat blocks
-      while (conversationWrapper.firstChild) {
-        conversationWrapper.removeChild(conversationWrapper.firstChild);
-      }
-      console.log("Cleared existing chat blocks.");
+      conversationId = null; // Reset global conversation ID
+      airtableRecordId = null; // Reset Airtable record ID
     
-      // Remove conversationID from the URL
-      const url = new URL(window.location.href);
-      url.searchParams.delete('conversationID');
-      window.history.replaceState({}, '', url);
-      console.log("Removed conversationID from URL.");
-    
-      // Reset the global conversationId variable
-      conversationId = null;
-      console.log("Reset conversationId to null.");
-    
-      // Create loading block
-      const { chatInnerWrapper, chatBlockWrapper } = createLoadingBlock();
-    
-      // Construct the initial message
       const currentTime = new Date().toLocaleString();
       const initialMessage = `conversation_name=${currentTime}, current_username=${name}, current_user_email=${email}`;
-      console.log("Sending initial message to AI:", initialMessage);
     
-      // Send initial message to AI (not shown as user's message)
+      console.log('Sending initial message to AI:', initialMessage);
+    
+      // Start a new conversation
       const agentResponse = await startConversation(initialMessage);
-    
-      // Remove loading block
-      conversationWrapper.removeChild(chatBlockWrapper);
-    
-      // Display only the AI's response
       createChatBlock(false, agentResponse);
     
-      // Show the input UI so the user can continue
-      if (chatInputWrapper) {
-        chatInputWrapper.style.display = "grid";
-        console.log("Input wrapper displayed as grid.");
-      }
+      // Collect metadata
+      const metadata = {
+        'Client-Name': name,
+        'Agent-ID': agentId,
+        'Conversation-ID': conversationId,
+        'Time-Stamp': new Date().toISOString(),
+      };
+    
+      // Save to Airtable and set record ID
+      airtableRecordId = await saveConversationToAirtable(metadata);
+      console.log('New Airtable Record ID:', airtableRecordId);
     }
+
 
     
     const startConversationButton = document.getElementById('start-new-conversation');
