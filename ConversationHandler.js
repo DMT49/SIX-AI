@@ -48,17 +48,19 @@ let userId = null; // Declare userId globally
 
       if (conversationsData.records && conversationsData.records.length > 0) {
         const sortedRecords = conversationsData.records.sort((a, b) => {
-          const timeA = new Date(a.fields['Time-Stamp']);
-          const timeB = new Date(b.fields['Time-Stamp']);
-          return timeB - timeA;
+          const timeA = new Date(a.fields['Time-Last-Edited']);
+          const timeB = new Date(b.fields['Time-Last-Edited']);
+          return timeB - timeA; // Sort descending by Time-Last-Edited
         });
 
         sortedRecords.forEach((record) => {
           const timeStamp = record.fields['Time-Stamp'];
+          const timeLastEdited = record.fields['Time-Last-Edited'];
           const conversationId = record.fields['Conversation-ID'];
           const clientName = record.fields['Client-Name'] || ''; // Leave blank if missing
+          const summary = record.fields['Summary'] || 'No summary available'; // Default if summary is missing
           const conversationDate = new Date(timeStamp).toLocaleDateString('en-GB'); // Format as DD/MM/YYYY
-          const relativeTime = getRelativeTime(timeStamp);
+          const relativeTime = getRelativeTime(timeLastEdited);
 
           const conversationItem = document.createElement('div');
           conversationItem.className = 'conversation-item';
@@ -68,6 +70,7 @@ let userId = null; // Declare userId globally
               <span style="color: #67b8d9;">${clientName}</span>
               <span>(${relativeTime})</span> - ${conversationDate}
             </p>
+            <p style="margin: 5px 0 0; color: #555;">${summary}</p> <!-- Display summary below -->
           `;
 
           conversationItem.addEventListener('click', () => {
