@@ -86,17 +86,16 @@
     }
 
 
-    // Fetch Airtable record ID based on the conversationID
     async function fetchAirtableRecordId(conversationID) {
-      const airtableBaseUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/Conversations';
+      const airtableBaseUrl = "https://api.airtable.com/v0/app2N6x5jeRnIzSpL/Conversations";
       const airtableHeaders = {
-        Authorization: 'Bearer patTeuxUuzgG0ZU8Q.2eb9ff7f31afe3e06f3c128c5b5b832bcc4e4e85bd58a5007a8368f218d28b83',
-        'Content-Type': 'application/json',
+        Authorization: "Bearer patTeuxUuzgG0ZU8Q.2eb9ff7f31afe3e06f3c128c5b5b832bcc4e4e85bd58a5007a8368f218d28b83",
+        "Content-Type": "application/json",
       };
     
       try {
         const response = await fetch(`${airtableBaseUrl}?filterByFormula={Conversation-ID}="${conversationID}"`, {
-          method: 'GET',
+          method: "GET",
           headers: airtableHeaders,
         });
     
@@ -105,14 +104,18 @@
           if (data.records && data.records.length > 0) {
             airtableRecordId = data.records[0].id; // Save the record ID
             console.log("Fetched Airtable Record ID:", airtableRecordId);
+            return airtableRecordId;
           } else {
             console.log("No matching Airtable record found for Conversation-ID:", conversationID);
+            return null;
           }
         } else {
           console.error("Error fetching Airtable record ID:", await response.text());
+          return null;
         }
       } catch (error) {
         console.error("Error during Airtable record ID fetch:", error);
+        return null;
       }
     }
 
