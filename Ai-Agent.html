@@ -269,9 +269,9 @@
 
 
     async function saveConversationToAirtable(metadata) {
-      const conversationsTableUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/conversations';
+      const conversationsTableUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/Conversations';
       const airtableHeaders = {
-        Authorization: 'Bearer patTeuxUuzgG0ZU8Q.2eb9ff7f31afe3e06f3c128c5b5b832bcc4e4e85bd58a5007a8368f218d28b83', // Replace with your Airtable API key
+        Authorization: 'Bearer patTeuxUuzgG0ZU8Q.2eb9ff7f31afe3e06f3c128c5b5b832bcc4e4e85bd58a5007a8368f218d28b83', // Your Airtable API key
         'Content-Type': 'application/json',
       };
     
@@ -279,15 +279,24 @@
         const response = await fetch(conversationsTableUrl, {
           method: 'POST',
           headers: airtableHeaders,
-          body: JSON.stringify({ fields: metadata }),
+          body: JSON.stringify({
+            fields: {
+              'Client-Name': metadata.userName, // Correct field name
+              'Agent-ID': metadata.agentID,     // Correct field name
+              'Conversation-ID': metadata.conversationID, // Correct field name
+              'Time-Stamp': metadata.timeStamp,           // Correct field name
+              'User-ID': metadata.userId,                 // Correct field name
+            },
+          }),
         });
     
         if (response.ok) {
           const data = await response.json();
           console.log('Conversation metadata saved successfully:', data);
-          return data.id; // Return the record ID
+          return data; // Return the saved record
         } else {
-          console.error('Failed to save conversation metadata:', await response.text());
+          const errorText = await response.text();
+          console.error('Failed to save conversation metadata:', errorText);
           return null;
         }
       } catch (error) {
@@ -295,6 +304,7 @@
         return null;
       }
     }
+
 
 
 
