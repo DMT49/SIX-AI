@@ -17,31 +17,26 @@ let userId = null; // Declare userId globally
     const now = new Date();
     const conversationDate = new Date(timestamp);
     const diffMs = now - conversationDate;
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMinutes / 60);
+    const diffDays = Math.floor(diffHours / 24);
 
-    if (diffDays === 0) {
-      const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-      return diffHours > 1 ? `${diffHours} hours ago` : `just now`;
-    }
-    if (diffDays === 1) return '1 day ago';
-    if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffMinutes < 1) return 'just now';
+    if (diffMinutes < 60) return `${diffMinutes} minute${diffMinutes > 1 ? 's' : ''} ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
     const diffWeeks = Math.floor(diffDays / 7);
-    return diffWeeks > 1 ? `${diffWeeks} weeks ago` : '1 week ago';
+    if (diffWeeks < 5) return `${diffWeeks} week${diffWeeks > 1 ? 's' : ''} ago`;
+    const diffMonths = Math.floor(diffDays / 30);
+    return `${diffMonths} month${diffMonths > 1 ? 's' : ''} ago`;
   };
 
-  const formatLocalDateTime = (timestamp) => {
-    const date = new Date(timestamp);
-    const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
-    const formattedDate = date.toLocaleDateString('en-GB', options);
-
+  const formatTime12Hour = (date) => {
     const hours = date.getHours();
     const minutes = date.getMinutes().toString().padStart(2, '0');
     const period = hours >= 12 ? 'PM' : 'AM';
     const formattedHours = hours % 12 || 12;
-
-    const formattedTime = `${formattedHours}:${minutes} <span style="font-size: 0.9em;">${period}</span>`;
-
-    return `${formattedDate} <span style="margin-left: 8px;">${formattedTime}</span>`;
+    return `${formattedHours}:${minutes} <span style="font-size: 0.85em;">${period}</span>`;
   };
 
   try {
@@ -69,11 +64,14 @@ let userId = null; // Declare userId globally
         });
 
         sortedRecords.forEach((record) => {
+          const timeStamp = record.fields['Time-Stamp'];
           const timeLastEdited = record.fields['Time-Last-Edited'];
           const conversationId = record.fields['Conversation-ID'];
           const clientName = record.fields['Client-Name'] || ''; // Leave blank if missing
           const summary = record.fields['Summary'] || 'No summary available'; // Default if summary is missing
-          const formattedDateTime = formatLocalDateTime(timeLastEdited);
+          const conversationDate = new Date(timeStamp);
+          const formattedDate = conversationDate.toLocaleDateString('en-GB'); // Format as DD/MM/YYYY
+          const formattedTime = formatTime12Hour(conversationDate);
           const relativeTime = getRelativeTime(timeLastEdited);
 
           const conversationItem = document.createElement('div');
@@ -84,7 +82,7 @@ let userId = null; // Declare userId globally
           conversationItem.innerHTML = `
             <p style="color: #404040; margin: 0;">
               <span style="color: #67b8d9;">${clientName}</span>
-              <span>(${relativeTime})</span> - ${formattedDateTime}
+              <span>(${relativeTime})</span> - ${formattedDate} ${formattedTime}
             </p>
             <p class="summary-text" style="margin: 5px 0 0; color: #a2a2a2; transition: color 0.3s;">
               ${summary}
