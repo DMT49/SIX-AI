@@ -601,13 +601,12 @@
     }
 
     
-    // Function to start a conversation with the AI
     async function startConversation(message) {
       try {
         const requestBody = {
           message: { role: "user", content: message },
           agent_id: agentId,
-          ...(conversationId && { conversation_id: conversationId }) // Include conversationId if it exists
+          ...(conversationId && { conversation_id: conversationId }), // Include conversationId if it exists
         };
     
         const response = await fetch(`${baseUrl}/agents/trigger`, {
@@ -623,6 +622,9 @@
           if (!conversationId) {
             conversationId = data.conversation_id;
             console.log(`New conversation started with ID: ${conversationId}`);
+    
+            // Fetch Airtable recordID for the new conversation
+            airtableRecordId = await fetchAirtableRecordId(conversationId);
           }
     
           const { studio_id, job_id } = data.job_info;
@@ -638,6 +640,7 @@
         return "Sorry, something went wrong.";
       }
     }
+
 
 
     
