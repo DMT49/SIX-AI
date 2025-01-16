@@ -64,19 +64,34 @@ let userId = null; // Declare userId globally
 
           const conversationItem = document.createElement('div');
           conversationItem.className = 'conversation-item';
-          conversationItem.style.padding = '10px 5px'; // Add padding to top and bottom
+          conversationItem.style.padding = '10px'; // Add 10px padding to all sides
+          conversationItem.style.cursor = 'pointer'; // Add pointer for hover effect
+
           conversationItem.innerHTML = `
-            <p>
-              <span style="color: #67b8d9;">${clientName}</span>
+            <p style="color: #404040; margin: 0;">
+              <span>${clientName}</span>
               <span>(${relativeTime})</span> - ${conversationDate}
             </p>
-            <p style="margin: 5px 0 0; color: #555;">${summary}</p> <!-- Display summary below -->
+            <p class="summary-text" style="margin: 5px 0 0; color: #a2a2a2; transition: color 0.3s;">
+              ${summary}
+            </p>
           `;
 
           conversationItem.addEventListener('click', () => {
             const currentUrl = new URL(window.location.href);
             currentUrl.searchParams.set('conversationID', conversationId);
             window.location.href = currentUrl.toString();
+          });
+
+          // Add hover effect to change the summary text color
+          conversationItem.addEventListener('mouseenter', () => {
+            const summaryText = conversationItem.querySelector('.summary-text');
+            summaryText.style.color = '#404040';
+          });
+
+          conversationItem.addEventListener('mouseleave', () => {
+            const summaryText = conversationItem.querySelector('.summary-text');
+            summaryText.style.color = '#a2a2a2';
           });
 
           listWrapper.appendChild(conversationItem);
