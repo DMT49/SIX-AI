@@ -31,9 +31,17 @@ let userId = null; // Declare userId globally
 
   const formatLocalDateTime = (timestamp) => {
     const date = new Date(timestamp);
-    const formattedDate = date.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }); // DD/MM/YYYY
-    const formattedTime = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }); // hh:mm AM/PM
-    return `${formattedDate} ${formattedTime}`;
+    const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+    const formattedDate = date.toLocaleDateString('en-GB', options);
+
+    const hours = date.getHours();
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const formattedHours = hours % 12 || 12;
+
+    const formattedTime = `${formattedHours}:${minutes} <span style="font-size: 0.9em;">${period}</span>`;
+
+    return `${formattedDate} <span style="margin-left: 8px;">${formattedTime}</span>`;
   };
 
   try {
@@ -65,8 +73,8 @@ let userId = null; // Declare userId globally
           const conversationId = record.fields['Conversation-ID'];
           const clientName = record.fields['Client-Name'] || ''; // Leave blank if missing
           const summary = record.fields['Summary'] || 'No summary available'; // Default if summary is missing
+          const formattedDateTime = formatLocalDateTime(timeLastEdited);
           const relativeTime = getRelativeTime(timeLastEdited);
-          const localDateTime = formatLocalDateTime(timeLastEdited); // Convert to local time zone
 
           const conversationItem = document.createElement('div');
           conversationItem.className = 'conversation-item';
@@ -76,7 +84,7 @@ let userId = null; // Declare userId globally
           conversationItem.innerHTML = `
             <p style="color: #404040; margin: 0;">
               <span style="color: #67b8d9;">${clientName}</span>
-              <span>(${relativeTime})</span> - ${localDateTime}
+              <span>(${relativeTime})</span> - ${formattedDateTime}
             </p>
             <p class="summary-text" style="margin: 5px 0 0; color: #a2a2a2; transition: color 0.3s;">
               ${summary}
