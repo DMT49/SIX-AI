@@ -555,8 +555,8 @@
             conversationId = data.conversation_id;
             console.log(`New conversation started with ID: ${conversationId}`);
     
-            // Fetch Airtable recordID for the new conversation
-            airtableRecordId = await fetchAirtableRecordId(conversationId);
+           
+            console.log("New conversation started with ID:", conversationId);
           }
     
           const { studio_id, job_id } = data.job_info;
