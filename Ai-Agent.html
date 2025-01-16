@@ -79,11 +79,14 @@
     let airtableRecordId = null;
 
     if (conversationID) {
-      console.log("Fetching Airtable record ID for conversation:", conversationID);
-      fetchAirtableRecordId(conversationID);
+      console.log("Conversation ID found in URL:", conversationID);
+      fetchAirtableRecordId(conversationID).then(() => {
+        console.log("Airtable Record ID set from existing conversation ID:", airtableRecordId);
+      });
     } else {
-      console.log("No conversation ID provided in the URL.");
+      console.log("No conversation ID provided in the URL. Waiting for user to start a new conversation.");
     }
+
 
 
     // Fetch Airtable record ID based on the conversationID
@@ -267,10 +270,6 @@
     })();
 
 
-
-
-    
-    
     async function saveConversationToAirtable(metadata) {
       const conversationsTableUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/conversations';
       const airtableHeaders = {
@@ -294,14 +293,20 @@
         });
     
         if (response.ok) {
-          console.log('Conversation metadata saved successfully:', await response.json());
+          const data = await response.json();
+          console.log('Conversation metadata saved successfully:', data);
+          return data.id; // Return the record ID
         } else {
           console.error('Failed to save conversation metadata:', await response.text());
+          return null;
         }
       } catch (error) {
         console.error('Error saving conversation metadata to Airtable:', error);
+        return null;
       }
     }
+
+
 
     // Function to fetch and log conversation messages
     async function fetchConversationMessages(conversationID) {
@@ -870,9 +875,13 @@
           userId, // Include globally accessible User-ID
         };
     
-        // Only save to Airtable if userId is not null
+        // Save to Airtable and set airtableRecordId
         if (userId) {
-          await saveConversationToAirtable(metadata);
+          const recordId = await saveConversationToAirtable(metadata);
+          if (recordId) {
+            airtableRecordId = recordId;
+            console.log("New Airtable Record ID set after starting a new conversation:", airtableRecordId);
+          }
         } else {
           console.log('User-ID is null. Skipping metadata save to Airtable.');
         }
