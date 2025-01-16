@@ -39,7 +39,7 @@ let userId = null; // Declare userId globally
     const minutes = date.getMinutes().toString().padStart(2, '0');
     const period = hours >= 12 ? 'PM' : 'AM';
     const formattedHours = hours % 12 || 12;
-    return `${formattedHours}:${minutes} <span style="font-size: 0.6em;">${period}</span>`;
+    return `${formattedHours}:${minutes} <span style="font-size: 0.7em;">${period}</span>`;
   };
 
   try {
