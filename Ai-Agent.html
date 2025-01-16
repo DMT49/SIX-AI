@@ -78,12 +78,48 @@
 
     let airtableRecordId = null;
 
+    if (conversationID) {
+      console.log("Fetching Airtable record ID for conversation:", conversationID);
+      fetchAirtableRecordId(conversationID);
+    } else {
+      console.log("No conversation ID provided in the URL.");
+    }
 
+
+    // Fetch Airtable record ID based on the conversationID
+    async function fetchAirtableRecordId(conversationID) {
+      const airtableBaseUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/Conversations';
+      const airtableHeaders = {
+        Authorization: 'Bearer patTeuxUuzgG0ZU8Q.2eb9ff7f31afe3e06f3c128c5b5b832bcc4e4e85bd58a5007a8368f218d28b83',
+        'Content-Type': 'application/json',
+      };
+    
+      try {
+        const response = await fetch(`${airtableBaseUrl}?filterByFormula={Conversation-ID}="${conversationID}"`, {
+          method: 'GET',
+          headers: airtableHeaders,
+        });
+    
+        if (response.ok) {
+          const data = await response.json();
+          if (data.records && data.records.length > 0) {
+            airtableRecordId = data.records[0].id; // Save the record ID
+            console.log("Fetched Airtable Record ID:", airtableRecordId);
+          } else {
+            console.log("No matching Airtable record found for Conversation-ID:", conversationID);
+          }
+        } else {
+          console.error("Error fetching Airtable record ID:", await response.text());
+        }
+      } catch (error) {
+        console.error("Error during Airtable record ID fetch:", error);
+      }
+    }
 
     async function updateTimeLastEdited(recordId) {
       const airtableBaseUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/Conversations';
       const airtableHeaders = {
-        Authorization: 'Bearer patTeuxUuzgG0ZU8Q.2eb9ff7f31afe3e06f3c128c5b5b832bcc4e4e85bd58a5007a8368f218d28b83', // Replace with your actual API key
+        Authorization: 'Bearer patTeuxUuzgG0ZU8Q.2eb9ff7f31afe3e06f3c128c5b5b832bcc4e4e85bd58a5007a8368f218d28b83',
         'Content-Type': 'application/json',
       };
     
@@ -93,18 +129,18 @@
           headers: airtableHeaders,
           body: JSON.stringify({
             fields: {
-              'Time-Last-Edited': new Date().toISOString(), // Current time in ISO format
+              'Time-Last-Edited': new Date().toISOString(), // Current time in GMT
             },
           }),
         });
     
         if (response.ok) {
-          console.log('Successfully updated Time-Last-Edited:', await response.json());
+          console.log("Successfully updated Time-Last-Edited:", await response.json());
         } else {
-          console.error('Error updating Time-Last-Edited:', await response.text());
+          console.error("Error updating Time-Last-Edited:", await response.text());
         }
       } catch (error) {
-        console.error('Error during PATCH request:', error);
+        console.error("Error during PATCH request:", error);
       }
     }
 
@@ -230,8 +266,13 @@
       updateChatUserAvatarStyle(userProfileImage);
     })();
 
+
+
+
+    
+    
     async function saveConversationToAirtable(metadata) {
-      const conversationsTableUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/Conversations';
+      const conversationsTableUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/conversations';
       const airtableHeaders = {
         Authorization: 'Bearer patTeuxUuzgG0ZU8Q.2eb9ff7f31afe3e06f3c128c5b5b832bcc4e4e85bd58a5007a8368f218d28b83',
         'Content-Type': 'application/json',
@@ -247,26 +288,20 @@
               'Agent-ID': metadata.agentID,
               'Conversation-ID': metadata.conversationID,
               'Time-Stamp': metadata.timeStamp,
-              'User-ID': metadata.userId,
+              'User-ID': metadata.userId, // Include the User-ID
             },
           }),
         });
     
         if (response.ok) {
-          const data = await response.json();
-          console.log('Conversation metadata saved successfully:', data);
-          return data; // Return the saved record
+          console.log('Conversation metadata saved successfully:', await response.json());
         } else {
-          const errorText = await response.text();
-          console.error('Failed to save conversation metadata:', errorText);
-          return null;
+          console.error('Failed to save conversation metadata:', await response.text());
         }
       } catch (error) {
         console.error('Error saving conversation metadata to Airtable:', error);
-        return null;
       }
     }
-
 
     // Function to fetch and log conversation messages
     async function fetchConversationMessages(conversationID) {
@@ -563,12 +598,13 @@
     }
 
     
+    // Function to start a conversation with the AI
     async function startConversation(message) {
       try {
         const requestBody = {
           message: { role: "user", content: message },
           agent_id: agentId,
-          ...(conversationId && { conversation_id: conversationId }), // Include conversationId if it exists
+          ...(conversationId && { conversation_id: conversationId }) // Include conversationId if it exists
         };
     
         const response = await fetch(`${baseUrl}/agents/trigger`, {
@@ -584,9 +620,6 @@
           if (!conversationId) {
             conversationId = data.conversation_id;
             console.log(`New conversation started with ID: ${conversationId}`);
-    
-           
-            console.log("New conversation started with ID:", conversationId);
           }
     
           const { studio_id, job_id } = data.job_info;
@@ -602,7 +635,6 @@
         return "Sorry, something went wrong.";
       }
     }
-
 
 
     
@@ -798,7 +830,7 @@
       const initialMessage = `conversation_name=${currentTime}, current_username=${name}, current_user_email=${email}`;
       console.log("Sending initial message to AI:", initialMessage);
     
-      // Send the initial message to AI
+      // Send initial message to AI (not shown as user's message)
       const agentResponse = await startConversation(initialMessage);
     
       // Remove loading block
@@ -807,35 +839,12 @@
       // Display only the AI's response
       createChatBlock(false, agentResponse);
     
-      // Save metadata to Airtable after the conversation is initialized
-      const metadata = {
-        userName: name,
-        agentID: agentId,
-        conversationID: conversationId,
-        timeStamp: new Date().toISOString(),
-        userId: "aabcdefheja", // Example User ID
-      };
-    
-      try {
-        const savedRecord = await saveConversationToAirtable(metadata);
-        if (savedRecord && savedRecord.id) {
-          airtableRecordId = savedRecord.id; // Save the Airtable record ID globally
-          console.log("Airtable record successfully saved. Record ID:", airtableRecordId);
-        } else {
-          console.error("Failed to retrieve Airtable record ID after saving.");
-        }
-      } catch (error) {
-        console.error("Error saving conversation metadata to Airtable:", error);
-      }
-    
       // Show the input UI so the user can continue
       if (chatInputWrapper) {
         chatInputWrapper.style.display = "grid";
         console.log("Input wrapper displayed as grid.");
       }
     }
-
-
 
     
     const startConversationButton = document.getElementById('start-new-conversation');
