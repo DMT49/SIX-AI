@@ -17,18 +17,21 @@ let userId = null; // Declare userId globally
     const now = new Date();
     const conversationDate = new Date(timestamp);
     const diffMs = now - conversationDate;
+
     const diffMinutes = Math.floor(diffMs / (1000 * 60));
-    const diffHours = Math.floor(diffMinutes / 60);
-    const diffDays = Math.floor(diffHours / 24);
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
     if (diffMinutes < 1) return 'just now';
     if (diffMinutes < 60) return `${diffMinutes} minute${diffMinutes > 1 ? 's' : ''} ago`;
     if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
     if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
     const diffWeeks = Math.floor(diffDays / 7);
-    if (diffWeeks < 5) return `${diffWeeks} week${diffWeeks > 1 ? 's' : ''} ago`;
+    if (diffWeeks < 4) return `${diffWeeks} week${diffWeeks > 1 ? 's' : ''} ago`;
     const diffMonths = Math.floor(diffDays / 30);
-    return `${diffMonths} month${diffMonths > 1 ? 's' : ''} ago`;
+    if (diffMonths < 12) return `${diffMonths} month${diffMonths > 1 ? 's' : ''} ago`;
+    const diffYears = Math.floor(diffDays / 365);
+    return `${diffYears} year${diffYears > 1 ? 's' : ''} ago`;
   };
 
   const formatTime12Hour = (date) => {
@@ -36,7 +39,7 @@ let userId = null; // Declare userId globally
     const minutes = date.getMinutes().toString().padStart(2, '0');
     const period = hours >= 12 ? 'PM' : 'AM';
     const formattedHours = hours % 12 || 12;
-    return `${formattedHours}:${minutes} <span style="font-size: 0.85em;">${period}</span>`;
+    return `${formattedHours}:${minutes} <span style="font-size: 0.9em;">${period}</span>`;
   };
 
   try {
@@ -69,6 +72,7 @@ let userId = null; // Declare userId globally
           const conversationId = record.fields['Conversation-ID'];
           const clientName = record.fields['Client-Name'] || ''; // Leave blank if missing
           const summary = record.fields['Summary'] || 'No summary available'; // Default if summary is missing
+
           const conversationDate = new Date(timeStamp);
           const formattedDate = conversationDate.toLocaleDateString('en-GB'); // Format as DD/MM/YYYY
           const formattedTime = formatTime12Hour(conversationDate);
@@ -82,7 +86,7 @@ let userId = null; // Declare userId globally
           conversationItem.innerHTML = `
             <p style="color: #404040; margin: 0;">
               <span style="color: #67b8d9;">${clientName}</span>
-              <span>(${relativeTime})</span> - ${formattedDate} ${formattedTime}
+              <span>(${relativeTime})</span> - ${formattedDate} <span style="margin-left: 15px;">${formattedTime}</span>
             </p>
             <p class="summary-text" style="margin: 5px 0 0; color: #a2a2a2; transition: color 0.3s;">
               ${summary}
