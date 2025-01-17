@@ -492,7 +492,7 @@
     }
     
      function createChatBlock(isUser, content) {
-        // Split the content into segments (text and options)
+        // Preprocess content to remove bullet points before { ... }
         content = content.replace(/(^|\n)[\s]*[-*]\s*(?=\{)/g, '$1');
         const segments = [];
         const regex = /(\{[\s\S]*?\})/g;
@@ -513,41 +513,50 @@
             segments.push({ type: "text", content: textSegment });
         }
     
-        // Create a wrapper for the entire output group
-        const outputGroupWrapper = document.createElement("div");
-        outputGroupWrapper.className = "chat_output-group";
+        const chatBlockWrapper = document.createElement("div");
+        chatBlockWrapper.className = "chat_block-wrapper";
     
-        let optionGroup = [];
+        const chatBlock = document.createElement("div");
+        chatBlock.className = "chat_block";
+    
+        const botAvatar = document.createElement("div");
+        botAvatar.className = "chat_bot-avatar";
+        if (isUser) botAvatar.classList.add("opacity-0");
+    
+        const userAvatar = document.createElement("div");
+        userAvatar.className = "chat_user-avatar";
+        if (!isUser) userAvatar.classList.add("opacity-0");
+    
+        const chatInnerWrapper = document.createElement("div");
+        chatInnerWrapper.className = `chat_inner-wrapper ${isUser ? "user-message" : ""}`;
     
         segments.forEach((segment) => {
             if (segment.type === "text") {
-                const textContent = segment.content.trim();
-                if (textContent) {
-                    if (optionGroup.length > 0) {
-                        renderOptions(optionGroup, outputGroupWrapper);
-                        optionGroup = [];
-                    }
-                    renderTextSegment(textContent, isUser, outputGroupWrapper);
-                }
+                const parsedHtml = marked.parse(segment.content.trim());
+                const sanitizedHtml = DOMPurify.sanitize(parsedHtml);
+    
+                const textDiv = document.createElement("div");
+                textDiv.innerHTML = sanitizedHtml;
+                chatInnerWrapper.appendChild(textDiv);
             } else if (segment.type === "option") {
-                optionGroup.push(cleanOptionText(segment.content.slice(1, -1).trim()));
+                const optionGroup = cleanOptionText(segment.content.slice(1, -1).trim()).split(",");
+                renderOptions(optionGroup, chatInnerWrapper);
             }
         });
     
-        if (optionGroup.length > 0) {
-            renderOptions(optionGroup, outputGroupWrapper);
-        }
-    
-        // Add the "Copy to Clipboard" button at the end of the output group
+        // Add the "Copy to Clipboard" button for bot messages
         if (!isUser) {
-            const copyButton = createCopyButton(outputGroupWrapper);
-            outputGroupWrapper.appendChild(copyButton);
+            const copyButton = createCopyButton(chatInnerWrapper);
+            chatInnerWrapper.appendChild(copyButton);
         }
     
-        // Append the entire output group to the conversation wrapper
-        conversationWrapper.appendChild(outputGroupWrapper);
+        chatBlock.appendChild(botAvatar);
+        chatBlock.appendChild(chatInnerWrapper);
+        chatBlock.appendChild(userAvatar);
     
-        // Scroll to the bottom of the conversation
+        chatBlockWrapper.appendChild(chatBlock);
+        conversationWrapper.appendChild(chatBlockWrapper);
+    
         conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
     }
 
