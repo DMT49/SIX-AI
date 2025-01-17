@@ -89,9 +89,6 @@
 
     let airtableRecordId = null;
 
-    const agentMessageEmoji = "😊"; // Emoji to append to agent messages
-
-
     // Utility function to convert Markdown to plain text
     function markdownToPlainText(markdown) {
         // Ensure the `marked` object is correctly accessed
@@ -529,46 +526,38 @@
       return false;
     }
     
+    // Function to render a text segment in the chat
     function renderTextSegment(text, isUser, hideAvatar) {
-        if (!text) return;
-        const chatBlockWrapper = document.createElement("div");
-        chatBlockWrapper.className = "chat_block-wrapper";
+      if (!text) return;
+      const chatBlockWrapper = document.createElement("div");
+      chatBlockWrapper.className = "chat_block-wrapper";
     
-        const chatBlock = document.createElement("div");
-        chatBlock.className = "chat_block";
+      const chatBlock = document.createElement("div");
+      chatBlock.className = "chat_block";
     
-        const botAvatar = document.createElement("div");
-        botAvatar.className = "chat_bot-avatar";
-        if (isUser || hideAvatar) botAvatar.classList.add("opacity-0");
+      const botAvatar = document.createElement("div");
+      botAvatar.className = "chat_bot-avatar";
+      if (isUser || hideAvatar) botAvatar.classList.add("opacity-0");
     
-        const userAvatar = document.createElement("div");
-        userAvatar.className = "chat_user-avatar";
-        if (!isUser) userAvatar.classList.add("opacity-0");
+      const userAvatar = document.createElement("div");
+      userAvatar.className = "chat_user-avatar";
+      if (!isUser) userAvatar.classList.add("opacity-0");
     
-        const chatInnerWrapper = document.createElement("div");
-        chatInnerWrapper.className = `chat_inner-wrapper ${isUser ? "user-message" : ""}`;
+      const chatInnerWrapper = document.createElement("div");
+      chatInnerWrapper.className = `chat_inner-wrapper ${isUser ? "user-message" : ""}`;
     
-        // Parse and sanitize the main content
-        const parsedHtml = marked.parse(text);
-        const sanitizedHtml = DOMPurify.sanitize(parsedHtml);
-        chatInnerWrapper.innerHTML = sanitizedHtml;
+      const parsedHtml = marked.parse(text);
+      const sanitizedHtml = DOMPurify.sanitize(parsedHtml);
     
-        // Append emoji block for bot messages
-        if (!isUser) {
-            const emojiBlock = document.createElement("div");
-            emojiBlock.className = "chat_emoji-block";
-            emojiBlock.textContent = agentMessageEmoji;
-            chatBlock.appendChild(emojiBlock);
-        }
+      chatInnerWrapper.innerHTML = sanitizedHtml;
     
-        chatBlock.appendChild(botAvatar);
-        chatBlock.appendChild(chatInnerWrapper);
-        chatBlock.appendChild(userAvatar);
+      chatBlock.appendChild(botAvatar);
+      chatBlock.appendChild(chatInnerWrapper);
+      chatBlock.appendChild(userAvatar);
     
-        chatBlockWrapper.appendChild(chatBlock);
-        conversationWrapper.appendChild(chatBlockWrapper);
+      chatBlockWrapper.appendChild(chatBlock);
+      conversationWrapper.appendChild(chatBlockWrapper);
     }
-
     
     // Function to render multiple choice options
     function renderOptions(options, isEnd) {
