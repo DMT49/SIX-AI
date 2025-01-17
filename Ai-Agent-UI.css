@@ -2293,7 +2293,7 @@ figcaption {
   border: 1px solid #949494;
   border-radius: 35px;
   grid-template-rows: auto;
-  grid-template-columns: 63px 63px 63px 1fr auto;
+  grid-template-columns: 70px 63px 63px 1fr auto;
   grid-auto-columns: 1fr;
   width: 100%;
   max-width: 52rem;
