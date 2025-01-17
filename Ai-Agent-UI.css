@@ -2502,6 +2502,11 @@ figcaption {
   position: relative;
 }
 
+#chat-voice-toggle {
+    place-self: end start; /* Aligns to bottom-left */
+}
+
+
 .chat_submit-input {
   color: #26353f;
   flex-direction: column;
