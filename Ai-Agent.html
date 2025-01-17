@@ -936,7 +936,10 @@
     });
 
     
-    // Function to handle text-to-speech using ElevenLabs' streaming endpoint
+    // Global variable to track the currently playing audio instance
+    let currentAudio = null;
+    
+    // Function to handle text-to-speech with interruption management
     const playVoiceOutput = async (text) => {
         if (!isVoiceOn) return; // Do nothing if voice output is OFF
     
@@ -944,6 +947,12 @@
         const voiceId = "IKne3meq5aSn9XLyUdCD"; // Your voice ID
     
         try {
+            // Stop any currently playing audio
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null; // Release the current audio instance
+            }
+    
             // Convert Markdown to plain text
             const plainText = markdownToPlainText(text);
     
@@ -964,8 +973,6 @@
     
             // Create a readable stream from the response body
             const reader = response.body.getReader();
-            const audioContext = new AudioContext();
-            const source = audioContext.createBufferSource();
             const audioChunks = [];
     
             let done = false;
@@ -981,16 +988,29 @@
             // Decode the audio chunks
             const audioData = new Blob(audioChunks);
             const arrayBuffer = await audioData.arrayBuffer();
+            const audioContext = new AudioContext();
             const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
     
-            // Connect the audio source and play
-            source.buffer = audioBuffer;
-            source.connect(audioContext.destination);
-            source.start(0);
+            // Create and configure the new audio instance
+            const audio = new Audio();
+            audio.src = URL.createObjectURL(audioData);
+    
+            // Track the current audio instance globally
+            currentAudio = audio;
+    
+            // Play the audio
+            audio.play();
+    
+            // Clean up when audio ends
+            audio.onended = () => {
+                currentAudio = null; // Release the instance
+            };
         } catch (error) {
             console.error("Error during TTS playback:", error);
+            currentAudio = null; // Ensure the instance is released on error
         }
     };
+
 
 
     
