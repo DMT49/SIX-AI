@@ -89,15 +89,6 @@
 
     let airtableRecordId = null;
 
-
-    function createCopyToClipboardIcon() {
-      const icon = document.createElement("div");
-      icon.className = "copy-to-clipboard";
-      icon.textContent = "📋"; // Clipboard emoji or icon
-      return icon;
-    }
-
-
     // Utility function to convert Markdown to plain text
     function markdownToPlainText(markdown) {
         // Ensure the `marked` object is correctly accessed
@@ -410,7 +401,7 @@
     
         if (role && content) {
           const isUser = role === "user";
-          (isUser, content);
+          createChatBlock(isUser, content);
         }
       });
     
@@ -470,6 +461,7 @@
       retainedText = "";
     }
     
+    // Function to create a chat block (user or bot)
     function createChatBlock(isUser, content) {
       // Preprocess content to remove bullet points before { ... }
       content = content.replace(/(^|\n)[\s]*[-*]\s*(?=\{)/g, '$1');
@@ -478,7 +470,6 @@
       let lastIndex = 0;
       let match;
     
-      // Extract text and option segments from the content
       while ((match = regex.exec(content)) !== null) {
         if (match.index > lastIndex) {
           const textSegment = content.substring(lastIndex, match.index);
@@ -488,35 +479,15 @@
         lastIndex = regex.lastIndex;
       }
     
-      // Capture any remaining text after the last match
       if (lastIndex < content.length) {
         const textSegment = content.substring(lastIndex);
         segments.push({ type: "text", content: textSegment });
       }
     
-      // Create the chat block wrapper
-      const chatBlockWrapper = document.createElement("div");
-      chatBlockWrapper.className = "chat_block-wrapper";
-    
-      // Create the chat block container
-      const chatBlock = document.createElement("div");
-      chatBlock.className = "chat_block";
-    
-      // Create the bot avatar
-      const botAvatar = document.createElement("div");
-      botAvatar.className = "chat_bot-avatar opacity-0"; // Set opacity-0 for this case
-    
-      // Create the user avatar
-      const userAvatar = document.createElement("div");
-      userAvatar.className = "chat_user-avatar opacity-0"; // Always hidden for bot messages
-    
-      // Append avatars to the chat block
-      chatBlock.appendChild(botAvatar);
-    
       let optionGroup = [];
       let lastOptionIndex = -1;
+      let hasRenderedBotAvatar = false;
     
-      // Process each segment of the message
       segments.forEach((segment, index) => {
         if (segment.type === "text") {
           const textContent = segment.content.trim();
@@ -526,7 +497,9 @@
               renderOptions(optionGroup, isOptionsAtEnd);
               optionGroup = [];
             }
-            renderTextSegment(textContent, isUser, true); // Render text segment (hide avatar already handled above)
+            const hideAvatar = !isUser && hasRenderedBotAvatar;
+            renderTextSegment(textContent, isUser, hideAvatar);
+            hasRenderedBotAvatar = true;
           }
         } else if (segment.type === "option") {
           optionGroup.push(cleanOptionText(segment.content.slice(1, -1).trim()));
@@ -534,34 +507,14 @@
         }
       });
     
-      // Render any remaining options
       if (optionGroup.length > 0) {
         const isOptionsAtEnd = !hasNonEmptyTextAfterIndex(segments, lastOptionIndex);
         renderOptions(optionGroup, isOptionsAtEnd);
         optionGroup = [];
       }
     
-      // Add the "Copy to Clipboard" icon for agent messages
-      if (!isUser) {
-        const copyIcon = createCopyToClipboardIcon(); // Create the clipboard icon
-        chatBlock.appendChild(copyIcon);             // Append it to the chat block
-      }
-    
-      // Append the user avatar
-      chatBlock.appendChild(userAvatar);
-    
-      // Append the chat block to the wrapper
-      chatBlockWrapper.appendChild(chatBlock);
-    
-      // Append the chat block wrapper to the conversation container
-      conversationWrapper.appendChild(chatBlockWrapper);
-    
-      // Scroll to the bottom of the conversation to show the latest message
       conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
     }
-
-
-
     
     // Helper function to check if there's non-empty text after a given index
     function hasNonEmptyTextAfterIndex(segments, currentIndex) {
@@ -646,7 +599,7 @@
           });
     
           // Show the user's chosen option as their message
-          (true, optionText);
+          createChatBlock(true, optionText);
     
           // Update Airtable Time-Last-Edited if record ID exists
           if (airtableRecordId) {
@@ -664,7 +617,7 @@
           conversationWrapper.removeChild(loadingBlockWrapper);
     
           // Show agent response
-          (false, agentResponse);
+          createChatBlock(false, agentResponse);
         });
       });
     
@@ -799,7 +752,7 @@
       }
     
       // Existing functionality to handle message submission
-      (true, message); // Render user message
+      createChatBlock(true, message); // Render user message
       resetHeight(); // Reset textarea height
     
       // Display loading block
