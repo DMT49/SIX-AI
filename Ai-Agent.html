@@ -91,16 +91,23 @@
 
     // Utility function to convert Markdown to plain text
     function markdownToPlainText(markdown) {
+        // Ensure the `marked` object is correctly accessed
+        const parser = typeof marked === "function" ? marked : marked.parse;
+    
         // Parse Markdown to HTML
-        const html = marked(markdown);
+        const html = parser(markdown);
+    
         // Sanitize the HTML
         const sanitizedHtml = DOMPurify.sanitize(html);
+    
         // Create a temporary DOM element to extract plain text
         const tempDiv = document.createElement("div");
         tempDiv.innerHTML = sanitizedHtml;
+    
         // Return plain text content
         return tempDiv.textContent || tempDiv.innerText || "";
     }
+
 
 
     if (conversationID) {
