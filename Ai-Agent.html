@@ -90,61 +90,32 @@
     let airtableRecordId = null;
 
 
-
-    function renderTextSegmentWithCopy(text, isUser, hideAvatar) {
-        if (!text) return;
+    function createCopyButton(outputGroupWrapper) {
+        const copyButton = document.createElement("button");
+        copyButton.className = "copy-button";
+        copyButton.innerHTML = "📋"; // Add your icon or text here
+        copyButton.title = "Copy to Clipboard";
     
-        const chatBlockWrapper = document.createElement("div");
-        chatBlockWrapper.className = "chat_block-wrapper";
+        // Handle copy functionality
+        copyButton.addEventListener("click", () => {
+            // Collect all text content from the output group
+            const allText = Array.from(outputGroupWrapper.querySelectorAll(".chat_inner-wrapper"))
+                .map((wrapper) => wrapper.textContent.trim())
+                .join("\n\n");
     
-        const chatBlock = document.createElement("div");
-        chatBlock.className = "chat_block";
-    
-        const botAvatar = document.createElement("div");
-        botAvatar.className = "chat_bot-avatar";
-        if (isUser || hideAvatar) botAvatar.classList.add("opacity-0");
-    
-        const userAvatar = document.createElement("div");
-        userAvatar.className = "chat_user-avatar";
-        if (!isUser) userAvatar.classList.add("opacity-0");
-    
-        const chatInnerWrapper = document.createElement("div");
-        chatInnerWrapper.className = `chat_inner-wrapper ${isUser ? "user-message" : ""}`;
-    
-        const parsedHtml = marked.parse(text);
-        const sanitizedHtml = DOMPurify.sanitize(parsedHtml);
-        chatInnerWrapper.innerHTML = sanitizedHtml;
-    
-        // Add the "Copy" button for bot messages
-        if (!isUser) {
-            const copyButton = document.createElement("button");
-            copyButton.className = "copy-button";
-            copyButton.innerHTML = "📋"; // Add your icon or text here
-            copyButton.title = "Copy to Clipboard";
-    
-            // Handle copy functionality
-            copyButton.addEventListener("click", () => {
-                navigator.clipboard.writeText(text).then(() => {
-                    copyButton.innerHTML = "✅"; // Show feedback
-                    setTimeout(() => {
-                        copyButton.innerHTML = "📋"; // Revert to original icon
-                    }, 2000); // Revert after 2 seconds
-                }).catch((error) => {
-                    console.error("Error copying to clipboard:", error);
-                });
+            navigator.clipboard.writeText(allText).then(() => {
+                copyButton.innerHTML = "✅"; // Show feedback
+                setTimeout(() => {
+                    copyButton.innerHTML = "📋"; // Revert to original icon
+                }, 2000); // Revert after 2 seconds
+            }).catch((error) => {
+                console.error("Error copying to clipboard:", error);
             });
+        });
     
-            // Append the button
-            chatInnerWrapper.appendChild(copyButton);
-        }
-    
-        chatBlock.appendChild(botAvatar);
-        chatBlock.appendChild(chatInnerWrapper);
-        chatBlock.appendChild(userAvatar);
-    
-        chatBlockWrapper.appendChild(chatBlock);
-        conversationWrapper.appendChild(chatBlockWrapper);
+        return copyButton;
     }
+
 
     // Utility function to convert Markdown to plain text
     function markdownToPlainText(markdown) {
@@ -519,7 +490,6 @@
     }
 
     function createChatBlock(isUser, content) {
-        // Preprocess content to remove bullet points before { ... }
         content = content.replace(/(^|\n)[\s]*[-*]\s*(?=\{)/g, '$1');
         const segments = [];
         const regex = /(\{[\s\S]*?\})/g;
@@ -540,22 +510,22 @@
             segments.push({ type: "text", content: textSegment });
         }
     
+        // Create a wrapper for the entire output group
+        const outputGroupWrapper = document.createElement("div");
+        outputGroupWrapper.className = "chat_output-group";
+    
         let optionGroup = [];
         let lastOptionIndex = -1;
-        let hasRenderedBotAvatar = false;
     
         segments.forEach((segment, index) => {
             if (segment.type === "text") {
                 const textContent = segment.content.trim();
                 if (textContent) {
                     if (optionGroup.length > 0) {
-                        const isOptionsAtEnd = !hasNonEmptyTextAfterIndex(segments, lastOptionIndex);
-                        renderOptions(optionGroup, isOptionsAtEnd);
+                        renderOptions(optionGroup, outputGroupWrapper);
                         optionGroup = [];
                     }
-                    const hideAvatar = !isUser && hasRenderedBotAvatar;
-                    renderTextSegmentWithCopy(textContent, isUser, hideAvatar); // Updated function call
-                    hasRenderedBotAvatar = true;
+                    renderTextSegment(textContent, isUser, outputGroupWrapper);
                 }
             } else if (segment.type === "option") {
                 optionGroup.push(cleanOptionText(segment.content.slice(1, -1).trim()));
@@ -564,13 +534,19 @@
         });
     
         if (optionGroup.length > 0) {
-            const isOptionsAtEnd = !hasNonEmptyTextAfterIndex(segments, lastOptionIndex);
-            renderOptions(optionGroup, isOptionsAtEnd);
-            optionGroup = [];
+            renderOptions(optionGroup, outputGroupWrapper);
         }
     
+        // Add the "Copy to Clipboard" button at the end of the output group
+        if (!isUser) {
+            const copyButton = createCopyButton(outputGroupWrapper);
+            outputGroupWrapper.appendChild(copyButton);
+        }
+    
+        conversationWrapper.appendChild(outputGroupWrapper);
         conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
     }
+
 
     
     // Helper function to check if there's non-empty text after a given index
@@ -584,37 +560,64 @@
     }
     
     // Function to render a text segment in the chat
-    function renderTextSegment(text, isUser, hideAvatar) {
-      if (!text) return;
-      const chatBlockWrapper = document.createElement("div");
-      chatBlockWrapper.className = "chat_block-wrapper";
+    function renderTextSegment(text, isUser, hideAvatar = false) {
+        if (!text) return;
     
-      const chatBlock = document.createElement("div");
-      chatBlock.className = "chat_block";
+        // Create the necessary elements
+        const chatBlockWrapper = document.createElement("div");
+        chatBlockWrapper.className = "chat_block-wrapper";
     
-      const botAvatar = document.createElement("div");
-      botAvatar.className = "chat_bot-avatar";
-      if (isUser || hideAvatar) botAvatar.classList.add("opacity-0");
+        const chatBlock = document.createElement("div");
+        chatBlock.className = "chat_block";
     
-      const userAvatar = document.createElement("div");
-      userAvatar.className = "chat_user-avatar";
-      if (!isUser) userAvatar.classList.add("opacity-0");
+        const botAvatar = document.createElement("div");
+        botAvatar.className = "chat_bot-avatar";
+        if (isUser || hideAvatar) botAvatar.classList.add("opacity-0");
     
-      const chatInnerWrapper = document.createElement("div");
-      chatInnerWrapper.className = `chat_inner-wrapper ${isUser ? "user-message" : ""}`;
+        const userAvatar = document.createElement("div");
+        userAvatar.className = "chat_user-avatar";
+        if (!isUser) userAvatar.classList.add("opacity-0");
     
-      const parsedHtml = marked.parse(text);
-      const sanitizedHtml = DOMPurify.sanitize(parsedHtml);
+        const chatInnerWrapper = document.createElement("div");
+        chatInnerWrapper.className = `chat_inner-wrapper ${isUser ? "user-message" : ""}`;
     
-      chatInnerWrapper.innerHTML = sanitizedHtml;
+        // Sanitize and parse text for rendering
+        const parsedHtml = marked.parse(text);
+        const sanitizedHtml = DOMPurify.sanitize(parsedHtml);
+        chatInnerWrapper.innerHTML = sanitizedHtml;
     
-      chatBlock.appendChild(botAvatar);
-      chatBlock.appendChild(chatInnerWrapper);
-      chatBlock.appendChild(userAvatar);
+        // Add the "Copy to Clipboard" button for bot messages
+        if (!isUser) {
+            const copyButton = document.createElement("button");
+            copyButton.className = "copy-button";
+            copyButton.innerHTML = "📋"; // Add your icon or text here
+            copyButton.title = "Copy to Clipboard";
     
-      chatBlockWrapper.appendChild(chatBlock);
-      conversationWrapper.appendChild(chatBlockWrapper);
+            // Handle copy functionality
+            copyButton.addEventListener("click", () => {
+                navigator.clipboard.writeText(text).then(() => {
+                    copyButton.innerHTML = "✅"; // Show feedback
+                    setTimeout(() => {
+                        copyButton.innerHTML = "📋"; // Revert to original icon
+                    }, 2000); // Revert after 2 seconds
+                }).catch((error) => {
+                    console.error("Error copying to clipboard:", error);
+                });
+            });
+    
+            // Append the button to the chat inner wrapper
+            chatInnerWrapper.appendChild(copyButton);
+        }
+    
+        // Assemble the chat block
+        chatBlock.appendChild(botAvatar);
+        chatBlock.appendChild(chatInnerWrapper);
+        chatBlock.appendChild(userAvatar);
+    
+        chatBlockWrapper.appendChild(chatBlock);
+        conversationWrapper.appendChild(chatBlockWrapper);
     }
+
     
     // Function to render multiple choice options
     function renderOptions(options, isEnd) {
