@@ -484,8 +484,9 @@
       }
       retainedText = "";
     }
-
+    
     function createChatBlock(isUser, content) {
+        // Split the content into segments (text and options)
         content = content.replace(/(^|\n)[\s]*[-*]\s*(?=\{)/g, '$1');
         const segments = [];
         const regex = /(\{[\s\S]*?\})/g;
@@ -511,9 +512,8 @@
         outputGroupWrapper.className = "chat_output-group";
     
         let optionGroup = [];
-        let lastOptionIndex = -1;
     
-        segments.forEach((segment, index) => {
+        segments.forEach((segment) => {
             if (segment.type === "text") {
                 const textContent = segment.content.trim();
                 if (textContent) {
@@ -521,11 +521,10 @@
                         renderOptions(optionGroup, outputGroupWrapper);
                         optionGroup = [];
                     }
-                    (textContent, isUser, outputGroupWrapper);
+                    renderTextSegment(textContent, isUser, outputGroupWrapper);
                 }
             } else if (segment.type === "option") {
                 optionGroup.push(cleanOptionText(segment.content.slice(1, -1).trim()));
-                lastOptionIndex = index;
             }
         });
     
@@ -539,7 +538,10 @@
             outputGroupWrapper.appendChild(copyButton);
         }
     
+        // Append the entire output group to the conversation wrapper
         conversationWrapper.appendChild(outputGroupWrapper);
+    
+        // Scroll to the bottom of the conversation
         conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
     }
 
