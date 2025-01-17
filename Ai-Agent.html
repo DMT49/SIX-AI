@@ -494,6 +494,25 @@
         segments.push({ type: "text", content: textSegment });
       }
     
+      // Create the chat block wrapper
+      const chatBlockWrapper = document.createElement("div");
+      chatBlockWrapper.className = "chat_block-wrapper";
+    
+      // Create the chat block container
+      const chatBlock = document.createElement("div");
+      chatBlock.className = "chat_block";
+    
+      // Add the bot avatar or user avatar based on the role
+      const botAvatar = document.createElement("div");
+      botAvatar.className = "chat_bot-avatar";
+      if (isUser) botAvatar.classList.add("opacity-0");
+    
+      const userAvatar = document.createElement("div");
+      userAvatar.className = "chat_user-avatar";
+      if (!isUser) userAvatar.classList.add("opacity-0");
+    
+      chatBlock.appendChild(botAvatar);
+    
       let optionGroup = [];
       let lastOptionIndex = -1;
       let hasRenderedBotAvatar = false;
@@ -531,9 +550,17 @@
         chatBlockWrapper.appendChild(copyIcon);      // Append it at the end of the message block
       }
     
+      // Append the chat block and avatars
+      chatBlock.appendChild(userAvatar);
+      chatBlockWrapper.appendChild(chatBlock);
+    
+      // Append the chat block wrapper to the conversation container
+      conversationWrapper.appendChild(chatBlockWrapper);
+    
       // Scroll to the bottom of the conversation to show the latest message
       conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
     }
+
 
 
     
