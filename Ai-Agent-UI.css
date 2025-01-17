@@ -3069,3 +3069,21 @@ margin: 0rem !important;
 .chat_conversation-wrapper tr:nth-child(even) {
   background: #f9f9f9 !important; /* Slightly lighter gray */
 }
+
+.copy-button {
+    margin-left: 10px;
+    cursor: pointer;
+    background-color: transparent;
+    border: none;
+    font-size: 1.2em;
+    color: #007BFF;
+    transition: color 0.3s ease;
+}
+
+.copy-button:hover {
+    color: #0056b3;
+}
+
+.copy-button:active {
+    transform: scale(0.9);
+}
