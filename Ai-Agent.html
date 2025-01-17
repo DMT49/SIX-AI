@@ -925,15 +925,22 @@
     let isVoiceOn = false; // Declare `isVoiceOn` globally
     
     document.addEventListener("click", (event) => {
-        // Check if the clicked element matches the voice toggle button
         const voiceToggle = event.target.closest("#chat-voice-toggle");
-        if (!voiceToggle) return; // Exit if the click is not on the button
+        if (!voiceToggle) return;
     
         // Toggle the voice state
         isVoiceOn = !isVoiceOn;
         voiceToggle.classList.toggle("is-active", isVoiceOn);
         console.log(`Voice Output is now ${isVoiceOn ? "ON" : "OFF"}`);
+    
+        // If voice output is turned off, stop the current audio immediately
+        if (!isVoiceOn && currentAudio) {
+            currentAudio.pause(); // Stop playback
+            currentAudio = null;  // Release the audio instance
+            console.log("Voice output stopped immediately as toggle is OFF.");
+        }
     });
+
 
     
     // Global variable to track the currently playing audio instance
@@ -977,6 +984,14 @@
     
             let done = false;
             while (!done) {
+                // Check if voice output is OFF during playback
+                if (!isVoiceOn) {
+                    console.log("Voice output interrupted; stopping playback.");
+                    if (currentAudio) currentAudio.pause();
+                    currentAudio = null; // Release audio instance
+                    return; // Exit playback function
+                }
+    
                 const { done: readerDone, value } = await reader.read();
                 if (readerDone) {
                     done = true;
@@ -1010,8 +1025,6 @@
             currentAudio = null; // Ensure the instance is released on error
         }
     };
-
-
 
     
     // Hook into the existing message rendering logic
