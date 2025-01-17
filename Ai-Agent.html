@@ -901,55 +901,56 @@
       console.error("Button with id 'start-new-conversation' not found.");
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
-        const voiceToggle = document.getElementById("chat-voice-toggle"); // The voice toggle button
-        let isVoiceOn = false; // Default state: OFF
+    document.addEventListener("click", (event) => {
+        // Check if the clicked element matches the voice toggle button
+        const voiceToggle = event.target.closest("#chat-voice-toggle");
+        if (!voiceToggle) return; // Exit if the click is not on the button
     
-        // Add event listener to toggle the active state
-        voiceToggle.addEventListener("click", () => {
-            isVoiceOn = !isVoiceOn; // Toggle state
-            voiceToggle.classList.toggle("is-active", isVoiceOn); // Add or remove 'is-active' class
-            console.log(`Voice Output is now ${isVoiceOn ? "ON" : "OFF"}`);
-        });
-    
-        // Function to handle text-to-speech
-        const playVoiceOutput = async (text) => {
-            if (!isVoiceOn) return; // Do nothing if voice output is OFF
-    
-            const apiKey = "sk_065dc50b4b41b24e68999e7f5bbbd45e0dead586465ace18"; // Replace with your actual API key
-            const voiceId = "yiMrQX5Wz362K2dbQS4c"; // Replace with your chosen voice ID
-    
-            try {
-                const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "xi-api-key": apiKey,
-                    },
-                    body: JSON.stringify({ text }),
-                });
-    
-                if (!response.ok) throw new Error("Failed to fetch audio");
-    
-                const audioBlob = await response.blob();
-                const audioUrl = URL.createObjectURL(audioBlob);
-                const audio = new Audio(audioUrl); // Create an audio element for playback
-                audio.play(); // Play the audio
-            } catch (error) {
-                console.error("Error during TTS playback:", error);
-            }
-        };
-    
-        // Hook into the existing message rendering logic
-        const originalCreateChatBlock = createChatBlock; // Reference the existing function
-        createChatBlock = (isUser, content) => {
-            originalCreateChatBlock(isUser, content); // Call the original function
-    
-            if (!isUser) {
-                playVoiceOutput(content); // Play voice output for bot messages
-            }
-        };
+        // Toggle the voice state
+        const isVoiceOn = voiceToggle.classList.toggle("is-active");
+        console.log(`Voice Output is now ${isVoiceOn ? "ON" : "OFF"}`);
     });
+    
+    // Function to handle text-to-speech
+    const playVoiceOutput = async (text) => {
+        const voiceToggle = document.getElementById("chat-voice-toggle");
+        const isVoiceOn = voiceToggle && voiceToggle.classList.contains("is-active");
+        if (!isVoiceOn) return; // Exit if voice output is OFF
+    
+        const apiKey = "sk_065dc50b4b41b24e68999e7f5bbbd45e0dead586465ace18"; // Replace with your actual API key
+        const voiceId = "yiMrQX5Wz362K2dbQS4c"; // Replace with your chosen voice ID
+    
+        try {
+            const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "xi-api-key": apiKey,
+                },
+                body: JSON.stringify({ text }),
+            });
+    
+            if (!response.ok) throw new Error("Failed to fetch audio");
+    
+            const audioBlob = await response.blob();
+            const audioUrl = URL.createObjectURL(audioBlob);
+            const audio = new Audio(audioUrl); // Create an audio element for playback
+            audio.play(); // Play the audio
+        } catch (error) {
+            console.error("Error during TTS playback:", error);
+        }
+    };
+    
+    // Hook into the existing message rendering logic
+    const originalCreateChatBlock = createChatBlock; // Reference the existing function
+    createChatBlock = (isUser, content) => {
+        originalCreateChatBlock(isUser, content); // Call the original function
+    
+        if (!isUser) {
+            playVoiceOutput(content); // Play voice output for bot messages
+        }
+    };
+
 
   })();
 </script>
