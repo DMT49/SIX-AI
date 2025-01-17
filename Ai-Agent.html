@@ -89,6 +89,15 @@
 
     let airtableRecordId = null;
 
+
+    function createCopyToClipboardIcon() {
+      const icon = document.createElement("div");
+      icon.className = "copy-to-clipboard";
+      icon.textContent = "📋"; // Clipboard emoji or icon
+      return icon;
+    }
+
+
     // Utility function to convert Markdown to plain text
     function markdownToPlainText(markdown) {
         // Ensure the `marked` object is correctly accessed
@@ -401,7 +410,7 @@
     
         if (role && content) {
           const isUser = role === "user";
-          createChatBlock(isUser, content);
+          (isUser, content);
         }
       });
     
@@ -461,7 +470,6 @@
       retainedText = "";
     }
     
-    // Function to create a chat block (user or bot)
     function createChatBlock(isUser, content) {
       // Preprocess content to remove bullet points before { ... }
       content = content.replace(/(^|\n)[\s]*[-*]\s*(?=\{)/g, '$1');
@@ -470,6 +478,7 @@
       let lastIndex = 0;
       let match;
     
+      // Extract text and option segments from the content
       while ((match = regex.exec(content)) !== null) {
         if (match.index > lastIndex) {
           const textSegment = content.substring(lastIndex, match.index);
@@ -479,6 +488,7 @@
         lastIndex = regex.lastIndex;
       }
     
+      // Capture any remaining text after the last match
       if (lastIndex < content.length) {
         const textSegment = content.substring(lastIndex);
         segments.push({ type: "text", content: textSegment });
@@ -488,6 +498,7 @@
       let lastOptionIndex = -1;
       let hasRenderedBotAvatar = false;
     
+      // Process each segment of the message
       segments.forEach((segment, index) => {
         if (segment.type === "text") {
           const textContent = segment.content.trim();
@@ -507,14 +518,24 @@
         }
       });
     
+      // Render any remaining options
       if (optionGroup.length > 0) {
         const isOptionsAtEnd = !hasNonEmptyTextAfterIndex(segments, lastOptionIndex);
         renderOptions(optionGroup, isOptionsAtEnd);
         optionGroup = [];
       }
     
+      // Add the "Copy to Clipboard" icon for agent messages
+      if (!isUser) {
+        const copyIcon = createCopyToClipboardIcon(); // Create the clipboard icon
+        chatBlockWrapper.appendChild(copyIcon);      // Append it at the end of the message block
+      }
+    
+      // Scroll to the bottom of the conversation to show the latest message
       conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
     }
+
+
     
     // Helper function to check if there's non-empty text after a given index
     function hasNonEmptyTextAfterIndex(segments, currentIndex) {
@@ -599,7 +620,7 @@
           });
     
           // Show the user's chosen option as their message
-          createChatBlock(true, optionText);
+          (true, optionText);
     
           // Update Airtable Time-Last-Edited if record ID exists
           if (airtableRecordId) {
@@ -617,7 +638,7 @@
           conversationWrapper.removeChild(loadingBlockWrapper);
     
           // Show agent response
-          createChatBlock(false, agentResponse);
+          (false, agentResponse);
         });
       });
     
@@ -752,7 +773,7 @@
       }
     
       // Existing functionality to handle message submission
-      createChatBlock(true, message); // Render user message
+      (true, message); // Render user message
       resetHeight(); // Reset textarea height
     
       // Display loading block
