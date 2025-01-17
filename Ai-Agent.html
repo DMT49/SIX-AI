@@ -461,7 +461,7 @@
       retainedText = "";
     }
     
-    // Function to create a chat block (user or bot)
+
     function createChatBlock(isUser, content) {
       // Preprocess content to remove bullet points before { ... }
       content = content.replace(/(^|\n)[\s]*[-*]\s*(?=\{)/g, '$1');
@@ -484,37 +484,54 @@
         segments.push({ type: "text", content: textSegment });
       }
     
-      let optionGroup = [];
-      let lastOptionIndex = -1;
-      let hasRenderedBotAvatar = false;
+      const chatBlockWrapper = document.createElement("div");
+      chatBlockWrapper.className = "chat_block-wrapper";
     
-      segments.forEach((segment, index) => {
+      const chatBlock = document.createElement("div");
+      chatBlock.className = "chat_block";
+    
+      const botAvatar = document.createElement("div");
+      botAvatar.className = "chat_bot-avatar";
+      if (isUser) botAvatar.classList.add("opacity-0");
+    
+      const userAvatar = document.createElement("div");
+      userAvatar.className = "chat_user-avatar";
+      if (!isUser) userAvatar.classList.add("opacity-0");
+    
+      chatBlock.appendChild(botAvatar);
+    
+      // Render message content
+      segments.forEach((segment) => {
         if (segment.type === "text") {
-          const textContent = segment.content.trim();
-          if (textContent) {
-            if (optionGroup.length > 0) {
-              const isOptionsAtEnd = !hasNonEmptyTextAfterIndex(segments, lastOptionIndex);
-              renderOptions(optionGroup, isOptionsAtEnd);
-              optionGroup = [];
-            }
-            const hideAvatar = !isUser && hasRenderedBotAvatar;
-            renderTextSegment(textContent, isUser, hideAvatar);
-            hasRenderedBotAvatar = true;
-          }
+          const textSegment = renderTextSegment(segment.content, isUser, false);
+          if (textSegment) chatBlock.appendChild(textSegment);
         } else if (segment.type === "option") {
-          optionGroup.push(cleanOptionText(segment.content.slice(1, -1).trim()));
-          lastOptionIndex = index;
+          const optionsBlock = renderOptions([segment.content], true);
+          if (optionsBlock) chatBlock.appendChild(optionsBlock);
         }
       });
     
-      if (optionGroup.length > 0) {
-        const isOptionsAtEnd = !hasNonEmptyTextAfterIndex(segments, lastOptionIndex);
-        renderOptions(optionGroup, isOptionsAtEnd);
-        optionGroup = [];
+      // Append emoji for bot messages
+      if (!isUser) {
+        const emojiWrapper = document.createElement("div");
+        emojiWrapper.className = "chat_emoji-wrapper";
+    
+        const emojiSpan = document.createElement("span");
+        emojiSpan.className = "chat_emoji";
+        emojiSpan.textContent = "😊";
+    
+        emojiWrapper.appendChild(emojiSpan);
+        chatBlock.appendChild(emojiWrapper);
       }
     
+      chatBlock.appendChild(userAvatar);
+      chatBlockWrapper.appendChild(chatBlock);
+      conversationWrapper.appendChild(chatBlockWrapper);
+    
+      // Scroll to the bottom of the chat
       conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
     }
+
     
     // Helper function to check if there's non-empty text after a given index
     function hasNonEmptyTextAfterIndex(segments, currentIndex) {
