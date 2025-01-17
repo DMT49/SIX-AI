@@ -502,20 +502,19 @@
       const chatBlock = document.createElement("div");
       chatBlock.className = "chat_block";
     
-      // Add the bot avatar or user avatar based on the role
+      // Create the bot avatar
       const botAvatar = document.createElement("div");
-      botAvatar.className = "chat_bot-avatar";
-      if (isUser) botAvatar.classList.add("opacity-0");
+      botAvatar.className = "chat_bot-avatar opacity-0"; // Set opacity-0 for this case
     
+      // Create the user avatar
       const userAvatar = document.createElement("div");
-      userAvatar.className = "chat_user-avatar";
-      if (!isUser) userAvatar.classList.add("opacity-0");
+      userAvatar.className = "chat_user-avatar opacity-0"; // Always hidden for bot messages
     
+      // Append avatars to the chat block
       chatBlock.appendChild(botAvatar);
     
       let optionGroup = [];
       let lastOptionIndex = -1;
-      let hasRenderedBotAvatar = false;
     
       // Process each segment of the message
       segments.forEach((segment, index) => {
@@ -527,9 +526,7 @@
               renderOptions(optionGroup, isOptionsAtEnd);
               optionGroup = [];
             }
-            const hideAvatar = !isUser && hasRenderedBotAvatar;
-            renderTextSegment(textContent, isUser, hideAvatar);
-            hasRenderedBotAvatar = true;
+            renderTextSegment(textContent, isUser, true); // Render text segment (hide avatar already handled above)
           }
         } else if (segment.type === "option") {
           optionGroup.push(cleanOptionText(segment.content.slice(1, -1).trim()));
@@ -547,11 +544,13 @@
       // Add the "Copy to Clipboard" icon for agent messages
       if (!isUser) {
         const copyIcon = createCopyToClipboardIcon(); // Create the clipboard icon
-        chatBlockWrapper.appendChild(copyIcon);      // Append it at the end of the message block
+        chatBlock.appendChild(copyIcon);             // Append it to the chat block
       }
     
-      // Append the chat block and avatars
+      // Append the user avatar
       chatBlock.appendChild(userAvatar);
+    
+      // Append the chat block to the wrapper
       chatBlockWrapper.appendChild(chatBlock);
     
       // Append the chat block wrapper to the conversation container
