@@ -89,36 +89,6 @@
 
     let airtableRecordId = null;
 
-
-    // Updated "Copy to Clipboard" button functionality
-    function createCopyButton(outputGroupWrapper) {
-        const copyButton = document.createElement("button");
-        copyButton.className = "copy-button";
-        copyButton.innerHTML = "📋"; // Add your icon or text here
-        copyButton.title = "Copy to Clipboard";
-    
-        // Handle copy functionality
-        copyButton.addEventListener("click", () => {
-            // Collect all text content from the output group
-            const allText = Array.from(outputGroupWrapper.querySelectorAll(".chat_inner-wrapper"))
-                .map((wrapper) => wrapper.textContent.trim())
-                .join("\n\n");
-    
-            navigator.clipboard.writeText(allText).then(() => {
-                copyButton.innerHTML = "✅"; // Show feedback
-                setTimeout(() => {
-                    copyButton.innerHTML = "📋"; // Revert to original icon
-                }, 2000); // Revert after 2 seconds
-            }).catch((error) => {
-                console.error("Error copying to clipboard:", error);
-            });
-        });
-    
-        return copyButton;
-    }
-
-
-
     // Utility function to convert Markdown to plain text
     function markdownToPlainText(markdown) {
         // Ensure the `marked` object is correctly accessed
@@ -431,7 +401,7 @@
     
         if (role && content) {
           const isUser = role === "user";
-          (isUser, content);
+          createChatBlock(isUser, content);
         }
       });
     
@@ -490,57 +460,61 @@
       }
       retainedText = "";
     }
-
-    // Function to create a chat block with inline buttons
+    
+    // Function to create a chat block (user or bot)
     function createChatBlock(isUser, content) {
-      const chatBlockWrapper = document.createElement("div");
-      chatBlockWrapper.className = "chat_block-wrapper";
+      // Preprocess content to remove bullet points before { ... }
+      content = content.replace(/(^|\n)[\s]*[-*]\s*(?=\{)/g, '$1');
+      const segments = [];
+      const regex = /(\{[\s\S]*?\})/g;
+      let lastIndex = 0;
+      let match;
     
-      const chatBlock = document.createElement("div");
-      chatBlock.className = "chat_block";
+      while ((match = regex.exec(content)) !== null) {
+        if (match.index > lastIndex) {
+          const textSegment = content.substring(lastIndex, match.index);
+          segments.push({ type: "text", content: textSegment });
+        }
+        segments.push({ type: "option", content: match[1] });
+        lastIndex = regex.lastIndex;
+      }
     
-      const botAvatar = document.createElement("div");
-      botAvatar.className = "chat_bot-avatar";
-      if (isUser) botAvatar.classList.add("opacity-0");
+      if (lastIndex < content.length) {
+        const textSegment = content.substring(lastIndex);
+        segments.push({ type: "text", content: textSegment });
+      }
     
-      const userAvatar = document.createElement("div");
-      userAvatar.className = "chat_user-avatar";
-      if (!isUser) userAvatar.classList.add("opacity-0");
+      let optionGroup = [];
+      let lastOptionIndex = -1;
+      let hasRenderedBotAvatar = false;
     
-      const chatInnerWrapper = document.createElement("div");
-      chatInnerWrapper.className = `chat_inner-wrapper ${isUser ? "user-message" : ""}`;
-    
-      // Split content into text and options
-      const segments = splitContentIntoSegments(content);
-    
-      segments.forEach((segment) => {
+      segments.forEach((segment, index) => {
         if (segment.type === "text") {
-          const sanitizedHtml = DOMPurify.sanitize(marked.parse(segment.content.trim()));
-          const textDiv = document.createElement("div");
-          textDiv.innerHTML = sanitizedHtml;
-          chatInnerWrapper.appendChild(textDiv);
+          const textContent = segment.content.trim();
+          if (textContent) {
+            if (optionGroup.length > 0) {
+              const isOptionsAtEnd = !hasNonEmptyTextAfterIndex(segments, lastOptionIndex);
+              renderOptions(optionGroup, isOptionsAtEnd);
+              optionGroup = [];
+            }
+            const hideAvatar = !isUser && hasRenderedBotAvatar;
+            renderTextSegment(textContent, isUser, hideAvatar);
+            hasRenderedBotAvatar = true;
+          }
         } else if (segment.type === "option") {
-          renderOptions(cleanOptionText(segment.content.slice(1, -1).trim()).split(","), chatInnerWrapper);
+          optionGroup.push(cleanOptionText(segment.content.slice(1, -1).trim()));
+          lastOptionIndex = index;
         }
       });
     
-      // Add "Copy to Clipboard" button for bot messages
-      if (!isUser) {
-        const copyButton = createCopyButton(chatInnerWrapper);
-        chatInnerWrapper.appendChild(copyButton);
+      if (optionGroup.length > 0) {
+        const isOptionsAtEnd = !hasNonEmptyTextAfterIndex(segments, lastOptionIndex);
+        renderOptions(optionGroup, isOptionsAtEnd);
+        optionGroup = [];
       }
     
-      chatBlock.appendChild(botAvatar);
-      chatBlock.appendChild(chatInnerWrapper);
-      chatBlock.appendChild(userAvatar);
-    
-      chatBlockWrapper.appendChild(chatBlock);
-      conversationWrapper.appendChild(chatBlockWrapper);
       conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
     }
-
-
-
     
     // Helper function to check if there's non-empty text after a given index
     function hasNonEmptyTextAfterIndex(segments, currentIndex) {
@@ -552,46 +526,51 @@
       return false;
     }
     
-    // Function to render individual text segments
-    function renderTextSegment(text, isUser, outputGroupWrapper) {
-        const chatBlockWrapper = document.createElement("div");
-        chatBlockWrapper.className = "chat_block-wrapper";
+    // Function to render a text segment in the chat
+    function renderTextSegment(text, isUser, hideAvatar) {
+      if (!text) return;
+      const chatBlockWrapper = document.createElement("div");
+      chatBlockWrapper.className = "chat_block-wrapper";
     
-        const chatBlock = document.createElement("div");
-        chatBlock.className = "chat_block";
+      const chatBlock = document.createElement("div");
+      chatBlock.className = "chat_block";
     
-        const botAvatar = document.createElement("div");
-        botAvatar.className = "chat_bot-avatar";
-        if (isUser) botAvatar.classList.add("opacity-0"); // Hide avatar for user messages
+      const botAvatar = document.createElement("div");
+      botAvatar.className = "chat_bot-avatar";
+      if (isUser || hideAvatar) botAvatar.classList.add("opacity-0");
     
-        const userAvatar = document.createElement("div");
-        userAvatar.className = "chat_user-avatar";
-        if (!isUser) userAvatar.classList.add("opacity-0"); // Hide avatar for bot messages
+      const userAvatar = document.createElement("div");
+      userAvatar.className = "chat_user-avatar";
+      if (!isUser) userAvatar.classList.add("opacity-0");
     
-        const chatInnerWrapper = document.createElement("div");
-        chatInnerWrapper.className = `chat_inner-wrapper ${isUser ? "user-message" : ""}`;
+      const chatInnerWrapper = document.createElement("div");
+      chatInnerWrapper.className = `chat_inner-wrapper ${isUser ? "user-message" : ""}`;
     
-        // Sanitize and parse text for rendering
-        const parsedHtml = marked.parse(text);
-        const sanitizedHtml = DOMPurify.sanitize(parsedHtml);
-        chatInnerWrapper.innerHTML = sanitizedHtml;
+      const parsedHtml = marked.parse(text);
+      const sanitizedHtml = DOMPurify.sanitize(parsedHtml);
     
-        // Assemble the chat block
-        chatBlock.appendChild(botAvatar);
-        chatBlock.appendChild(chatInnerWrapper);
-        chatBlock.appendChild(userAvatar);
+      chatInnerWrapper.innerHTML = sanitizedHtml;
     
-        chatBlockWrapper.appendChild(chatBlock);
-        outputGroupWrapper.appendChild(chatBlockWrapper);
+      chatBlock.appendChild(botAvatar);
+      chatBlock.appendChild(chatInnerWrapper);
+      chatBlock.appendChild(userAvatar);
+    
+      chatBlockWrapper.appendChild(chatBlock);
+      conversationWrapper.appendChild(chatBlockWrapper);
     }
-
-
-    // Function to render multiple choice options inline with the message
-    function renderOptions(options, parentWrapper) {
+    
+    // Function to render multiple choice options
+    function renderOptions(options, isEnd) {
       if (options.length === 0) return;
     
-      const optionsWrapper = document.createElement("div");
-      optionsWrapper.className = "chat_options-wrapper";
+      const chatBlockWrapper = document.createElement("div");
+      chatBlockWrapper.className = "chat_block-wrapper is-multi-choice-options";
+      if (isEnd) {
+        chatBlockWrapper.classList.add("is-end");
+      }
+    
+      const chatBlock = document.createElement("div");
+      chatBlock.className = "chat_block is-multi-choice-options";
     
       let optionClicked = false;
     
@@ -601,27 +580,25 @@
     
         const optionHeading = document.createElement("span");
         optionHeading.className = "chat-button-text";
-        optionHeading.style.fontWeight = "bold"; // Bold styling
+        optionHeading.style.fontWeight = "bold"; // Apply bold styling
         optionHeading.textContent = optionText;
     
         optionDiv.appendChild(optionHeading);
-        optionsWrapper.appendChild(optionDiv);
+        chatBlock.appendChild(optionDiv);
     
         // Handle option click
         optionDiv.addEventListener("click", async () => {
           if (optionClicked) return;
           optionDiv.classList.add("is-chosen");
           optionClicked = true;
-    
-          // Disable all other options
-          Array.from(optionsWrapper.children).forEach((child) => {
+          Array.from(chatBlock.children).forEach((child) => {
             if (child !== optionDiv) {
               child.classList.add("is-disabled");
               child.style.pointerEvents = "none";
             }
           });
     
-          // Show the user's chosen option
+          // Show the user's chosen option as their message
           createChatBlock(true, optionText);
     
           // Update Airtable Time-Last-Edited if record ID exists
@@ -633,18 +610,20 @@
           // Create loading block
           const { chatInnerWrapper: loadingWrapper, chatBlockWrapper: loadingBlockWrapper } = createLoadingBlock();
     
-          // Fetch agent response
+          // Get response
           const agentResponse = await startConversation(optionText);
     
-          // Remove loading block and display response
+          // Remove loading block
           conversationWrapper.removeChild(loadingBlockWrapper);
+    
+          // Show agent response
           createChatBlock(false, agentResponse);
         });
       });
     
-      parentWrapper.appendChild(optionsWrapper); // Append to the current message
+      chatBlockWrapper.appendChild(chatBlock);
+      conversationWrapper.appendChild(chatBlockWrapper);
     }
-
 
     
     // Function to clean option text
