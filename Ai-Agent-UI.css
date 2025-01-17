@@ -2479,7 +2479,7 @@ figcaption {
   display: flex;
 }
 
-.chat_input-file {
+.chat_input-button {
   color: #525252;
   cursor: pointer;
   background-color: #e7e7e7;
@@ -2493,7 +2493,7 @@ figcaption {
   display: flex;
 }
 
-.chat_input-file:hover {
+.chat_input-button:hover {
   background-color: #c9c9c9;
 }
 
@@ -2864,7 +2864,7 @@ margin: 0rem !important;
     display: none;
 }
  
-.chat_input-file.is-active {
+.chat_input-button.is-active {
 	background-color: #67b8d9;
 	filter: drop-shadow(0px 0px 9px #67b8d9);}
 
