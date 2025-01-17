@@ -89,6 +89,20 @@
 
     let airtableRecordId = null;
 
+    // Utility function to convert Markdown to plain text
+    function markdownToPlainText(markdown) {
+        // Parse Markdown to HTML
+        const html = marked(markdown);
+        // Sanitize the HTML
+        const sanitizedHtml = DOMPurify.sanitize(html);
+        // Create a temporary DOM element to extract plain text
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = sanitizedHtml;
+        // Return plain text content
+        return tempDiv.textContent || tempDiv.innerText || "";
+    }
+
+
     if (conversationID) {
       console.log("Conversation ID found in URL:", conversationID);
       fetchAirtableRecordId(conversationID).then(() => {
@@ -913,21 +927,22 @@
     
     // Function to handle text-to-speech
     const playVoiceOutput = async (text) => {
-        const voiceToggle = document.getElementById("chat-voice-toggle");
-        const isVoiceOn = voiceToggle && voiceToggle.classList.contains("is-active");
-        if (!isVoiceOn) return; // Exit if voice output is OFF
+        if (!isVoiceOn) return; // Do nothing if voice output is OFF
     
         const apiKey = "sk_065dc50b4b41b24e68999e7f5bbbd45e0dead586465ace18"; // Replace with your actual API key
         const voiceId = "yiMrQX5Wz362K2dbQS4c"; // Replace with your chosen voice ID
     
         try {
+            // Convert Markdown to plain text
+            const plainText = markdownToPlainText(text);
+    
             const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "xi-api-key": apiKey,
                 },
-                body: JSON.stringify({ text }),
+                body: JSON.stringify({ text: plainText }),
             });
     
             if (!response.ok) throw new Error("Failed to fetch audio");
@@ -940,6 +955,7 @@
             console.error("Error during TTS playback:", error);
         }
     };
+
     
     // Hook into the existing message rendering logic
     const originalCreateChatBlock = createChatBlock; // Reference the existing function
