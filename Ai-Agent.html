@@ -569,71 +569,75 @@
       conversationWrapper.appendChild(chatBlockWrapper);
     }
     
-    // Function to render multiple choice options
+    // Function to render multiple-choice options
     function renderOptions(options, isEnd) {
-      if (options.length === 0) return;
+        if (options.length === 0) return;
     
-      const chatBlockWrapper = document.createElement("div");
-      chatBlockWrapper.className = "chat_block-wrapper is-multi-choice-options";
-      if (isEnd) {
-        chatBlockWrapper.classList.add("is-end");
-      }
+        const chatBlockWrapper = document.createElement("div");
+        chatBlockWrapper.className = "chat_block-wrapper is-multi-choice-options";
+        if (isEnd) {
+            chatBlockWrapper.classList.add("is-end");
+        }
     
-      const chatBlock = document.createElement("div");
-      chatBlock.className = "chat_block is-multi-choice-options";
+        const chatBlock = document.createElement("div");
+        chatBlock.className = "chat_block is-multi-choice-options";
     
-      let optionClicked = false;
+        let optionClicked = false;
     
-      options.forEach((optionText) => {
-        const optionDiv = document.createElement("div");
-        optionDiv.className = "chat_multi-choice-option";
+        options.forEach((optionText) => {
+            const optionDiv = document.createElement("div");
+            optionDiv.className = "chat_multi-choice-option";
     
-        const optionHeading = document.createElement("span");
-        optionHeading.className = "chat-button-text";
-        optionHeading.style.fontWeight = "bold"; // Apply bold styling
-        optionHeading.textContent = optionText;
+            const optionHeading = document.createElement("span");
+            optionHeading.className = "chat-button-text";
+            optionHeading.style.fontWeight = "bold"; // Apply bold styling
+            optionHeading.textContent = optionText;
     
-        optionDiv.appendChild(optionHeading);
-        chatBlock.appendChild(optionDiv);
+            optionDiv.appendChild(optionHeading);
+            chatBlock.appendChild(optionDiv);
     
-        // Handle option click
-        optionDiv.addEventListener("click", async () => {
-          if (optionClicked) return;
-          optionDiv.classList.add("is-chosen");
-          optionClicked = true;
-          Array.from(chatBlock.children).forEach((child) => {
-            if (child !== optionDiv) {
-              child.classList.add("is-disabled");
-              child.style.pointerEvents = "none";
-            }
-          });
+            // Handle option click
+            optionDiv.addEventListener("click", async () => {
+                if (optionClicked) return;
+                optionDiv.classList.add("is-chosen");
+                optionClicked = true;
+                Array.from(chatBlock.children).forEach((child) => {
+                    if (child !== optionDiv) {
+                        child.classList.add("is-disabled");
+                        child.style.pointerEvents = "none";
+                    }
+                });
     
-          // Show the user's chosen option as their message
-          createChatBlock(true, optionText);
+                // Stop any current voice output
+                stopCurrentVoiceOutput(); // NEW LINE: Stops voice output on button click
     
-          // Update Airtable Time-Last-Edited if record ID exists
-          if (airtableRecordId) {
-            console.log("Updating Time-Last-Edited for record ID:", airtableRecordId);
-            await updateTimeLastEdited(airtableRecordId);
-          }
+                // Show the user's chosen option as their message
+                createChatBlock(true, optionText);
     
-          // Create loading block
-          const { chatInnerWrapper: loadingWrapper, chatBlockWrapper: loadingBlockWrapper } = createLoadingBlock();
+                // Update Airtable Time-Last-Edited if record ID exists
+                if (airtableRecordId) {
+                    console.log("Updating Time-Last-Edited for record ID:", airtableRecordId);
+                    await updateTimeLastEdited(airtableRecordId);
+                }
     
-          // Get response
-          const agentResponse = await startConversation(optionText);
+                // Create loading block
+                const { chatInnerWrapper: loadingWrapper, chatBlockWrapper: loadingBlockWrapper } = createLoadingBlock();
     
-          // Remove loading block
-          conversationWrapper.removeChild(loadingBlockWrapper);
+                // Get response
+                const agentResponse = await startConversation(optionText);
     
-          // Show agent response
-          createChatBlock(false, agentResponse);
+                // Remove loading block
+                conversationWrapper.removeChild(loadingBlockWrapper);
+    
+                // Show agent response
+                createChatBlock(false, agentResponse);
+            });
         });
-      });
     
-      chatBlockWrapper.appendChild(chatBlock);
-      conversationWrapper.appendChild(chatBlockWrapper);
+        chatBlockWrapper.appendChild(chatBlock);
+        conversationWrapper.appendChild(chatBlockWrapper);
     }
+
 
     
     // Function to clean option text
