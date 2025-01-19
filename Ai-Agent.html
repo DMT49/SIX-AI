@@ -89,6 +89,16 @@
 
     let airtableRecordId = null;
 
+
+    function stopCurrentVoiceOutput() {
+        if (currentAudio) {
+            currentAudio.pause(); // Stop playback
+            currentAudio = null;  // Release the audio instance
+            console.log("Current voice output stopped.");
+        }
+    }
+
+
     // Utility function to convert Markdown to plain text
     function markdownToPlainText(markdown) {
         // Ensure the `marked` object is correctly accessed
@@ -737,36 +747,30 @@
       return { chatInnerWrapper, chatBlockWrapper };
     }
     
-    // Function to handle user message submission
     async function handleSubmit() {
-      stopVoiceTranscription();
-      const message = textarea.value.trim();
-      if (!message) return;
+        stopVoiceTranscription(); // Existing voice transcription logic
+        stopCurrentVoiceOutput(); // New logic to stop current voice output
     
-      console.log("User submitted message:", message);
+        const message = textarea.value.trim();
+        if (!message) return;
     
-      // Update Time-Last-Edited in Airtable if recordId exists
-      if (airtableRecordId) {
-        console.log("Updating Time-Last-Edited for record ID:", airtableRecordId);
-        await updateTimeLastEdited(airtableRecordId);
-      }
+        console.log("User submitted message:", message);
     
-      // Existing functionality to handle message submission
-      createChatBlock(true, message); // Render user message
-      resetHeight(); // Reset textarea height
+        // Update Time-Last-Edited in Airtable if recordId exists
+        if (airtableRecordId) {
+            console.log("Updating Time-Last-Edited for record ID:", airtableRecordId);
+            await updateTimeLastEdited(airtableRecordId);
+        }
     
-      // Display loading block
-      const { chatInnerWrapper, chatBlockWrapper } = createLoadingBlock();
+        createChatBlock(true, message); // Render user message
+        resetHeight(); // Reset textarea height
     
-      // Get AI response
-      const agentResponse = await startConversation(message);
-    
-      // Remove loading block
-      conversationWrapper.removeChild(chatBlockWrapper);
-    
-      // Render AI response
-      createChatBlock(false, agentResponse);
+        const { chatInnerWrapper, chatBlockWrapper } = createLoadingBlock(); // Show loading block
+        const agentResponse = await startConversation(message); // Get AI response
+        conversationWrapper.removeChild(chatBlockWrapper); // Remove loading block
+        createChatBlock(false, agentResponse); // Render AI response
     }
+
 
     
     // Attach event listeners
