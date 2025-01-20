@@ -2293,10 +2293,10 @@ figcaption {
   border: 1px solid #949494;
   border-radius: 35px;
   grid-template-rows: auto;
-  grid-template-columns: 70px 63px 1fr auto;
+  grid-template-columns: 70px 63px 63px 1fr auto;
   grid-auto-columns: 1fr;
   width: 100%;
-  max-width: 48rem;
+  max-width: 52rem;
   padding-top: 8px;
   padding-bottom: 8px;
   padding-right: 8px;
@@ -2479,7 +2479,7 @@ figcaption {
   display: flex;
 }
 
-.chat_input-file {
+.chat_input-button {
   color: #525252;
   cursor: pointer;
   background-color: #e7e7e7;
@@ -2493,7 +2493,7 @@ figcaption {
   display: flex;
 }
 
-.chat_input-file:hover {
+.chat_input-button:hover {
   background-color: #c9c9c9;
 }
 
@@ -2501,6 +2501,11 @@ figcaption {
   padding-right: 8px;
   position: relative;
 }
+
+#chat-voice-toggle {
+    place-self: end start; /* Aligns to bottom-left */
+}
+
 
 .chat_submit-input {
   color: #26353f;
@@ -2864,7 +2869,7 @@ margin: 0rem !important;
     display: none;
 }
  
-.chat_input-file.is-active {
+.chat_input-button.is-active {
 	background-color: #67b8d9;
 	filter: drop-shadow(0px 0px 9px #67b8d9);}
 
@@ -3064,3 +3069,19 @@ margin: 0rem !important;
 .chat_conversation-wrapper tr:nth-child(even) {
   background: #f9f9f9 !important; /* Slightly lighter gray */
 }
+
+.copy-to-clipboard {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px; /* Space from the message content */
+  cursor: pointer;
+  font-size: 1.2rem; /* Adjust size as needed */
+  color: #888; /* Default color for the icon */
+  transition: color 0.3s;
+}
+
+.copy-to-clipboard:hover {
+  color: #555; /* Darker shade on hover */
+}
+
