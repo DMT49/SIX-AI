@@ -163,6 +163,14 @@
       fileInput.click();
     }
 
+    // Attach the event listener to the chat-file-input button
+    const chatFileInputButton = document.getElementById("chat-file-input");
+    if (chatFileInputButton) {
+      chatFileInputButton.addEventListener("click", handlePdfUpload);
+    } else {
+      console.error("Button with ID 'chat-file-input' not found.");
+    }
+
 
     function stopCurrentVoiceOutput() {
         if (currentAudio) {
