@@ -127,9 +127,12 @@
           // Extract the secure URL of the uploaded PDF
           const pdfUrl = data.secure_url;
     
-          // Append the PDF URL to the chat-user-input textarea
+          // Format the output for the textarea
+          const formattedOutput = `(PDF: ${pdfUrl})`;
+    
+          // Append the formatted output to the chat-user-input textarea
           const userInput = document.getElementById("chat-user-input");
-          userInput.value += ` Uploaded PDF: ${pdfUrl}`;
+          userInput.value += ` ${formattedOutput}`;
         } catch (error) {
           console.error("Error uploading PDF:", error);
           alert("There was an issue uploading your PDF. Please try again.");
@@ -147,7 +150,6 @@
     } else {
       console.error("Button with ID 'chat-file-input' not found.");
     }
-
 
 
     function stopCurrentVoiceOutput() {
