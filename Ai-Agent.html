@@ -112,7 +112,7 @@
           formData.append("upload_preset", "my_unsigned_preset"); // Use your unsigned preset name
     
           // Upload the PDF to Cloudinary
-          const response = await fetch("https://api.cloudinary.com/v1_1/dgt84jatm/raw/upload", {
+          const response = await fetch("https://api.cloudinary.com/v1_1/dgt84jatm/auto/upload", {
             method: "POST",
             body: formData,
           });
@@ -124,7 +124,7 @@
           // Parse the response JSON
           const data = await response.json();
     
-          // Extract the correct URL for the PDF
+          // Extract the secure URL of the uploaded PDF
           const pdfUrl = data.secure_url;
     
           // Append the PDF URL to the chat-user-input textarea
@@ -147,6 +147,7 @@
     } else {
       console.error("Button with ID 'chat-file-input' not found.");
     }
+
 
 
     function stopCurrentVoiceOutput() {
