@@ -10,10 +10,15 @@
         <div id="chat_conversation-wrapper" class="chat_conversation-wrapper"></div>
         <div class="chat_input-wrapper">
           <div id="chat-file-input" class="chat_input-button">
-            <div class="icon-embed-small w-embed"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--ic" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24">
+            <!-- File upload icon -->
+            <div id="chat-file-input-icon" class="icon-embed-small w-embed">
+              <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--ic" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24">
                 <path fill="currentColor" d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5a2.5 2.5 0 0 1 5 0v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5a2.5 2.5 0 0 0 5 0V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6z"></path>
-              </svg></div>
+              </svg>
             </div>
+            <!-- Loading animation GIF -->
+            <img id="chat-file-loading" src="https://cdn.prod.website-files.com/64e508e8bea103fa08b8f130/6761f50a16ce8196496d4724_load-animation.gif" alt="Loading..." style="display: none; width: 24px; height: 24px;">
+          </div>
           <div id="chat-user-input-mic" class="chat_input-button w-node-d52fb02a-d5b0-6fa8-115b-d486e3e4b322-8f158f72">
             <div class="icon-embed-small w-embed"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--ic" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24">
                 <path fill="currentColor" d="M12 15c1.66 0 2.99-1.34 2.99-3L15 6c0-1.66-1.34-3-3-3S9 4.34 9 6v6c0 1.66 1.34 3 3 3m-1.2-9.1c0-.66.54-1.2 1.2-1.2s1.2.54 1.2 1.2l-.01 6.2c0 .66-.53 1.2-1.19 1.2s-1.2-.54-1.2-1.2zm6.5 6.1c0 3-2.54 5.1-5.3 5.1S6.7 15 6.7 12H5c0 3.41 2.72 6.23 6 6.72V22h2v-3.28c3.28-.48 6-3.3 6-6.72z"></path>
@@ -88,15 +93,15 @@
 
     // Function to handle PDF upload and append the URL to the input field
     function handlePdfUpload() {
-      // Select the elements for toggling
-      const fileInputIcon = document.getElementById("chat-file-input-icon");
-      const fileInputLoading = document.getElementById("chat-file-input-loading");
-    
       // Create a hidden file input element for selecting PDFs
       const fileInput = document.createElement("input");
       fileInput.type = "file";
       fileInput.accept = "application/pdf"; // Restrict to PDF files only
       fileInput.style.display = "none";
+    
+      // DOM Elements for toggling visibility
+      const fileIcon = document.getElementById("chat-file-input-icon");
+      const loadingGif = document.getElementById("chat-file-loading");
     
       // Listen for file selection
       fileInput.addEventListener("change", async (event) => {
@@ -109,11 +114,11 @@
           return;
         }
     
-        // Show the loading animation and hide the file icon
-        fileInputIcon.style.display = "none";
-        fileInputLoading.style.display = "block";
-    
         try {
+          // Show the loading animation and hide the file icon
+          fileIcon.style.display = "none";
+          loadingGif.style.display = "block";
+    
           // Prepare FormData for Cloudinary upload
           const formData = new FormData();
           formData.append("file", file);
@@ -145,9 +150,9 @@
           console.error("Error uploading PDF:", error);
           alert("There was an issue uploading your PDF. Please try again.");
         } finally {
-          // Hide the loading animation and show the file icon
-          fileInputLoading.style.display = "none";
-          fileInputIcon.style.display = "block";
+          // Hide the loading animation and show the file icon again
+          fileIcon.style.display = "block";
+          loadingGif.style.display = "none";
         }
       });
     
@@ -162,6 +167,7 @@
     } else {
       console.error("Button with ID 'chat-file-input' not found.");
     }
+
 
 
     function stopCurrentVoiceOutput() {
