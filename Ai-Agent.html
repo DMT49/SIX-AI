@@ -102,6 +102,7 @@
       // DOM Elements for toggling visibility
       const fileIcon = document.getElementById("chat-file-input-icon");
       const loadingGif = document.getElementById("chat-file-loading");
+      const userInput = document.getElementById("chat-user-input");
     
       // Listen for file selection
       fileInput.addEventListener("change", async (event) => {
@@ -144,8 +145,10 @@
           const formattedOutput = `(PDF: ${pdfUrl})`;
     
           // Append the formatted output to the chat-user-input textarea
-          const userInput = document.getElementById("chat-user-input");
           userInput.value += ` ${formattedOutput}`;
+    
+          // Dynamically adjust the textarea height
+          adjustHeight();
         } catch (error) {
           console.error("Error uploading PDF:", error);
           alert("There was an issue uploading your PDF. Please try again.");
@@ -159,15 +162,6 @@
       // Trigger the file input dialog
       fileInput.click();
     }
-    
-    // Attach the event listener to the chat-file-input button
-    const chatFileInputButton = document.getElementById("chat-file-input");
-    if (chatFileInputButton) {
-      chatFileInputButton.addEventListener("click", handlePdfUpload);
-    } else {
-      console.error("Button with ID 'chat-file-input' not found.");
-    }
-
 
 
     function stopCurrentVoiceOutput() {
