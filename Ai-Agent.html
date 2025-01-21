@@ -101,21 +101,15 @@
       // Listen for file selection
       fileInput.addEventListener("change", async (event) => {
         const file = event.target.files[0];
-        if (!file) {
-          console.error("No file selected");
-          return;
-        }
+        if (!file) return;
     
         // Validate file type
         if (file.type !== "application/pdf") {
           alert("Please select a valid PDF file.");
-          console.error("Invalid file type selected:", file.type);
           return;
         }
     
         try {
-          console.log("Starting upload for file:", file.name);
-    
           // Prepare FormData for Cloudinary upload
           const formData = new FormData();
           formData.append("file", file);
@@ -128,32 +122,18 @@
           });
     
           if (!response.ok) {
-            console.error("Failed to upload PDF. Status:", response.status, "Response:", await response.text());
             throw new Error("Failed to upload the PDF to Cloudinary");
           }
     
           // Parse the response JSON
           const data = await response.json();
-          console.log("Cloudinary API response:", data);
     
           // Extract the secure URL of the uploaded PDF
           const pdfUrl = data.secure_url;
-          if (!pdfUrl) {
-            console.error("Secure URL not found in API response:", data);
-            throw new Error("Secure URL not found in API response");
-          }
-    
-          console.log("Extracted PDF URL:", pdfUrl);
     
           // Append the PDF URL to the chat-user-input textarea
           const userInput = document.getElementById("chat-user-input");
-          if (!userInput) {
-            console.error("Text input element with ID 'chat-user-input' not found.");
-            throw new Error("Text input element not found");
-          }
-    
           userInput.value += ` Uploaded PDF: ${pdfUrl}`;
-          console.log("PDF URL successfully appended to the input field.");
         } catch (error) {
           console.error("Error uploading PDF:", error);
           alert("There was an issue uploading your PDF. Please try again.");
@@ -168,10 +148,10 @@
     const chatFileInputButton = document.getElementById("chat-file-input");
     if (chatFileInputButton) {
       chatFileInputButton.addEventListener("click", handlePdfUpload);
-      console.log("Event listener attached to 'chat-file-input' button.");
     } else {
       console.error("Button with ID 'chat-file-input' not found.");
     }
+
 
 
     function stopCurrentVoiceOutput() {
