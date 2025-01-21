@@ -46,9 +46,6 @@
 </div>
 
 
-
-
-
 <!-- Existing HTML structure remains unchanged -->
 
 <script>
@@ -89,7 +86,6 @@
 
     let airtableRecordId = null;
 
-
     // Function to handle PDF upload and append the URL to the input field
     function handlePdfUpload() {
       // Create a hidden file input element for selecting PDFs
@@ -114,9 +110,10 @@
           const formData = new FormData();
           formData.append("file", file);
           formData.append("upload_preset", "my_unsigned_preset"); // Use your unsigned preset name
+          formData.append("resource_type", "raw"); // Ensure the PDF is treated as a raw file
     
           // Upload the PDF to Cloudinary
-          const response = await fetch("https://api.cloudinary.com/v1_1/dgt84jatm/auto/upload", {
+          const response = await fetch("https://api.cloudinary.com/v1_1/dgt84jatm/raw/upload", {
             method: "POST",
             body: formData,
           });
@@ -151,6 +148,7 @@
     } else {
       console.error("Button with ID 'chat-file-input' not found.");
     }
+
 
 
 
