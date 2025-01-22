@@ -651,7 +651,20 @@
       conversationWrapper.appendChild(chatBlockWrapper);
     }
     
-    // REPLACE your existing renderOptions function with this one:
+    /**
+     * Renders multiple choice options in the chat UI.
+     * 
+     * Dependencies/Variables:
+     *  - conversationWrapper (DOM element)
+     *  - stopCurrentVoiceOutput() 
+     *  - createChatBlock(isUser, text)
+     *  - airtableRecordId, updateTimeLastEdited(recordId)
+     *  - createLoadingBlock()
+     *  - startConversation(message)
+     *  - adjustHeight() – adjusts the textarea height
+     *  - chat-user-input (the <textarea> element)
+     */
+    
     function renderOptions(options, isEnd) {
       if (options.length === 0) return;
     
@@ -667,16 +680,15 @@
     
       let optionClicked = false;
     
-      // Loop through each option and build UI elements
       options.forEach((optionText) => {
-        // 1. Container to hold both the clipboard icon and the button
+        // 1. Container for icon + main option
         const optionContainer = document.createElement("div");
         optionContainer.className = "chat_multi-choice-container";
     
         // 2. The clipboard icon on the left
         const clipboardIcon = document.createElement("span");
         clipboardIcon.className = "clipboard-icon";
-        clipboardIcon.textContent = "📋"; // Default icon
+        clipboardIcon.textContent = "📋";
     
         // 3. The main clickable option (original button)
         const optionDiv = document.createElement("div");
@@ -684,7 +696,7 @@
     
         const optionHeading = document.createElement("span");
         optionHeading.className = "chat-button-text";
-        optionHeading.style.fontWeight = "bold"; // Keep it bold if desired
+        optionHeading.style.fontWeight = "bold"; 
         optionHeading.textContent = optionText;
     
         optionDiv.appendChild(optionHeading);
@@ -696,15 +708,14 @@
         // Add container to the overall chat block
         chatBlock.appendChild(optionContainer);
     
-        // --- CLIPBOARD ICON CLICK ---
+        // --- CLIPBOARD ICON CLICK (NEW/UPDATED) ---
         clipboardIcon.addEventListener("click", (e) => {
-          // Stop the main button’s click from firing
-          e.stopPropagation();
+          e.stopPropagation(); // Prevent triggering the send-text logic
     
-          // Copy the option text to clipboard
+          // 1) Copy the option text to clipboard
           navigator.clipboard.writeText(optionText)
             .then(() => {
-              // Show a tick for 2 seconds
+              // Switch to tick for 2 seconds
               clipboardIcon.textContent = "✅";
               setTimeout(() => {
                 clipboardIcon.textContent = "📋";
@@ -713,9 +724,14 @@
             .catch((err) => {
               console.error("Clipboard copy failed:", err);
             });
+    
+          // 2) ALSO append the text to the user's input area with a line break
+          const userInput = document.getElementById("chat-user-input");
+          userInput.value += `${optionText}\n`;
+          adjustHeight(); // Re-adjust textarea size if needed
         });
     
-        // --- MAIN OPTION CLICK (to send message) ---
+        // --- MAIN OPTION CLICK (unchanged) ---
         optionDiv.addEventListener("click", async () => {
           if (optionClicked) return;
           optionDiv.classList.add("is-chosen");
@@ -724,34 +740,31 @@
           // Disable other options
           Array.from(chatBlock.children).forEach((child) => {
             if (child !== optionContainer) {
-              // 'child' is each .chat_multi-choice-container
               child.classList.add("is-disabled");
               child.style.pointerEvents = "none";
             }
           });
     
-          // 1) Stop voice output (if currently playing)
+          // Stop current voice output
           stopCurrentVoiceOutput();
     
-          // 2) Show user-chosen option as a chat block
+          // Show user-chosen option in the chat
           createChatBlock(true, optionText);
     
-          // 3) Update Airtable Time-Last-Edited if record ID exists
+          // Update Airtable time if record ID exists
           if (airtableRecordId) {
             console.log("Updating Time-Last-Edited for record ID:", airtableRecordId);
             await updateTimeLastEdited(airtableRecordId);
           }
     
-          // 4) Show loading block
+          // Show loading block
           const { chatInnerWrapper: loadingWrapper, chatBlockWrapper: loadingBlockWrapper } = createLoadingBlock();
     
-          // 5) Send the chosen option to the agent
+          // Send the text to the agent, get response
           const agentResponse = await startConversation(optionText);
     
-          // 6) Remove loading block
+          // Remove loading block, show response
           conversationWrapper.removeChild(loadingBlockWrapper);
-    
-          // 7) Render the agent's response
           createChatBlock(false, agentResponse);
         });
       });
