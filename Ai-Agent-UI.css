@@ -2529,11 +2529,11 @@ figcaption {
   border-radius: 14px;
   flex-flow: column;
   justify-content: center;
-  margin-left: 7%;
-  margin-right: 17%;
   padding: 12px 17px;
   transition: all .2s;
   display: flex;
+  width: 76%;
+  translate: -35px;
 }
 
 .chat_multi-choice-option:hover {
@@ -3073,7 +3073,8 @@ margin: 0rem !important;
   .chat_multi-choice-container {
     display: flex;
     align-items: center;
-    gap: 8px; /* Space between icon and option button */
+    gap: 4px; /* Space between icon and option button */
+    margin-left: 8%;
   }
   
 /* Clipboard icon default style */
