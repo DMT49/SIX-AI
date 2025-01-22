@@ -3076,8 +3076,16 @@ margin: 0rem !important;
     gap: 8px; /* Space between icon and option button */
   }
   
-  .clipboard-icon {
-    cursor: pointer;
-    /* Optional: Add padding or hover effects as desired */
-  }
+/* Clipboard icon default style */
+.clipboard-icon {
+  opacity: 0.5; /* Default transparency */
+  transition: opacity 0.3s ease; /* Smooth transition for hover effect */
+  cursor: pointer; /* Show pointer cursor on hover */
+}
+
+/* Clipboard icon hover effect */
+.clipboard-icon:hover {
+  opacity: 1; /* Full opacity on hover */
+}
+
 
