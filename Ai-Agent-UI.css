@@ -3072,8 +3072,9 @@ margin: 0rem !important;
   .chat_multi-choice-container {
     display: flex;
     align-items: center;
-    gap: 4px; /* Space between icon and option button */
+    gap: 14px; /* Space between icon and option button */
     margin-left: 8%;
+    transform: translateX(-35px);
   }
   
 /* Clipboard icon default style */
