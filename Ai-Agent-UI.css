@@ -2533,7 +2533,6 @@ figcaption {
   transition: all .2s;
   display: flex;
   width: 76%;
-  translate: -35px;
 }
 
 .chat_multi-choice-option:hover {
