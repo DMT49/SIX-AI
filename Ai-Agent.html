@@ -594,7 +594,7 @@
             hasRenderedBotAvatar = true;
           }
         } else if (segment.type === "option") {
-          optionGroup.push(cleanOptionText(segment.content.slice(1, -1).trim()));
+          optionGroup.push((segment.content.slice(1, -1).trim()));
           lastOptionIndex = index;
         }
       });
@@ -724,7 +724,8 @@
     
     // Function to clean option text
     function cleanOptionText(text) {
-      text = text.replace(/^[\s]*([-*]|(\d+\.)|(\d+\))|[A-Z]\.)\s*/, ""); // Removes leading markers
+      // Only remove bullet points '-' or '*'
+      text = text.replace(/^[\s]*[-*]\s*/, "");
       text = text.replace(/[*#_`~>]/g, ""); // Retain dashes, remove other unwanted symbols
       text = text.replace(/\s+/g, " ").trim(); // Normalizes whitespace
       return text;
