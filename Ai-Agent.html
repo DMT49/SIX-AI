@@ -594,7 +594,7 @@
             hasRenderedBotAvatar = true;
           }
         } else if (segment.type === "option") {
-          optionGroup.push(cleanOptionText(segment.content.slice(1, -1).trim()));
+          optionGroup.push((segment.content.slice(1, -1).trim()));
           lastOptionIndex = index;
         }
       });
@@ -651,80 +651,135 @@
       conversationWrapper.appendChild(chatBlockWrapper);
     }
     
-    // Function to render multiple-choice options
+    /**
+     * Renders multiple choice options in the chat UI.
+     * 
+     * Dependencies/Variables:
+     *  - conversationWrapper (DOM element)
+     *  - stopCurrentVoiceOutput() 
+     *  - createChatBlock(isUser, text)
+     *  - airtableRecordId, updateTimeLastEdited(recordId)
+     *  - createLoadingBlock()
+     *  - startConversation(message)
+     *  - adjustHeight() – adjusts the textarea height
+     *  - chat-user-input (the <textarea> element)
+     */
+    
     function renderOptions(options, isEnd) {
-        if (options.length === 0) return;
+      if (options.length === 0) return;
     
-        const chatBlockWrapper = document.createElement("div");
-        chatBlockWrapper.className = "chat_block-wrapper is-multi-choice-options";
-        if (isEnd) {
-            chatBlockWrapper.classList.add("is-end");
-        }
+      // Create a container for the multi-choice block
+      const chatBlockWrapper = document.createElement("div");
+      chatBlockWrapper.className = "chat_block-wrapper is-multi-choice-options";
+      if (isEnd) {
+        chatBlockWrapper.classList.add("is-end");
+      }
     
-        const chatBlock = document.createElement("div");
-        chatBlock.className = "chat_block is-multi-choice-options";
+      const chatBlock = document.createElement("div");
+      chatBlock.className = "chat_block is-multi-choice-options";
     
-        let optionClicked = false;
+      let optionClicked = false;
     
-        options.forEach((optionText) => {
-            const optionDiv = document.createElement("div");
-            optionDiv.className = "chat_multi-choice-option";
+      options.forEach((optionText) => {
+        // 1. Container for icon + main option
+        const optionContainer = document.createElement("div");
+        optionContainer.className = "chat_multi-choice-container";
     
-            const optionHeading = document.createElement("span");
-            optionHeading.className = "chat-button-text";
-            optionHeading.style.fontWeight = "bold"; // Apply bold styling
-            optionHeading.textContent = optionText;
+        // 2. The clipboard icon on the left
+        const clipboardIcon = document.createElement("span");
+        clipboardIcon.className = "clipboard-icon";
+        clipboardIcon.textContent = "📋";
     
-            optionDiv.appendChild(optionHeading);
-            chatBlock.appendChild(optionDiv);
+        // 3. The main clickable option (original button)
+        const optionDiv = document.createElement("div");
+        optionDiv.className = "chat_multi-choice-option";
     
-            // Handle option click
-            optionDiv.addEventListener("click", async () => {
-                if (optionClicked) return;
-                optionDiv.classList.add("is-chosen");
-                optionClicked = true;
-                Array.from(chatBlock.children).forEach((child) => {
-                    if (child !== optionDiv) {
-                        child.classList.add("is-disabled");
-                        child.style.pointerEvents = "none";
-                    }
-                });
+        const optionHeading = document.createElement("span");
+        optionHeading.className = "chat-button-text";
+        optionHeading.style.fontWeight = "bold"; 
+        optionHeading.textContent = optionText;
     
-                // Stop any current voice output
-                stopCurrentVoiceOutput(); // NEW LINE: Stops voice output on button click
+        optionDiv.appendChild(optionHeading);
     
-                // Show the user's chosen option as their message
-                createChatBlock(true, optionText);
+        // Add icon + option to the container
+        optionContainer.appendChild(clipboardIcon);
+        optionContainer.appendChild(optionDiv);
     
-                // Update Airtable Time-Last-Edited if record ID exists
-                if (airtableRecordId) {
-                    console.log("Updating Time-Last-Edited for record ID:", airtableRecordId);
-                    await updateTimeLastEdited(airtableRecordId);
-                }
+        // Add container to the overall chat block
+        chatBlock.appendChild(optionContainer);
     
-                // Create loading block
-                const { chatInnerWrapper: loadingWrapper, chatBlockWrapper: loadingBlockWrapper } = createLoadingBlock();
+        // --- CLIPBOARD ICON CLICK (NEW/UPDATED) ---
+        clipboardIcon.addEventListener("click", (e) => {
+          e.stopPropagation(); // Prevent triggering the send-text logic
     
-                // Get response
-                const agentResponse = await startConversation(optionText);
-    
-                // Remove loading block
-                conversationWrapper.removeChild(loadingBlockWrapper);
-    
-                // Show agent response
-                createChatBlock(false, agentResponse);
+          // 1) Copy the option text to clipboard
+          navigator.clipboard.writeText(optionText)
+            .then(() => {
+              // Switch to tick for 2 seconds
+              clipboardIcon.textContent = "✅";
+              setTimeout(() => {
+                clipboardIcon.textContent = "📋";
+              }, 2000);
+            })
+            .catch((err) => {
+              console.error("Clipboard copy failed:", err);
             });
+    
+          // 2) ALSO append the text to the user's input area with a line break
+          const userInput = document.getElementById("chat-user-input");
+          userInput.value += `${optionText}\n`;
+          adjustHeight(); // Re-adjust textarea size if needed
         });
     
-        chatBlockWrapper.appendChild(chatBlock);
-        conversationWrapper.appendChild(chatBlockWrapper);
+        // --- MAIN OPTION CLICK (unchanged) ---
+        optionDiv.addEventListener("click", async () => {
+          if (optionClicked) return;
+          optionDiv.classList.add("is-chosen");
+          optionClicked = true;
+    
+          // Disable other options
+          Array.from(chatBlock.children).forEach((child) => {
+            if (child !== optionContainer) {
+              child.classList.add("is-disabled");
+              child.style.pointerEvents = "none";
+            }
+          });
+    
+          // Stop current voice output
+          stopCurrentVoiceOutput();
+    
+          // Show user-chosen option in the chat
+          createChatBlock(true, optionText);
+    
+          // Update Airtable time if record ID exists
+          if (airtableRecordId) {
+            console.log("Updating Time-Last-Edited for record ID:", airtableRecordId);
+            await updateTimeLastEdited(airtableRecordId);
+          }
+    
+          // Show loading block
+          const { chatInnerWrapper: loadingWrapper, chatBlockWrapper: loadingBlockWrapper } = createLoadingBlock();
+    
+          // Send the text to the agent, get response
+          const agentResponse = await startConversation(optionText);
+    
+          // Remove loading block, show response
+          conversationWrapper.removeChild(loadingBlockWrapper);
+          createChatBlock(false, agentResponse);
+        });
+      });
+    
+      chatBlockWrapper.appendChild(chatBlock);
+      conversationWrapper.appendChild(chatBlockWrapper);
     }
+
 
 
     
     // Function to clean option text
     function cleanOptionText(text) {
-      text = text.replace(/^[\s]*([-*]|(\d+\.)|(\d+\))|[A-Z]\.)\s*/, ""); // Removes leading markers
+      // Only remove bullet points '-' or '*'
+      text = text.replace(/^[\s]*[-*]\s*/, "");
       text = text.replace(/[*#_`~>]/g, ""); // Retain dashes, remove other unwanted symbols
       text = text.replace(/\s+/g, " ").trim(); // Normalizes whitespace
       return text;
