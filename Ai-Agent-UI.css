@@ -3070,18 +3070,14 @@ margin: 0rem !important;
   background: #f9f9f9 !important; /* Slightly lighter gray */
 }
 
-.copy-to-clipboard {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 10px; /* Space from the message content */
-  cursor: pointer;
-  font-size: 1.2rem; /* Adjust size as needed */
-  color: #888; /* Default color for the icon */
-  transition: color 0.3s;
-}
-
-.copy-to-clipboard:hover {
-  color: #555; /* Darker shade on hover */
-}
+  .chat_multi-choice-container {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Space between icon and option button */
+  }
+  
+  .clipboard-icon {
+    cursor: pointer;
+    /* Optional: Add padding or hover effects as desired */
+  }
 
