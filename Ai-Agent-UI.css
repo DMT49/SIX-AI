@@ -3103,28 +3103,23 @@ margin: 0rem !important;
 }
 
 
-/* Target ordered lists in chat messages */
+/* Only needed CSS */
 .chat_inner-wrapper ol {
-  list-style-position: outside; /* Ensures numbers stay aligned left */
+  list-style: none; /* Remove default numbering */
+  padding-left: 1.5em; /* Maintain indentation */
+  margin: 0; /* Preserve existing margins */
 }
 
-/* Align list markers to top */
-.chat_inner-wrapper li {
-  display: flex;
-  align-items: flex-start;
+.chat_inner-wrapper ol li {
+  position: relative; /* Required for absolute positioning */
 }
 
-/* Specific styling for numbered lists */
 .chat_inner-wrapper ol li::before {
-  content: counter(list-item) ".";
-  vertical-align: top;
-  margin-right: 8px;
-  position: relative;
-}
-
-/* Reset default list styling */
-.chat_inner-wrapper ol {
-  counter-reset: list-item;
-  padding-left: 1.5em;
-  margin: 0;
+  content: counter(list-item) ". "; /* Use default counter */
+  position: absolute;
+  left: -1.5em; /* Match padding-left value */
+  width: 1.5em; /* Match negative left value */
+  text-align: right;
+  vertical-align: top; /* Critical alignment fix */
+  line-height: inherit; /* Match text line-height */
 }
