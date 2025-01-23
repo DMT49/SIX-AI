@@ -2316,15 +2316,16 @@ figcaption {
   }
 }
 
-
-
-
-
-
-
-
-
-
+/* Styles for screens smaller than 940px */
+@media (max-width: 940px) {
+  .chat_input-wrapper {
+    left: 0; /* Align with the left edge of the page */
+    width: 100%; /* Take up the full width of the viewport */
+    max-width: none; /* Remove max-width constraint */
+    padding-left: 8px; /* Add consistent padding for usability */
+    padding-right: 8px; /* Add consistent padding for usability */
+  }
+}
 
 
 .chat_block-wrapper {
