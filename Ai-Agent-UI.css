@@ -2302,12 +2302,14 @@ figcaption {
   display: grid;
   position: fixed;
   bottom: 20px;
-  left: calc(25% + 12.5%); /* Start at the center of the 75% main content */
-  transform: translateX(-50%); /* Adjust for perfect centering within the main content */
+  left: auto; /* Remove any unnecessary left alignment */
+  right: calc(12.5% + 25%); /* Position based on the right-hand side (sidebar offset + main content adjustment) */
+  transform: translateX(50%); /* Shift it slightly to the right for centering */
   box-sizing: border-box; /* Include padding in the element's width */
   width: calc(75% - 40px); /* Constrain to 75% width with padding for responsiveness */
   margin: 0 auto; /* Keep centering within the main content */
 }
+
 
 
 
