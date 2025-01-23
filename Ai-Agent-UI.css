@@ -2328,12 +2328,14 @@ figcaption {
 }
 
 
-.chat_block-wrapper {
-  justify-content: center;
-  width: 100%;
-  padding: 25px 0px;
-  display: flex;
-  position: relative;
+/* Styles for screens smaller than 940px */
+@media (max-width: 940px) {
+  .chat_input-wrapper {
+    left: 10px; /* Add margin on the left */
+    right: 10px; /* Add margin on the right */
+    width: calc(100% - 20px); /* Adjust width to account for side margins */
+    max-width: none; /* Remove max-width constraint */
+  }
 }
 
 .chat_block-wrapper.is-multi-choice-options {
