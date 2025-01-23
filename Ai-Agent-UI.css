@@ -2284,44 +2284,28 @@ figcaption {
   position: relative;
 }
 
-/* Chat input wrapper */
+/* Chat Input Wrapper */
 .chat_input-wrapper {
-  z-index: 300;
-  filter: drop-shadow(0 2px 4px #00000030);
+  position: fixed;
+  bottom: 20px;
+  left: 25%; /* Start positioning at the start of the main content */
+  width: calc(75% - 40px); /* Fit within the main content and leave padding */
+  max-width: 990px; /* Ensure it doesn't stretch beyond the main content */
+  padding: 10px;
   background-color: #e7e7e7;
   border: 1px solid #949494;
   border-radius: 35px;
-  display: grid;
-  grid-template-rows: auto;
-  grid-template-columns: 70px 63px 63px 1fr auto;
-  grid-auto-columns: 1fr;
-  position: fixed;
-  bottom: 20px;
-  left: calc(25% + (75% / 2) - (52rem / 2)); /* Calculate position based on the sidebar and main content */
-  width: 100%; /* Ensure it spans the full width of the main content area */
-  max-width: 52rem; /* Limit the maximum width */
-  box-sizing: border-box; /* Include padding in the element's width */
-  padding: 8px;
+  z-index: 300;
+  box-sizing: border-box; /* Include padding and borders in width */
 }
 
-/* Adjust for smaller screens */
-@media (max-width: 1320px) {
-  .chat_input-wrapper {
-    left: calc(25% + (75% / 2) - (min(90%, 52rem) / 2)); /* Dynamically center based on smaller main content width */
-    width: calc(75% - 40px); /* Adjust to fit within the main content dynamically */
-    max-width: 90%; /* Prevent overflow */
-  }
-}
-
+/* Responsive Adjustments */
 @media (max-width: 768px) {
   .chat_input-wrapper {
-    left: 10px; /* Hug the edge of the viewport on smaller screens */
-    right: 10px; /* Leave space on the right for responsiveness */
-    width: calc(100% - 20px); /* Take up full available width */
-    max-width: 100%; /* Ensure it stays within bounds */
+    left: 10px; /* Remove dependency on sidebar */
+    width: calc(100% - 20px); /* Full width with margin on smaller screens */
   }
 }
-
 
 
 
