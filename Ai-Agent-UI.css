@@ -2302,12 +2302,14 @@ figcaption {
   display: grid;
   position: fixed;
   bottom: 20px;
-  left: 50%; /* Start centering relative to the viewport */
-  transform: translateX(-50%); /* Shift it back by half its width to center */
+  left: 25%; /* Start at the left edge of the main content (25% offset) */
+  transform: translateX(-50%); /* Center within the 75% width of the main content */
   box-sizing: border-box; /* Include padding in the element's width */
-  width: calc(100% - 40px); /* Prevent it from overflowing on small screens */
-  margin: 0 auto; /* Keep centering if max-width kicks in */
+  width: calc(75% - 40px); /* Prevent overflow, account for the sidebar */
+  margin: 0 auto; /* Keep centering within the main content if max-width kicks in */
 }
+
+
 
 
 .chat_block-wrapper {
