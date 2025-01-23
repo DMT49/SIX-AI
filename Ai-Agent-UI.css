@@ -3103,23 +3103,7 @@ margin: 0rem !important;
 }
 
 
-/* Only needed CSS */
-.chat_inner-wrapper ol {
-  list-style: none; /* Remove default numbering */
-  padding-left: 1.5em; /* Maintain indentation */
-  margin: 0; /* Preserve existing margins */
-}
-
-.chat_inner-wrapper ol li {
-  position: relative; /* Required for absolute positioning */
-}
-
 .chat_inner-wrapper ol li::before {
-  content: counter(list-item) ". "; /* Use default counter */
   position: absolute;
-  left: -1.5em; /* Match padding-left value */
-  width: 1.5em; /* Match negative left value */
-  text-align: right;
   vertical-align: top; /* Critical alignment fix */
-  line-height: inherit; /* Match text line-height */
 }
