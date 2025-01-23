@@ -2298,14 +2298,16 @@ figcaption {
   display: grid;
   position: fixed;
   bottom: 20px;
-  width: calc(75% - 40px); /* Dynamically scale within the main content */
-  max-width: 52rem; /* Constrain to the main content max width */
   padding-top: 8px;
   padding-bottom: 8px;
   padding-right: 8px;
-  left: calc(25% + (75% / 2) - (52rem / 2)); /* Center in the main content */
-  box-sizing: border-box; /* Ensure padding and borders are included */
+  box-sizing: border-box;
+  max-width: 52rem; /* Prevent the wrapper from exceeding main content width */
+  width: 100%; /* Allows it to adapt dynamically */
+  left: calc((100% - 1320px) / 2 + (1320px * 0.25) + ((1320px * 0.75) / 2) - (52rem / 2)); /* Stay centered in the main content */
 }
+
+
 
 
 
