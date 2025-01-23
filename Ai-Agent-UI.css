@@ -3103,8 +3103,19 @@ margin: 0rem !important;
 }
 
 
-/* Add ONLY this to your CSS */
-.chat_inner-wrapper ol li::marker {
+/* TARGET LIST MARKERS */
+.chat_inner-wrapper ol {
+  list-style-position: outside; /* Critical for control */
+  padding-left: 1.5em; /* Standard list indentation */
+}
+
+/* FORCE TOP ALIGNMENT */
+.chat_inner-wrapper li::marker {
   vertical-align: top;
-  line-height: 1;
+  line-height: 0; /* Fixes WebKit/Blink browsers */
+}
+
+/* RESET LINE HEIGHTS */
+.chat_inner-wrapper li {
+  line-height: 1.4; /* Match your text's natural line-height */
 }
