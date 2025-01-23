@@ -2295,7 +2295,7 @@ figcaption {
   grid-template-rows: auto;
   grid-template-columns: 70px 63px 63px 1fr auto;
   grid-auto-columns: 1fr;
-  width: 100%;
+  width: auto;
   max-width: 52rem;
   padding-top: 8px;
   padding-bottom: 8px;
@@ -2303,6 +2303,9 @@ figcaption {
   display: grid;
   position: fixed;
   bottom: 20px;
+  bottom: 0; /* Keep it at the bottom of the viewport */
+  left: 0; /* Align it to the left edge */
+  box-sizing: border-box; /* Include padding in the element's width */
 }
 
 .chat_block-wrapper {
