@@ -2284,28 +2284,28 @@ figcaption {
   position: relative;
 }
 
-/* Chat Input Wrapper */
 .chat_input-wrapper {
-  position: fixed;
-  bottom: 20px;
-  left: 25%; /* Start positioning at the start of the main content */
-  width: calc(75% - 40px); /* Fit within the main content and leave padding */
-  max-width: 990px; /* Ensure it doesn't stretch beyond the main content */
-  padding: 10px;
+  z-index: 300;
+  grid-column-gap: 0px;
+  grid-row-gap: 0px;
+  filter: drop-shadow(0 2px 4px #00000030);
   background-color: #e7e7e7;
   border: 1px solid #949494;
   border-radius: 35px;
-  z-index: 300;
-  box-sizing: border-box; /* Include padding and borders in width */
+  grid-template-rows: auto;
+  grid-template-columns: 70px 63px 63px 1fr auto;
+  grid-auto-columns: 1fr;
+  display: grid;
+  position: fixed;
+  bottom: 20px;
+  width: 100%;
+  max-width: 52rem;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-right: 8px;
+  left: calc((1320px * 0.25) + ((1320px * 0.75) / 2) - (52rem / 2)); /* Center in main content */
 }
 
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-  .chat_input-wrapper {
-    left: 10px; /* Remove dependency on sidebar */
-    width: calc(100% - 20px); /* Full width with margin on smaller screens */
-  }
-}
 
 
 
