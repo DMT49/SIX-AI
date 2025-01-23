@@ -3103,13 +3103,13 @@ margin: 0rem !important;
 }
 
 
-/* Only 4 essential lines */
+/* Add ONLY this to your CSS */
+.chat_inner-wrapper ol li::marker {
+  vertical-align: top;
+  line-height: 1;
+}
+
 .chat_inner-wrapper ol {
   list-style-position: outside;
   padding-left: 1.5em;
-}
-
-.chat_inner-wrapper ol li {
-  display: table;
-  vertical-align: top;
 }
