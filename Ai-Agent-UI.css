@@ -2302,10 +2302,20 @@ figcaption {
   padding-bottom: 8px;
   padding-right: 8px;
   box-sizing: border-box;
-  max-width: 52rem; /* Prevent the wrapper from exceeding main content width */
-  width: 100%; /* Allows it to adapt dynamically */
-  left: calc((100% - 1320px) / 2 + (1320px * 0.25) + ((1320px * 0.75) / 2) - (52rem / 2)); /* Stay centered in the main content */
+  max-width: 52rem; /* Prevent the wrapper from becoming too wide */
+  width: 100%; /* Let it adapt dynamically */
+  left: calc((100% - 1320px) / 2 + (1320px * 0.25) + ((1320px * 0.75) / 2) - (52rem / 2)); /* Center in main content for wider screens */
 }
+
+/* Special styles for screens smaller than 1320px */
+@media (max-width: 1320px) {
+  .chat_input-wrapper {
+    left: calc(25%); /* Start at the main content boundary */
+    width: calc(75% - 20px); /* Stay within the main content and leave padding */
+    max-width: calc(100% - 40px); /* Prevent overflowing on small screens */
+  }
+}
+
 
 
 
