@@ -2928,19 +2928,19 @@ margin: 0rem !important;
 }
 
 .chat_conversation-wrapper h1 {
-  font-size: 1.4em !important;
+  font-size: 1.3em !important;
 }
 
 .chat_conversation-wrapper h2 {
-  font-size: 1.4em !important;
+  font-size: 1.3em !important;
 }
 
 .chat_conversation-wrapper h3 {
-  font-size: 1.2em !important;
+  font-size: 1.15em !important;
 }
 
 .chat_conversation-wrapper h4 {
-  font-size: 1.2em !important;
+  font-size: 1.15em !important;
 }
 
 .chat_conversation-wrapper h5 {
@@ -3079,9 +3079,11 @@ margin: 0rem !important;
   
 /* Clipboard icon default style */
 .clipboard-icon {
-  opacity: 0.5; /* Default transparency */
+  opacity: 0.4; /* Default transparency */
   transition: opacity 0.3s ease; /* Smooth transition for hover effect */
   cursor: pointer; /* Show pointer cursor on hover */
+  width: 20px !important;  /* Reduced from 24px */
+  height: 20px !important; /* Reduced from 24px */
 }
 
 /* Clipboard icon hover effect */
@@ -3089,4 +3091,42 @@ margin: 0rem !important;
   opacity: 1; /* Full opacity on hover */
 }
 
+.clipboard-icon svg {
+  /* Ensure SVG fills container */
+  width: 100%;
+  height: 100%;
+}
 
+/* Targets first element in chat blocks */
+.chat_inner-wrapper > *:first-child {
+  margin-top: 0 !important;
+}
+
+
+/* RESET LISTS */
+.chat_inner-wrapper ol {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+/* CUSTOM NUMBERING */
+.chat_inner-wrapper ol li {
+  position: relative;
+  padding-left: 2em;
+  counter-increment: list-counter;
+}
+
+.chat_inner-wrapper ol li::before {
+  content: counter(list-counter) ".";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 2em;
+  text-align: center;
+}
+
+.chat_inner-wrapper * {  /* Targets all descendants of .chat_inner-wrapper */
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
