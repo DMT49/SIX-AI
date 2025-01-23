@@ -2284,40 +2284,41 @@ figcaption {
   position: relative;
 }
 
+/* Chat input wrapper */
 .chat_input-wrapper {
   z-index: 300;
-  grid-column-gap: 0px;
-  grid-row-gap: 0px;
   filter: drop-shadow(0 2px 4px #00000030);
   background-color: #e7e7e7;
   border: 1px solid #949494;
   border-radius: 35px;
+  display: grid;
   grid-template-rows: auto;
   grid-template-columns: 70px 63px 63px 1fr auto;
   grid-auto-columns: 1fr;
-  max-width: calc(75% * 1320px); /* Constrain to main content width */
-  min-width: 280px; /* Ensure it doesn't shrink too much */
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-right: 8px;
-  display: grid;
   position: fixed;
   bottom: 20px;
-  left: 12.5%; /* Center in the main content area */
-  right: 12.5%; /* Respect the sidebar offset */
-  transform: translateX(0); /* No additional shifting */
-  box-sizing: border-box; /* Include padding in the element's width */
-  width: calc(100% - 40px); /* Adjust dynamically for smaller screens */
-  margin: 0 auto; /* Keep centering */
+  left: 25%; /* Offset to account for the 25% sidebar */
+  width: 50%; /* Take up 50% of the main content area */
+  max-width: 990px; /* Limit the width to 75% of 1320px (main content) */
+  min-width: 280px; /* Ensure it doesn't shrink too much on small screens */
+  box-sizing: border-box; /* Include padding and borders in width */
+  padding: 8px;
 }
 
-/* Add media queries for smaller screens */
+/* Responsive adjustments for smaller screens */
 @media (max-width: 1320px) {
   .chat_input-wrapper {
-    left: 0;
-    right: 0;
-    width: calc(100% - 20px); /* Shrink dynamically for small screens */
-    max-width: 95%; /* Leave some padding on small viewports */
+    left: 25%; /* Still align with the main content */
+    width: calc(75% - 40px); /* Adjust to fit the main content width dynamically */
+    max-width: 75%; /* Prevent it from exceeding available space */
+  }
+}
+
+@media (max-width: 768px) {
+  .chat_input-wrapper {
+    left: 10px; /* Move it closer to the edge for smaller screens */
+    right: 10px; /* Leave space on the right as well */
+    width: calc(100% - 20px); /* Take up full available width */
   }
 }
 
