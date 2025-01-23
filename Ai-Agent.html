@@ -685,10 +685,20 @@
         const optionContainer = document.createElement("div");
         optionContainer.className = "chat_multi-choice-container";
     
-        // 2. The clipboard icon on the left
         const clipboardIcon = document.createElement("span");
         clipboardIcon.className = "clipboard-icon";
-        clipboardIcon.textContent = "📋";
+        clipboardIcon.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" 
+               aria-hidden="true" 
+               role="img" 
+               class="clipboard-svg" 
+               width="32" 
+               height="32" 
+               viewBox="0 0 24 24">
+            <path fill="currentColor" 
+                  d="M15 20H5V7c0-.55-.45-1-1-1s-1 .45-1 1v13c0 1.1.9 2 2 2h10c.55 0 1-.45 1-1s-.45-1-1-1m5-4V4c0-1.1-.9-2-2-2H9c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h9c1.1 0 2-.9 2-2m-2 0H9V4h9z">
+            </path>
+          </svg>`;
     
         // 3. The main clickable option (original button)
         const optionDiv = document.createElement("div");
@@ -716,9 +726,20 @@
           navigator.clipboard.writeText(optionText)
             .then(() => {
               // Switch to tick for 2 seconds
-              clipboardIcon.textContent = "✅";
+              clipboardIcon.innerHTML = "✅";
               setTimeout(() => {
-                clipboardIcon.textContent = "📋";
+                  clipboardIcon.innerHTML = `
+                      <svg xmlns="http://www.w3.org/2000/svg" 
+                           aria-hidden="true" 
+                           role="img" 
+                           class="clipboard-svg" 
+                           width="32" 
+                           height="32" 
+                           viewBox="0 0 24 24">
+                          <path fill="currentColor" 
+                                d="M15 20H5V7c0-.55-.45-1-1-1s-1 .45-1 1v13c0 1.1.9 2 2 2h10c.55 0 1-.45 1-1s-.45-1-1-1m5-4V4c0-1.1-.9-2-2-2H9c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h9c1.1 0 2-.9 2-2m-2 0H9V4h9z">
+                          </path>
+                      </svg>`;
               }, 2000);
             })
             .catch((err) => {
