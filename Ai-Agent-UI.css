@@ -2302,6 +2302,8 @@ figcaption {
   display: grid;
   position: fixed;
   bottom: 20px;
+  left: 0; /* Align it to the left edge */
+  right: 0; /* Align it to the right edge */
   width: auto;
   box-sizing: border-box; /* Include padding in the element's width */
 }
