@@ -3115,8 +3115,6 @@ margin: 0rem !important;
   position: relative;
   padding-left: 2em;
   counter-increment: list-counter;
-  margin-bottom: 0.5em;
-  line-height: 1.4;
 }
 
 .chat_inner-wrapper ol li::before {
@@ -3126,6 +3124,4 @@ margin: 0rem !important;
   top: 0;
   width: 2em;
   text-align: right;
-  font-weight: normal;
-  color: inherit;
 }
