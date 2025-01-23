@@ -3103,8 +3103,28 @@ margin: 0rem !important;
 }
 
 
+/* Target ordered lists in chat messages */
+.chat_inner-wrapper ol {
+  list-style-position: outside; /* Ensures numbers stay aligned left */
+}
+
 /* Align list markers to top */
 .chat_inner-wrapper li {
   display: flex;
   align-items: flex-start;
+}
+
+/* Specific styling for numbered lists */
+.chat_inner-wrapper ol li::before {
+  content: counter(list-item) ".";
+  vertical-align: top;
+  margin-right: 8px;
+  position: relative;
+}
+
+/* Reset default list styling */
+.chat_inner-wrapper ol {
+  counter-reset: list-item;
+  padding-left: 1.5em;
+  margin: 0;
 }
