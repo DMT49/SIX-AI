@@ -2297,28 +2297,28 @@ figcaption {
   grid-auto-columns: 1fr;
   position: fixed;
   bottom: 20px;
-  left: 25%; /* Offset to account for the 25% sidebar */
-  width: 50%; /* Take up 50% of the main content area */
-  max-width: 990px; /* Limit the width to 75% of 1320px (main content) */
-  min-width: 280px; /* Ensure it doesn't shrink too much on small screens */
-  box-sizing: border-box; /* Include padding and borders in width */
+  left: calc(25% + (75% / 2) - (52rem / 2)); /* Calculate position based on the sidebar and main content */
+  width: 100%; /* Ensure it spans the full width of the main content area */
+  max-width: 52rem; /* Limit the maximum width */
+  box-sizing: border-box; /* Include padding in the element's width */
   padding: 8px;
 }
 
-/* Responsive adjustments for smaller screens */
+/* Adjust for smaller screens */
 @media (max-width: 1320px) {
   .chat_input-wrapper {
-    left: 25%; /* Still align with the main content */
-    width: calc(75% - 40px); /* Adjust to fit the main content width dynamically */
-    max-width: 75%; /* Prevent it from exceeding available space */
+    left: calc(25% + (75% / 2) - (min(90%, 52rem) / 2)); /* Dynamically center based on smaller main content width */
+    width: calc(75% - 40px); /* Adjust to fit within the main content dynamically */
+    max-width: 90%; /* Prevent overflow */
   }
 }
 
 @media (max-width: 768px) {
   .chat_input-wrapper {
-    left: 10px; /* Move it closer to the edge for smaller screens */
-    right: 10px; /* Leave space on the right as well */
+    left: 10px; /* Hug the edge of the viewport on smaller screens */
+    right: 10px; /* Leave space on the right for responsiveness */
     width: calc(100% - 20px); /* Take up full available width */
+    max-width: 100%; /* Ensure it stays within bounds */
   }
 }
 
