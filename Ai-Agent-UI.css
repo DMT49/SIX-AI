@@ -2295,19 +2295,19 @@ figcaption {
   grid-template-rows: auto;
   grid-template-columns: 70px 63px 63px 1fr auto;
   grid-auto-columns: 1fr;
-  max-width: 52rem; /* Ensure it doesn't exceed this width */
+  max-width: 52rem; /* Maximum width for the input wrapper */
   padding-top: 8px;
   padding-bottom: 8px;
   padding-right: 8px;
   display: grid;
   position: fixed;
   bottom: 20px;
-  left: 25%; /* Start at the left edge of the main content (25% offset) */
-  transform: translateX(-50%); /* Center within the 75% width of the main content */
-  box-sizing: border-box; /* Include padding in the element's width */
-  width: calc(75% - 40px); /* Prevent overflow, account for the sidebar */
-  margin: 0 auto; /* Keep centering within the main content if max-width kicks in */
+  left: 12.5%; /* Offset to align with the start of the 75% main content area */
+  right: 12.5%; /* Align with the end of the 75% main content area */
+  box-sizing: border-box; /* Ensure padding is included in the element's width */
+  margin: 0 auto; /* Keep centering if the max-width kicks in */
 }
+
 
 
 
