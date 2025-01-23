@@ -3108,8 +3108,3 @@ margin: 0rem !important;
   vertical-align: top;
   line-height: 1;
 }
-
-.chat_inner-wrapper ol {
-  list-style-position: outside;
-  padding-left: 1.5em;
-}
