@@ -2295,19 +2295,32 @@ figcaption {
   grid-template-rows: auto;
   grid-template-columns: 70px 63px 63px 1fr auto;
   grid-auto-columns: 1fr;
-  max-width: 52rem; /* Ensure it doesn't exceed this width */
+  max-width: calc(75% * 1320px); /* Constrain to main content width */
+  min-width: 280px; /* Ensure it doesn't shrink too much */
   padding-top: 8px;
   padding-bottom: 8px;
   padding-right: 8px;
   display: grid;
   position: fixed;
   bottom: 20px;
-  left: calc((1320px - 75% * 1320px) / 2); /* Center within the main content area */
-  transform: translateX(0); /* No additional shifting needed */
+  left: 12.5%; /* Center in the main content area */
+  right: 12.5%; /* Respect the sidebar offset */
+  transform: translateX(0); /* No additional shifting */
   box-sizing: border-box; /* Include padding in the element's width */
-  width: 75%; /* Match the width of the main content area */
-  margin: 0 auto; /* Keep centering within the max-width */
+  width: calc(100% - 40px); /* Adjust dynamically for smaller screens */
+  margin: 0 auto; /* Keep centering */
 }
+
+/* Add media queries for smaller screens */
+@media (max-width: 1320px) {
+  .chat_input-wrapper {
+    left: 0;
+    right: 0;
+    width: calc(100% - 20px); /* Shrink dynamically for small screens */
+    max-width: 95%; /* Leave some padding on small viewports */
+  }
+}
+
 
 
 
