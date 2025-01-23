@@ -3101,3 +3101,10 @@ margin: 0rem !important;
 .chat_inner-wrapper > *:first-child {
   margin-top: 0 !important;
 }
+
+
+/* Align list markers to top */
+.chat_inner-wrapper li {
+  display: flex;
+  align-items: flex-start;
+}
