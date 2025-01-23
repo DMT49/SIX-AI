@@ -3103,12 +3103,12 @@ margin: 0rem !important;
 }
 
 
-/* Only 4 essential lines */
+/* Only 3 essential lines */
 .chat_inner-wrapper ol {
-  list-style-position: inside; /* Fixes alignment */
-  padding-left: 0; /* Remove default padding */
+  list-style-position: outside; /* Default behavior */
+  padding-left: 1.5em; /* Standard list indentation */
 }
 
 .chat_inner-wrapper ol li::marker {
-  vertical-align: top; /* Aligns numbers to top */
+  vertical-align: top; /* Aligns number to first line */
 }
