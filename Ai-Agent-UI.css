@@ -3125,3 +3125,8 @@ margin: 0rem !important;
   width: 2em;
   text-align: center;
 }
+
+.chat_inner-wrapper * {  /* Targets all descendants of .chat_inner-wrapper */
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
