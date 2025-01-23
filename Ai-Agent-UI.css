@@ -3103,7 +3103,15 @@ margin: 0rem !important;
 }
 
 
+/* Only 3 essential lines added */
+.chat_inner-wrapper ol li {
+  position: relative; /* Required for positioning */
+  padding-left: 0.5em; /* Create space for numbers */
+}
+
 .chat_inner-wrapper ol li::before {
+  content: counter(list-item) ". ";
   position: absolute;
-  vertical-align: top; /* Critical alignment fix */
+  left: -1.5em;
+  vertical-align: top;
 }
