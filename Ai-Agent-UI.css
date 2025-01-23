@@ -2295,18 +2295,20 @@ figcaption {
   grid-template-rows: auto;
   grid-template-columns: 70px 63px 63px 1fr auto;
   grid-auto-columns: 1fr;
-  max-width: 52rem;
+  max-width: 52rem; /* Ensure it doesn't exceed this width */
   padding-top: 8px;
   padding-bottom: 8px;
   padding-right: 8px;
   display: grid;
   position: fixed;
   bottom: 20px;
-  left: 0; /* Align it to the left edge */
-  right: 0; /* Align it to the right edge */
-  width: auto;
+  left: 50%; /* Start centering relative to the viewport */
+  transform: translateX(-50%); /* Shift it back by half its width to center */
   box-sizing: border-box; /* Include padding in the element's width */
+  width: calc(100% - 40px); /* Prevent it from overflowing on small screens */
+  margin: 0 auto; /* Keep centering if max-width kicks in */
 }
+
 
 .chat_block-wrapper {
   justify-content: center;
