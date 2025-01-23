@@ -3103,19 +3103,29 @@ margin: 0rem !important;
 }
 
 
-/* TARGET LIST MARKERS */
+/* RESET LISTS */
 .chat_inner-wrapper ol {
-  list-style-position: outside; /* Critical for control */
-  padding-left: 1.5em; /* Standard list indentation */
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
 }
 
-/* FORCE TOP ALIGNMENT */
-.chat_inner-wrapper li::marker {
-  vertical-align: top;
-  line-height: 0; /* Fixes WebKit/Blink browsers */
+/* CUSTOM NUMBERING */
+.chat_inner-wrapper ol li {
+  position: relative;
+  padding-left: 2em;
+  counter-increment: list-counter;
+  margin-bottom: 0.5em;
+  line-height: 1.4;
 }
 
-/* RESET LINE HEIGHTS */
-.chat_inner-wrapper li {
-  line-height: 1.4; /* Match your text's natural line-height */
+.chat_inner-wrapper ol li::before {
+  content: counter(list-counter) ".";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 2em;
+  text-align: right;
+  font-weight: normal;
+  color: inherit;
 }
