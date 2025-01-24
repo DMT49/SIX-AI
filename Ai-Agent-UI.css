@@ -2263,9 +2263,9 @@ figcaption {
 }
 
 .shell15_wrapper {
-  min-height: 100svh;
   display: flex;
   position: relative;
+  margin-bottom: 80px;
 }
 
 .shell15_main-wrapper {
