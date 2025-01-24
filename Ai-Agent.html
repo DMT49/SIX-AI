@@ -91,12 +91,16 @@
 
     let airtableRecordId = null;
 
-    // Function to handle PDF upload and append the URL to the input field
-    function handlePdfUpload() {
-      // Create a hidden file input element for selecting PDFs
+    /**
+     * Accepts PDF and image files, then uploads to Cloudinary
+     * and appends (PDF: url) or (IMG: url) to user input.
+     */
+    function handleFileUpload() {
+      // Create a hidden file input element
       const fileInput = document.createElement("input");
       fileInput.type = "file";
-      fileInput.accept = "application/pdf"; // Restrict to PDF files only
+      // Accept PDF and popular image formats
+      fileInput.accept = "application/pdf,image/png,image/jpeg,image/jpg"; 
       fileInput.style.display = "none";
     
       // DOM Elements for toggling visibility
@@ -109,9 +113,16 @@
         const file = event.target.files[0];
         if (!file) return;
     
-        // Validate file type
-        if (file.type !== "application/pdf") {
-          alert("Please select a valid PDF file.");
+        // Check if PDF or allowed image type
+        const allowedTypes = [
+          "application/pdf",
+          "image/png",
+          "image/jpeg",
+          "image/jpg",
+        ];
+    
+        if (!allowedTypes.includes(file.type)) {
+          alert("Please select a PDF or image file (PNG/JPEG).");
           return;
         }
     
@@ -123,35 +134,36 @@
           // Prepare FormData for Cloudinary upload
           const formData = new FormData();
           formData.append("file", file);
-          formData.append("upload_preset", "my_unsigned_preset"); // Use your unsigned preset name
+          formData.append("upload_preset", "my_unsigned_preset"); // Your unsigned preset
     
-          // Upload the PDF to Cloudinary
+          // Upload to Cloudinary
           const response = await fetch("https://api.cloudinary.com/v1_1/dgt84jatm/auto/upload", {
             method: "POST",
             body: formData,
           });
     
           if (!response.ok) {
-            throw new Error("Failed to upload the PDF to Cloudinary");
+            throw new Error("Failed to upload the file to Cloudinary");
           }
     
           // Parse the response JSON
           const data = await response.json();
+          const fileUrl = data.secure_url;
     
-          // Extract the secure URL of the uploaded PDF
-          const pdfUrl = data.secure_url;
+          // Append (PDF: ...) or (IMG: ...) to the input
+          let fileTag = "";
+          if (file.type === "application/pdf") {
+            fileTag = `(PDF: ${fileUrl})`;
+          } else {
+            fileTag = `(IMG: ${fileUrl})`;
+          }
     
-          // Format the output for the textarea
-          const formattedOutput = `(PDF: ${pdfUrl})`;
+          userInput.value += ` ${fileTag}`;
+          adjustHeight(); // Re-adjust the textarea height
     
-          // Append the formatted output to the chat-user-input textarea
-          userInput.value += ` ${formattedOutput}`;
-    
-          // Dynamically adjust the textarea height
-          adjustHeight();
         } catch (error) {
-          console.error("Error uploading PDF:", error);
-          alert("There was an issue uploading your PDF. Please try again.");
+          console.error("Error uploading file:", error);
+          alert("There was an issue uploading your file. Please try again.");
         } finally {
           // Hide the loading animation and show the file icon again
           fileIcon.style.display = "block";
@@ -163,13 +175,14 @@
       fileInput.click();
     }
 
-    // Attach the event listener to the chat-file-input button
+
     const chatFileInputButton = document.getElementById("chat-file-input");
     if (chatFileInputButton) {
-      chatFileInputButton.addEventListener("click", handlePdfUpload);
+      chatFileInputButton.addEventListener("click", handleFileUpload);
     } else {
       console.error("Button with ID 'chat-file-input' not found.");
     }
+
 
 
     function stopCurrentVoiceOutput() {
