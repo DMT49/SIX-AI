@@ -2942,50 +2942,50 @@ margin: 0rem !important;
 }
 
 /* Headings */
-. h1, 
-. h2, 
-. h3, 
-. h4, 
-. h5, 
-. h6 {
+.chat_inner-wrapper h1, 
+.chat_inner-wrapper h2, 
+.chat_inner-wrapper h3, 
+.chat_inner-wrapper h4, 
+.chat_inner-wrapper h5, 
+.chat_inner-wrapper h6 {
   margin-top: 1em !important;
   margin-bottom: 0.5em !important;
   font-weight: bold !important;
   color: #000 !important; /* Standard black text for all headings */
 }
 
-. h4,
-. h5,
-. h6 {
+.chat_inner-wrapper h4,
+.chat_inner-wrapper h5,
+.chat_inner-wrapper h6 {
   padding-bottom: 0 !important; /* No bottom padding */
 }
 
-. h1 {
+.chat_inner-wrapper h1 {
   font-size: 1.3em !important;
 }
 
-. h2 {
+.chat_inner-wrapper h2 {
   font-size: 1.3em !important;
 }
 
-. h3 {
+.chat_inner-wrapper h3 {
   font-size: 1.15em !important;
 }
 
-. h4 {
+.chat_inner-wrapper h4 {
   font-size: 1.15em !important;
 }
 
-. h5 {
+.chat_inner-wrapper h5 {
   font-size: 1em !important;
 }
 
-. h6 {
+.chat_inner-wrapper h6 {
   font-size: 1em !important;
 }
 
 /* Paragraphs */
-. p {
+.chat_inner-wrapper p {
   margin-top: 0 !important;
   margin-bottom: 16px !important;
   color: #000 !important;
@@ -2996,13 +2996,14 @@ margin: 0rem !important;
 }
 
 /* Blockquotes */
-. blockquote {
+.chat_inner-wrapper blockquote {
   border-left: 5px solid #ddd !important; /* Neutral gray border */
   padding-left: 15px !important;
   font-style: italic !important;
   color: #555 !important; /* Dark gray text */
   margin: 1em 0 !important;
 }
+
 
 /* Lists */
 . ul, 
