@@ -2275,7 +2275,7 @@ figcaption {
   position: relative;
 }
 
-.chat_conversation-wrapper {
+. {
   flex-flow: column;
   flex: 1;
   justify-content: flex-start;
@@ -2936,56 +2936,56 @@ margin: 0rem !important;
 
 
 /* General Reset */
-.chat_conversation-wrapper body {
+. body {
   line-height: 1.6 !important;
   color: #000 !important; /* Standard black text */
 }
 
 /* Headings */
-.chat_conversation-wrapper h1, 
-.chat_conversation-wrapper h2, 
-.chat_conversation-wrapper h3, 
-.chat_conversation-wrapper h4, 
-.chat_conversation-wrapper h5, 
-.chat_conversation-wrapper h6 {
+. h1, 
+. h2, 
+. h3, 
+. h4, 
+. h5, 
+. h6 {
   margin-top: 1em !important;
   margin-bottom: 0.5em !important;
   font-weight: bold !important;
   color: #000 !important; /* Standard black text for all headings */
 }
 
-.chat_conversation-wrapper h4,
-.chat_conversation-wrapper h5,
-.chat_conversation-wrapper h6 {
+. h4,
+. h5,
+. h6 {
   padding-bottom: 0 !important; /* No bottom padding */
 }
 
-.chat_conversation-wrapper h1 {
+. h1 {
   font-size: 1.3em !important;
 }
 
-.chat_conversation-wrapper h2 {
+. h2 {
   font-size: 1.3em !important;
 }
 
-.chat_conversation-wrapper h3 {
+. h3 {
   font-size: 1.15em !important;
 }
 
-.chat_conversation-wrapper h4 {
+. h4 {
   font-size: 1.15em !important;
 }
 
-.chat_conversation-wrapper h5 {
+. h5 {
   font-size: 1em !important;
 }
 
-.chat_conversation-wrapper h6 {
+. h6 {
   font-size: 1em !important;
 }
 
 /* Paragraphs */
-.chat_conversation-wrapper p {
+. p {
   margin-top: 0 !important;
   margin-bottom: 16px !important;
   color: #000 !important;
@@ -2996,7 +2996,7 @@ margin: 0rem !important;
 }
 
 /* Blockquotes */
-.chat_conversation-wrapper blockquote {
+. blockquote {
   border-left: 5px solid #ddd !important; /* Neutral gray border */
   padding-left: 15px !important;
   font-style: italic !important;
@@ -3005,10 +3005,9 @@ margin: 0rem !important;
 }
 
 /* Lists */
-.chat_conversation-wrapper ul, 
+. ul, 
 .chat_conversation-wrapper ol {
   margin: 1em 0 !important;
-  padding-left: 30px !important; /* Reduced indentation */
 }
 
 .chat_conversation-wrapper ul ul, 
