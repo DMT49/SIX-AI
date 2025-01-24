@@ -99,21 +99,17 @@
       // Create a hidden file input element
       const fileInput = document.createElement("input");
       fileInput.type = "file";
-      // Accept PDF and popular image formats
       fileInput.accept = "application/pdf,image/png,image/jpeg,image/jpg"; 
       fileInput.style.display = "none";
     
-      // DOM Elements for toggling visibility
       const fileIcon = document.getElementById("chat-file-input-icon");
       const loadingGif = document.getElementById("chat-file-loading");
       const userInput = document.getElementById("chat-user-input");
     
-      // Listen for file selection
       fileInput.addEventListener("change", async (event) => {
         const file = event.target.files[0];
         if (!file) return;
     
-        // Check if PDF or allowed image type
         const allowedTypes = [
           "application/pdf",
           "image/png",
@@ -127,17 +123,24 @@
         }
     
         try {
-          // Show the loading animation and hide the file icon
           fileIcon.style.display = "none";
           loadingGif.style.display = "block";
     
-          // Prepare FormData for Cloudinary upload
+          // 1) Decide the correct endpoint based on file type
+          let uploadEndpoint = "https://api.cloudinary.com/v1_1/dgt84jatm/raw/upload";
+          if (file.type.startsWith("image/")) {
+            uploadEndpoint = "https://api.cloudinary.com/v1_1/dgt84jatm/image/upload";
+          }
+    
+          // 2) Prepare FormData
           const formData = new FormData();
           formData.append("file", file);
-          formData.append("upload_preset", "my_unsigned_preset"); // Your unsigned preset
+          formData.append("upload_preset", "my_unsigned_preset"); 
+          // Optional: If you have transformations, add them here
+          // formData.append("transformation", "...");
     
-          // Upload to Cloudinary
-          const response = await fetch("https://api.cloudinary.com/v1_1/dgt84jatm/auto/upload", {
+          // 3) Upload to the chosen endpoint
+          const response = await fetch(uploadEndpoint, {
             method: "POST",
             body: formData,
           });
@@ -146,11 +149,10 @@
             throw new Error("Failed to upload the file to Cloudinary");
           }
     
-          // Parse the response JSON
           const data = await response.json();
           const fileUrl = data.secure_url;
     
-          // Append (PDF: ...) or (IMG: ...) to the input
+          // 4) Different tags for PDFs vs images
           let fileTag = "";
           if (file.type === "application/pdf") {
             fileTag = `(PDF: ${fileUrl})`;
@@ -159,21 +161,20 @@
           }
     
           userInput.value += ` ${fileTag}`;
-          adjustHeight(); // Re-adjust the textarea height
+          adjustHeight();
     
         } catch (error) {
           console.error("Error uploading file:", error);
           alert("There was an issue uploading your file. Please try again.");
         } finally {
-          // Hide the loading animation and show the file icon again
           fileIcon.style.display = "block";
           loadingGif.style.display = "none";
         }
       });
     
-      // Trigger the file input dialog
       fileInput.click();
     }
+
 
 
     const chatFileInputButton = document.getElementById("chat-file-input");
