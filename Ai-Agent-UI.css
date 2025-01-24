@@ -457,7 +457,7 @@ textarea.w-select {
   margin-left: 0;
   margin-right: 0;
 }
-.w-col {
+.w-c{
   position: relative;
   float: left;
   width: 100%;
@@ -465,7 +465,7 @@ textarea.w-select {
   padding-left: 10px;
   padding-right: 10px;
 }
-.w-col .w-col {
+.w-c.w-c{
   padding-left: 0;
   padding-right: 0;
 }
@@ -575,7 +575,7 @@ textarea.w-select {
     margin-left: 0;
     margin-right: 0;
   }
-  .w-col {
+  .w-c{
     width: 100%;
     left: auto;
     right: auto;
@@ -633,7 +633,7 @@ textarea.w-select {
   .w-hidden-tiny {
     display: none !important;
   }
-  .w-col {
+  .w-c{
     width: 100%;
   }
   .w-col-tiny-1 {
@@ -832,14 +832,14 @@ textarea.w-select {
   display: none !important;
   -webkit-appearance: none;
 }
-.w-background-video--control {
+.w-background-video--contr{
   position: absolute;
   bottom: 1em;
   right: 1em;
   background-color: transparent;
   padding: 0;
 }
-.w-background-video--control > [hidden] {
+.w-background-video--contr> [hidden] {
   display: none !important;
 }
 .w-slider {
@@ -1188,7 +1188,7 @@ textarea.w-select {
   width: 100%;
   height: 100%;
 }
-.w-lightbox-control {
+.w-lightbox-contr{
   position: absolute;
   top: 0;
   width: 4em;
@@ -1928,7 +1928,7 @@ button {
 }
 /**
  * Address inconsistent `text-transform` inheritance for `button` and `select`.
- * All other form control elements do not inherit `text-transform` values.
+ * All other form contrelements do not inherit `text-transform` values.
  * Correct `button` style inheritance in Firefox, IE 8/9/10/11, and Opera.
  * Correct `select` style inheritance in Firefox.
  */
@@ -2741,7 +2741,7 @@ figcaption {
   margin-top: 0 !important;
 }
 /* Get rid of bottom margin on last element in any rich text element */
-.w-richtext>:last-child, .w-richtext ol li:last-child, .w-richtext ul li:last-child {
+.w-richtext>:last-child, .w-richtext li:last-child, .w-richtext ul li:last-child {
 	margin-bottom: 0 !important;
 }
 /* Prevent all click and hover interaction with an element */
@@ -3009,6 +3009,7 @@ margin: 0rem !important;
 . ul, 
 .chat_conversation-wrapper ol {
   margin: 1em 0 !important;
+  font-size: 16px !important;
 }
 
 .chat_conversation-wrapper ul ul, 
