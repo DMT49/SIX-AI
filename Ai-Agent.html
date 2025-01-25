@@ -622,6 +622,15 @@
     // Function to render a text segment in the chat
     function renderTextSegment(text, isUser, hideAvatar) {
       if (!text) return;
+    
+      // 1) Preserve user line breaks by converting "\n" to Markdown line breaks
+      if (isUser) {
+        // Marked normally doesn't treat single \n as <br>.
+        // Replace them with "  \n" which Marked interprets as a line break.
+        text = text.replace(/\n/g, "  \n");
+      }
+    
+      // 2) Create the chat block DOM elements
       const chatBlockWrapper = document.createElement("div");
       chatBlockWrapper.className = "chat_block-wrapper";
     
@@ -639,18 +648,20 @@
       const chatInnerWrapper = document.createElement("div");
       chatInnerWrapper.className = `chat_inner-wrapper ${isUser ? "user-message" : ""}`;
     
+      // 3) Convert text (with forced line breaks) into HTML via Marked,
+      //    then sanitize it with DOMPurify
       const parsedHtml = marked.parse(text);
       const sanitizedHtml = DOMPurify.sanitize(parsedHtml);
     
+      // 4) Insert the result into the DOM
       chatInnerWrapper.innerHTML = sanitizedHtml;
-    
       chatBlock.appendChild(botAvatar);
       chatBlock.appendChild(chatInnerWrapper);
       chatBlock.appendChild(userAvatar);
-    
       chatBlockWrapper.appendChild(chatBlock);
       conversationWrapper.appendChild(chatBlockWrapper);
     }
+
     
     /**
      * Renders multiple choice options in the chat UI.
