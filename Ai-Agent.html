@@ -528,7 +528,9 @@
     
     let conversationId = null;
     let isListening = false;
-    let retainedText = "";
+    let finalSoFar = "";   // Will store all finalized recognized text.
+    let lastPartial = "";  // Will track the most recently appended partial text.
+
     
     function adjustHeight() {
       textarea.style.height = 'auto'; // Reset height
@@ -953,21 +955,65 @@
     recognition.lang = "en-US";
     
     recognition.onresult = (event) => {
-      let interimTranscript = "";
-      let finalTranscript = "";
+      // 1) Get whatever text is currently in the textarea
+      //    (the user might have typed or removed text!)
+      let existingText = textarea.value;
     
+      // Prepare variables to hold newly recognized text
+      let newFinalTranscript = "";
+      let newPartialTranscript = "";
+    
+      // 2) Loop through each recognition result in this event
       for (let i = event.resultIndex; i < event.results.length; ++i) {
         if (event.results[i].isFinal) {
-          finalTranscript += event.results[i][0].transcript;
-          retainedText += event.results[i][0].transcript;
+          // This chunk is finalized recognized speech
+          newFinalTranscript += event.results[i][0].transcript;
         } else {
-          interimTranscript += event.results[i][0].transcript;
+          // This chunk is interim/partial recognized speech
+          newPartialTranscript += event.results[i][0].transcript;
         }
       }
     
-      textarea.value = retainedText + interimTranscript;
+      // 3) Add any finalized text to our cumulative finalSoFar
+      if (newFinalTranscript) {
+        finalSoFar += newFinalTranscript;
+      }
+    
+      // 4) Remove the old partial text from the end of existingText, IF it matches
+      //    (prevents duplicating partial text that was appended last time)
+      if (lastPartial && existingText.endsWith(lastPartial)) {
+        existingText = existingText.slice(0, existingText.length - lastPartial.length);
+      }
+    
+      // 5) Also remove finalSoFar if it exactly matches the end of existingText
+      //    (sometimes final text might be appended last time, but user hasn't edited it)
+      if (finalSoFar && existingText.endsWith(finalSoFar)) {
+        existingText = existingText.slice(0, existingText.length - finalSoFar.length);
+      }
+    
+      // 6) Build the new recognized block = finalSoFar + the newest partial
+      const recognizedBlock = finalSoFar + newPartialTranscript;
+    
+      // 7) Append recognizedBlock to what's left of existingText
+      //    (If the user typed something in the middle, only an exact match is removed.)
+      let finalText = existingText + recognizedBlock;
+    
+      // 8) Update the <textarea> with this newly combined text
+      textarea.value = finalText;
+    
+      // 9) Update lastPartial to the block that just got appended
+      //    - If there's partial text, it’s finalSoFar + partial
+      //    - If partial is empty (no ongoing speech), lastPartial = finalSoFar
+      if (newPartialTranscript) {
+        lastPartial = recognizedBlock;
+      } else {
+        lastPartial = finalSoFar;
+      }
+    
+      // 10) Adjust the textarea so user sees everything
       adjustHeight();
     };
+
     
     recognition.onstart = () => {
       console.log("Speech recognition started.");
