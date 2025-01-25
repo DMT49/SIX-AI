@@ -552,7 +552,6 @@
         console.log("Voice transcription stopped.");
         isListening = false;
       }
-      retainedText = "";
     }
     
     // Function to create a chat block (user or bot)
@@ -1040,7 +1039,6 @@
           micButton.classList.remove("is-active");
           console.log("Stopped listening.");
         } else {
-          retainedText = textarea.value;
           recognition.start();
           micButton.classList.add("is-active");
           console.log("Started listening.");
