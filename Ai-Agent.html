@@ -526,12 +526,9 @@
     }
 
     
-  let conversationId = null;
-  let isListening = false;
-  let retainedText = "";
-  let manualStop = false;
-
-    
+    let conversationId = null;
+    let isListening = false;
+    let retainedText = "";
     
     function adjustHeight() {
       textarea.style.height = 'auto'; // Reset height
@@ -913,46 +910,28 @@
     }
     
     async function handleSubmit() {
+        stopVoiceTranscription(); // Existing voice transcription logic
+        stopCurrentVoiceOutput(); // New logic to stop current voice output
     
-        // We still stop any voice output (text-to-speech) that may be playing.
-        stopCurrentVoiceOutput();
-    
-        // Grab the message text that the user typed or spoke
         const message = textarea.value.trim();
         if (!message) return;
     
         console.log("User submitted message:", message);
     
-        // If you have an Airtable record, update Time-Last-Edited
+        // Update Time-Last-Edited in Airtable if recordId exists
         if (airtableRecordId) {
             console.log("Updating Time-Last-Edited for record ID:", airtableRecordId);
             await updateTimeLastEdited(airtableRecordId);
         }
     
-        // 1) Render the user's message in the chat UI
-        createChatBlock(true, message);
+        createChatBlock(true, message); // Render user message
+        resetHeight(); // Reset textarea height
     
-        // 2) Clear the text area content and reset its height
-        resetHeight(); // This already sets textarea.value = "" and resets its size
-    
-        // 3) [RECOMMENDED] Reset the recognized text buffer so new speech is fresh
-        retainedText = "";
-    
-        // 4) Ensure the mic stays visually active (the button remains highlighted)
-        micButton.classList.add("is-active");
-        isListening = true;  // Tells our code we are still listening
-    
-        // 5) Show a loading animation while the AI processes the message
-        const { chatInnerWrapper, chatBlockWrapper } = createLoadingBlock();
-    
-        // 6) Send the user message to the AI and wait for a response
-        const agentResponse = await startConversation(message);
-    
-        // 7) Remove loading animation, then render the AI's response
-        conversationWrapper.removeChild(chatBlockWrapper);
-        createChatBlock(false, agentResponse);
+        const { chatInnerWrapper, chatBlockWrapper } = createLoadingBlock(); // Show loading block
+        const agentResponse = await startConversation(message); // Get AI response
+        conversationWrapper.removeChild(chatBlockWrapper); // Remove loading block
+        createChatBlock(false, agentResponse); // Render AI response
     }
-
 
 
     
@@ -973,7 +952,6 @@
     recognition.interimResults = true;
     recognition.lang = "en-US";
     
-    // Process recognized text as it comes in (both interim + final)
     recognition.onresult = (event) => {
       let interimTranscript = "";
       let finalTranscript = "";
@@ -991,49 +969,37 @@
       adjustHeight();
     };
     
-    // Fires whenever recognition stops (browser-based end or manual stop)
-    recognition.onend = () => {
-      console.log("Speech recognition ended (onend).");
-    
-      // If the user DID NOT manually stop, and we're still listening,
-      // automatically restart to avoid “silence timeouts.”
-      if (!manualStop && isListening) {
-        console.log("Auto-restarting speech recognition...");
-        recognition.start();
-      } else {
-        // If it was manual or an error, turn off the mic indicator
-        micButton.classList.remove("is-active");
-        isListening = false;
-      }
+    recognition.onstart = () => {
+      console.log("Speech recognition started.");
     };
     
-    // Handle recognition errors
+    recognition.onend = () => {
+      console.log("Speech recognition ended.");
+      micButton.classList.remove("is-active");
+      isListening = false;
+    };
+    
     recognition.onerror = (event) => {
       console.error("Speech recognition error:", event.error);
       micButton.classList.remove("is-active");
       isListening = false;
     };
     
-    // Mic button toggles start/stop
+    // Attach event listener to micButton
     if (micButton) {
       micButton.addEventListener("click", () => {
         console.log("Mic button clicked.");
         if (isListening) {
-          // ---- MANUAL STOP ----
-          recognition.stop();              // Stop recognition
+          recognition.stop();
           micButton.classList.remove("is-active");
-          isListening = false;
-          manualStop = true;               // Mark that we stopped manually
-          console.log("Stopped listening (manual).");
+          console.log("Stopped listening.");
         } else {
-          // ---- MANUAL START ----
-          retainedText = textarea.value;   // If there's any text already typed/spoken, preserve it
-          recognition.start();             // Start recognition
+          retainedText = textarea.value;
+          recognition.start();
           micButton.classList.add("is-active");
-          isListening = true;
-          manualStop = false;              // Reset so auto-restart can work
           console.log("Started listening.");
         }
+        isListening = !isListening;
       });
     } else {
       console.error("Cannot find #chat-user-input-mic element.");
