@@ -1236,15 +1236,31 @@
     };
 
     
+    //-----------------------------------------------------------
     // Hook into the existing message rendering logic
-    const originalCreateChatBlock = createChatBlock; // Reference the existing function
-    createChatBlock = (isUser, content) => {
-        originalCreateChatBlock(isUser, content); // Call the original function
+    //-----------------------------------------------------------
+    const originalCreateChatBlock = createChatBlock; // Keep a reference
     
-        if (!isUser) {
-            playVoiceOutput(content); // Play voice output for bot messages
-        }
+    createChatBlock = (isUser, content) => {
+      // Call the original function so the message is rendered
+      originalCreateChatBlock(isUser, content);
+    
+      // Only scroll if the bot (AI) posted the message
+      if (!isUser) {
+        // 1) Short delay so new message fully renders (avoid partial layout)
+        setTimeout(() => {
+          window.scrollTo({
+            top: document.body.scrollHeight,
+            left: 0,
+            behavior: "smooth", // Or "auto" if you don't want smooth scrolling
+          });
+        }, 50);
+    
+        // 2) Existing voice output logic
+        playVoiceOutput(content);
+      }
     };
+
 
 
   })();
