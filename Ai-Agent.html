@@ -591,7 +591,7 @@
               optionGroup = [];
             }
             const hideAvatar = !isUser && hasRenderedBotAvatar;
-            renderTextSegment(textContent, isUser, hideAvatar);
+            (textContent, isUser, hideAvatar);
             hasRenderedBotAvatar = true;
           }
         } else if (segment.type === "option") {
@@ -619,9 +619,15 @@
       return false;
     }
     
-    // Function to render a text segment in the chat
     function renderTextSegment(text, isUser, hideAvatar) {
       if (!text) return;
+    
+      // 1) If this is a user message, preserve line breaks by converting them to Markdown line breaks.
+      if (isUser) {
+        text = text.replace(/\n/g, "  \n");
+      }
+    
+      // 2) Create the DOM elements
       const chatBlockWrapper = document.createElement("div");
       chatBlockWrapper.className = "chat_block-wrapper";
     
@@ -639,18 +645,19 @@
       const chatInnerWrapper = document.createElement("div");
       chatInnerWrapper.className = `chat_inner-wrapper ${isUser ? "user-message" : ""}`;
     
+      // 3) Parse with Marked, sanitize with DOMPurify
       const parsedHtml = marked.parse(text);
       const sanitizedHtml = DOMPurify.sanitize(parsedHtml);
     
+      // 4) Insert into the DOM
       chatInnerWrapper.innerHTML = sanitizedHtml;
-    
       chatBlock.appendChild(botAvatar);
       chatBlock.appendChild(chatInnerWrapper);
       chatBlock.appendChild(userAvatar);
-    
       chatBlockWrapper.appendChild(chatBlock);
       conversationWrapper.appendChild(chatBlockWrapper);
     }
+
     
     /**
      * Renders multiple choice options in the chat UI.
