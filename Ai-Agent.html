@@ -91,15 +91,12 @@
 
     let airtableRecordId = null;
 
-    /**
-     * Accepts PDF and image files, then uploads to Cloudinary
-     * and appends (PDF: url) or (IMG: url) to user input.
-     */
-    function handleFileUpload() {
-      // Create a hidden file input element
+    // Function to handle PDF upload and append the URL to the input field
+    function handlePdfUpload() {
+      // Create a hidden file input element for selecting PDFs
       const fileInput = document.createElement("input");
       fileInput.type = "file";
-      fileInput.accept = "application/pdf,image/png,image/jpeg,image/jpg"; // Accept PDFs and images
+      fileInput.accept = "application/pdf"; // Restrict to PDF files only
       fileInput.style.display = "none";
     
       // DOM Elements for toggling visibility
@@ -113,15 +110,8 @@
         if (!file) return;
     
         // Validate file type
-        const allowedTypes = [
-          "application/pdf",
-          "image/png",
-          "image/jpeg",
-          "image/jpg",
-        ];
-    
-        if (!allowedTypes.includes(file.type)) {
-          alert("Please select a PDF or image file (PNG/JPEG).");
+        if (file.type !== "application/pdf") {
+          alert("Please select a valid PDF file.");
           return;
         }
     
@@ -130,42 +120,38 @@
           fileIcon.style.display = "none";
           loadingGif.style.display = "block";
     
-          // Cloudinary raw upload endpoint
-          const uploadEndpoint = "https://api.cloudinary.com/v1_1/dgt84jatm/raw/upload";
-    
           // Prepare FormData for Cloudinary upload
           const formData = new FormData();
-          formData.append("file", file); // File to upload
-          formData.append("upload_preset", "my_unsigned_preset"); // Your unsigned preset name
+          formData.append("file", file);
+          formData.append("upload_preset", "my_unsigned_preset"); // Use your unsigned preset name
     
-          // Upload the file to Cloudinary
-          const response = await fetch(uploadEndpoint, {
+          // Upload the PDF to Cloudinary
+          const response = await fetch("https://api.cloudinary.com/v1_1/dgt84jatm/auto/upload", {
             method: "POST",
             body: formData,
           });
     
           if (!response.ok) {
-            throw new Error("Failed to upload the file to Cloudinary");
+            throw new Error("Failed to upload the PDF to Cloudinary");
           }
     
           // Parse the response JSON
           const data = await response.json();
-          const fileUrl = data.secure_url; // Cloudinary URL for the uploaded file
     
-          // Add (PDF: ...) or (IMG: ...) tag based on file type
-          let fileTag = "";
-          if (file.type === "application/pdf") {
-            fileTag = `(PDF: ${fileUrl})`;
-          } else {
-            fileTag = `(IMG: ${fileUrl})`;
-          }
+          // Extract the secure URL of the uploaded PDF
+          const pdfUrl = data.secure_url;
     
-          // Append the file URL tag to the user input
-          userInput.value += ` ${fileTag}`;
-          adjustHeight(); // Adjust textarea height dynamically
+          // Format the output for the textarea
+          const formattedOutput = `(PDF: ${pdfUrl})`;
+    
+          // Append the formatted output to the chat-user-input textarea
+          userInput.value += ` ${formattedOutput}`;
+    
+          // Dynamically adjust the textarea height
+          adjustHeight();
         } catch (error) {
-          console.error("Error uploading file:", error);
-          alert("There was an issue uploading your file. Please try again.");
+          console.error("Error uploading PDF:", error);
+          alert("There was an issue uploading your PDF. Please try again.");
         } finally {
           // Hide the loading animation and show the file icon again
           fileIcon.style.display = "block";
@@ -177,17 +163,13 @@
       fileInput.click();
     }
 
-
-
-
-    
+    // Attach the event listener to the chat-file-input button
     const chatFileInputButton = document.getElementById("chat-file-input");
     if (chatFileInputButton) {
-      chatFileInputButton.addEventListener("click", handleFileUpload);
+      chatFileInputButton.addEventListener("click", handlePdfUpload);
     } else {
       console.error("Button with ID 'chat-file-input' not found.");
     }
-
 
 
     function stopCurrentVoiceOutput() {
