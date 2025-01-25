@@ -910,28 +910,46 @@
     }
     
     async function handleSubmit() {
-        stopVoiceTranscription(); // Existing voice transcription logic
-        stopCurrentVoiceOutput(); // New logic to stop current voice output
     
+        // We still stop any voice output (text-to-speech) that may be playing.
+        stopCurrentVoiceOutput();
+    
+        // Grab the message text that the user typed or spoke
         const message = textarea.value.trim();
         if (!message) return;
     
         console.log("User submitted message:", message);
     
-        // Update Time-Last-Edited in Airtable if recordId exists
+        // If you have an Airtable record, update Time-Last-Edited
         if (airtableRecordId) {
             console.log("Updating Time-Last-Edited for record ID:", airtableRecordId);
             await updateTimeLastEdited(airtableRecordId);
         }
     
-        createChatBlock(true, message); // Render user message
-        resetHeight(); // Reset textarea height
+        // 1) Render the user's message in the chat UI
+        createChatBlock(true, message);
     
-        const { chatInnerWrapper, chatBlockWrapper } = createLoadingBlock(); // Show loading block
-        const agentResponse = await startConversation(message); // Get AI response
-        conversationWrapper.removeChild(chatBlockWrapper); // Remove loading block
-        createChatBlock(false, agentResponse); // Render AI response
+        // 2) Clear the text area content and reset its height
+        resetHeight(); // This already sets textarea.value = "" and resets its size
+    
+        // 3) [RECOMMENDED] Reset the recognized text buffer so new speech is fresh
+        retainedText = "";
+    
+        // 4) Ensure the mic stays visually active (the button remains highlighted)
+        micButton.classList.add("is-active");
+        isListening = true;  // Tells our code we are still listening
+    
+        // 5) Show a loading animation while the AI processes the message
+        const { chatInnerWrapper, chatBlockWrapper } = createLoadingBlock();
+    
+        // 6) Send the user message to the AI and wait for a response
+        const agentResponse = await startConversation(message);
+    
+        // 7) Remove loading animation, then render the AI's response
+        conversationWrapper.removeChild(chatBlockWrapper);
+        createChatBlock(false, agentResponse);
     }
+
 
 
     
