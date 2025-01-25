@@ -526,9 +526,12 @@
     }
 
     
-    let conversationId = null;
-    let isListening = false;
-    let retainedText = "";
+  let conversationId = null;
+  let isListening = false;
+  let retainedText = "";
+  let manualStop = false;
+
+    
     
     function adjustHeight() {
       textarea.style.height = 'auto'; // Reset height
@@ -970,6 +973,7 @@
     recognition.interimResults = true;
     recognition.lang = "en-US";
     
+    // Process recognized text as it comes in (both interim + final)
     recognition.onresult = (event) => {
       let interimTranscript = "";
       let finalTranscript = "";
@@ -987,37 +991,49 @@
       adjustHeight();
     };
     
-    recognition.onstart = () => {
-      console.log("Speech recognition started.");
-    };
-    
+    // Fires whenever recognition stops (browser-based end or manual stop)
     recognition.onend = () => {
-      console.log("Speech recognition ended.");
-      micButton.classList.remove("is-active");
-      isListening = false;
+      console.log("Speech recognition ended (onend).");
+    
+      // If the user DID NOT manually stop, and we're still listening,
+      // automatically restart to avoid “silence timeouts.”
+      if (!manualStop && isListening) {
+        console.log("Auto-restarting speech recognition...");
+        recognition.start();
+      } else {
+        // If it was manual or an error, turn off the mic indicator
+        micButton.classList.remove("is-active");
+        isListening = false;
+      }
     };
     
+    // Handle recognition errors
     recognition.onerror = (event) => {
       console.error("Speech recognition error:", event.error);
       micButton.classList.remove("is-active");
       isListening = false;
     };
     
-    // Attach event listener to micButton
+    // Mic button toggles start/stop
     if (micButton) {
       micButton.addEventListener("click", () => {
         console.log("Mic button clicked.");
         if (isListening) {
-          recognition.stop();
+          // ---- MANUAL STOP ----
+          recognition.stop();              // Stop recognition
           micButton.classList.remove("is-active");
-          console.log("Stopped listening.");
+          isListening = false;
+          manualStop = true;               // Mark that we stopped manually
+          console.log("Stopped listening (manual).");
         } else {
-          retainedText = textarea.value;
-          recognition.start();
+          // ---- MANUAL START ----
+          retainedText = textarea.value;   // If there's any text already typed/spoken, preserve it
+          recognition.start();             // Start recognition
           micButton.classList.add("is-active");
+          isListening = true;
+          manualStop = false;              // Reset so auto-restart can work
           console.log("Started listening.");
         }
-        isListening = !isListening;
       });
     } else {
       console.error("Cannot find #chat-user-input-mic element.");
