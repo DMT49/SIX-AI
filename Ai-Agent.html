@@ -591,7 +591,7 @@
               optionGroup = [];
             }
             const hideAvatar = !isUser && hasRenderedBotAvatar;
-            (textContent, isUser, hideAvatar);
+            renderTextSegment(textContent, isUser, hideAvatar);
             hasRenderedBotAvatar = true;
           }
         } else if (segment.type === "option") {
@@ -619,15 +619,9 @@
       return false;
     }
     
+    // Function to render a text segment in the chat
     function renderTextSegment(text, isUser, hideAvatar) {
       if (!text) return;
-    
-      // 1) If this is a user message, preserve line breaks by converting them to Markdown line breaks.
-      if (isUser) {
-        text = text.replace(/\n/g, "  \n");
-      }
-    
-      // 2) Create the DOM elements
       const chatBlockWrapper = document.createElement("div");
       chatBlockWrapper.className = "chat_block-wrapper";
     
@@ -645,19 +639,18 @@
       const chatInnerWrapper = document.createElement("div");
       chatInnerWrapper.className = `chat_inner-wrapper ${isUser ? "user-message" : ""}`;
     
-      // 3) Parse with Marked, sanitize with DOMPurify
       const parsedHtml = marked.parse(text);
       const sanitizedHtml = DOMPurify.sanitize(parsedHtml);
     
-      // 4) Insert into the DOM
       chatInnerWrapper.innerHTML = sanitizedHtml;
+    
       chatBlock.appendChild(botAvatar);
       chatBlock.appendChild(chatInnerWrapper);
       chatBlock.appendChild(userAvatar);
+    
       chatBlockWrapper.appendChild(chatBlock);
       conversationWrapper.appendChild(chatBlockWrapper);
     }
-
     
     /**
      * Renders multiple choice options in the chat UI.
@@ -1232,32 +1225,15 @@
     };
 
     
-    //-----------------------------------------------------------
     // Hook into the existing message rendering logic
-    //-----------------------------------------------------------
-    const originalCreateChatBlock = createChatBlock; // Keep a reference
-    
+    const originalCreateChatBlock = createChatBlock; // Reference the existing function
     createChatBlock = (isUser, content) => {
-      // Call the original function so the message is rendered
-      originalCreateChatBlock(isUser, content);
+        originalCreateChatBlock(isUser, content); // Call the original function
     
-      // Only scroll if the bot (AI) posted the message
-      if (!isUser) {
-        // 1) Short delay so new message fully renders (avoid partial layout)
-        setTimeout(() => {
-          window.scrollTo({
-            top: document.body.scrollHeight,
-            left: 0,
-            behavior: "smooth", // Or "auto" if you don't want smooth scrolling
-          });
-        }, 50);
-    
-        // 2) Existing voice output logic
-        playVoiceOutput(content);
-      }
+        if (!isUser) {
+            playVoiceOutput(content); // Play voice output for bot messages
+        }
     };
-
-
 
 
   })();
