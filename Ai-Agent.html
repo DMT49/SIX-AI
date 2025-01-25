@@ -528,7 +528,9 @@
     
     let conversationId = null;
     let isListening = false;
-    let retainedText = "";
+    let finalSoFar = "";   // Will store all finalized recognized text.
+    let lastPartial = "";  // Will track the most recently appended partial text.
+
     
     function adjustHeight() {
       textarea.style.height = 'auto'; // Reset height
@@ -550,7 +552,6 @@
         console.log("Voice transcription stopped.");
         isListening = false;
       }
-      retainedText = "";
     }
     
     // Function to create a chat block (user or bot)
@@ -931,6 +932,9 @@
         const agentResponse = await startConversation(message); // Get AI response
         conversationWrapper.removeChild(chatBlockWrapper); // Remove loading block
         createChatBlock(false, agentResponse); // Render AI response
+
+        finalSoFar = "";
+        lastPartial = "";
     }
 
 
@@ -953,21 +957,50 @@
     recognition.lang = "en-US";
     
     recognition.onresult = (event) => {
-      let interimTranscript = "";
-      let finalTranscript = "";
+      // 1) Start with whatever is currently in the textarea
+      let textSoFar = textarea.value;
     
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
+      // We'll figure out how much new final text vs. partial text we got
+      let newFinal = "";
+      let newPartial = "";
+    
+      // 2) Loop through all the results from this speech event
+      for (let i = event.resultIndex; i < event.results.length; i++) {
         if (event.results[i].isFinal) {
-          finalTranscript += event.results[i][0].transcript;
-          retainedText += event.results[i][0].transcript;
+          newFinal += event.results[i][0].transcript;
         } else {
-          interimTranscript += event.results[i][0].transcript;
+          newPartial += event.results[i][0].transcript;
         }
       }
     
-      textarea.value = retainedText + interimTranscript;
+      // 3) Remove the old partial from the end of textSoFar IF it matches exactly
+      //    (If the user edited the text in that region, we skip this removal.)
+      if (lastPartial && textSoFar.endsWith(lastPartial)) {
+        textSoFar = textSoFar.slice(0, -lastPartial.length);
+      }
+    
+      // 4) If we got new final text, append it. Then reset lastPartial.
+      if (newFinal) {
+        textSoFar += newFinal;
+        finalSoFar += newFinal;   // If you need to keep a record of all final recognized text
+        lastPartial = "";
+      }
+    
+      // 5) If we also have new partial text, append it as ephemeral
+      //    (This is the "live" text that might change on the next result.)
+      if (newPartial) {
+        textSoFar += newPartial;
+        lastPartial = newPartial; // So we know what to remove next time
+      }
+    
+      // 6) Update the textarea
+      textarea.value = textSoFar;
+    
+      // 7) Adjust for auto-height
       adjustHeight();
     };
+
+
     
     recognition.onstart = () => {
       console.log("Speech recognition started.");
@@ -994,7 +1027,6 @@
           micButton.classList.remove("is-active");
           console.log("Stopped listening.");
         } else {
-          retainedText = textarea.value;
           recognition.start();
           micButton.classList.add("is-active");
           console.log("Started listening.");
