@@ -1225,24 +1225,31 @@
     };
 
     
-    // -----------------------------
+    //-----------------------------------------------------------
     // Hook into the existing message rendering logic
-    // -----------------------------
-    const originalCreateChatBlock = createChatBlock; // Reference the existing function
+    //-----------------------------------------------------------
+    const originalCreateChatBlock = createChatBlock; // Keep a reference
     
     createChatBlock = (isUser, content) => {
-        // Call the original function to preserve existing rendering
-        originalCreateChatBlock(isUser, content);
+      // Call the original function so the message is rendered
+      originalCreateChatBlock(isUser, content);
     
-        // Only scroll and speak if it's the AI (not the user)
-        if (!isUser) {
-            // 1) Scroll the conversation wrapper to the bottom
-            conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
-            
-            // 2) Play voice output for bot messages (existing functionality)
-            playVoiceOutput(content);
-        }
+      // Only scroll if the bot (AI) posted the message
+      if (!isUser) {
+        // 1) Short delay so new message fully renders (avoid partial layout)
+        setTimeout(() => {
+          window.scrollTo({
+            top: document.body.scrollHeight,
+            left: 0,
+            behavior: "smooth", // Or "auto" if you don't want smooth scrolling
+          });
+        }, 50);
+    
+        // 2) Existing voice output logic
+        playVoiceOutput(content);
+      }
     };
+
 
 
 
