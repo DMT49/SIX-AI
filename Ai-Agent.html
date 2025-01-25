@@ -1225,15 +1225,25 @@
     };
 
     
+    // -----------------------------
     // Hook into the existing message rendering logic
+    // -----------------------------
     const originalCreateChatBlock = createChatBlock; // Reference the existing function
-    createChatBlock = (isUser, content) => {
-        originalCreateChatBlock(isUser, content); // Call the original function
     
+    createChatBlock = (isUser, content) => {
+        // Call the original function to preserve existing rendering
+        originalCreateChatBlock(isUser, content);
+    
+        // Only scroll and speak if it's the AI (not the user)
         if (!isUser) {
-            playVoiceOutput(content); // Play voice output for bot messages
+            // 1) Scroll the conversation wrapper to the bottom
+            conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
+            
+            // 2) Play voice output for bot messages (existing functionality)
+            playVoiceOutput(content);
         }
     };
+
 
 
   })();
