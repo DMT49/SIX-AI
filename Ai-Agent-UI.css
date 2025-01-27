@@ -3033,24 +3033,23 @@ margin: 0rem !important;
 }
 
 /* 
-====================================
-1) Outer "code-block" container
-   - You still get the box/border,
-     separate background, etc.
-====================================
+===============================
+ 1) Outer Container + Header
+===============================
 */
+
 .code-block-container {
   border: 1px solid #ccc;
   border-radius: 4px;
   overflow: hidden;
-  margin: 1em 0; /* spacing above/below */
+  margin: 1em 0; /* space around the box */
 }
 
 .code-block-header {
   background-color: #f1f1f1;
   display: flex;
   align-items: center;
-  justify-content: flex-end; /* 'Copy' button on the right */
+  justify-content: flex-end; 
   height: 32px;
   padding: 0 8px;
 }
@@ -3062,7 +3061,7 @@ margin: 0rem !important;
   cursor: pointer;
   border: none;
   background: transparent;
-  font-size: 14px;
+  font-size: 14px; /* This is just for the button text */
 }
 
 .copy-code-icon svg {
@@ -3070,43 +3069,45 @@ margin: 0rem !important;
 }
 
 /*
-  The <pre> gets the "box" styling
-  (background color, spacing, etc.).
-  But we do NOT force a different font/color
-  inside the code—see below for <code> overrides.
+==========================================
+ 2) <pre>: The Box for the Code Content
+==========================================
 */
 .code-block-container pre {
-  margin: 0 !important;
-  padding: 10px !important;
-  background: #f4f4f4 !important;
-  border-radius: 5px !important;
-  overflow-x: auto !important;
-  /* If you want to keep text inside pre black, you can:
+  margin: 0 !important;          /* No extra spacing above/below */
+  padding: 10px !important;      /* Inner padding for the code area */
+  background: #f4f4f4 !important;/* Light gray box background */
+  border-radius: 5px !important; /* Slightly rounded corners */
+  overflow-x: auto !important;   /* Horizontal scroll for wide code */
+  /* If you want black text in the box:
      color: #000 !important; 
-     or omit color if you want to truly inherit from parent
+     (or remove to let .code styles apply)
   */
 }
 
 /*
-====================================
-2) Actual <code> text
-   - Here we remove the monospace style,
-     color changes, etc., so text looks
-     exactly like plain text.
-====================================
+==========================================
+ 3) <code>: Force Raleway Text at 16px
+    EXACTLY Like Your Standard Text
+==========================================
 */
 .code-block-container code {
-  font-family: inherit !important;
-  font-size: inherit !important;
-  font-weight: inherit !important;
-  line-height: inherit !important;
-  color: inherit !important; 
+  /* Match the font styles from your plain text */
+  font-family: "Raleway", sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 400 !important;    /* or 300 if that matches your normal text weight */
+  line-height: 28px !important;   /* or whichever line-height you prefer (28px from your screenshot) */
+  color: #000 !important;         /* match your normal text color */
 
-  /* Remove "code" background, let the pre handle it */
-  background: transparent !important;
+  /* Remove default "code" styling (monospace, backgrounds, etc.) */
+  background: none !important;
   padding: 0 !important;
   border-radius: 0 !important;
+  /* If you don’t want italic or anything else, you can override that too:
+     font-style: normal !important; 
+  */
 }
+
 
 
 
