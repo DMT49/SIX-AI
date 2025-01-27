@@ -3028,29 +3028,84 @@ margin: 0rem !important;
 
 /* Bold Text */
 .chat_conversation-wrapper strong {
-  font-family: 'Roboto Black', sans-serif !important; /* Heavy font */
   font-weight: 900 !important; /* Maximum bold */
   color: #000 !important;
 }
 
-/* Code */
-.chat_conversation-wrapper code {
-  font-family: 'Courier New', monospace !important;
-  background: #f4f4f4 !important; /* Light gray background */
-  padding: 4px 6px !important; /* Slightly more padding */
-  border-radius: 3px !important;
-  color: #333 !important; /* Neutral dark gray for text */
-  font-size: 1em !important; /* Increased font size */
+/* 
+==============================================
+ 1) Container + Header for "Copy to Clipboard"
+==============================================
+*/
+
+/* Outer wrapper that holds the header + <pre> */
+.code-block-container {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 1em 0; /* vertical spacing */
 }
 
-.chat_conversation-wrapper pre {
-  background: #f4f4f4 !important; /* Light gray */
-  color: #000 !important; /* Standard black */
-  padding: 10px !important;
-  border-radius: 5px !important;
-  overflow-x: auto !important;
-  font-size: 1em !important; /* Increased font size */
+/* The header bar above the code block */
+.code-block-header {
+  background-color: #f1f1f1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; /* right-align the "Copy" button */
+  height: 32px;
+  padding: 0 8px;
 }
+
+/* The "Copy" button inside the header */
+.copy-code-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px; /* small spacing between icon and text */
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+}
+
+/* The SVG container for the icon inside the button */
+.copy-code-icon svg {
+  vertical-align: middle;
+}
+
+/* 
+================================
+ 2) Code Block & Inline Code Styles
+   (integrating your existing)
+================================
+*/
+
+/* The <pre> within our container:
+   - Replicates your old .chat_conversation-wrapper pre rules 
+   - Adjusts margin/padding to fit the new layout
+*/
+.code-block-container pre {
+  margin: 0 !important;               /* Ensure no extra spacing above/below <pre> */
+  padding: 10px !important;           /* from your old style */
+  background: #f4f4f4 !important;     /* light gray, matches your old style */
+  color: #000 !important;             /* standard black text */
+  border-radius: 5px !important;      /* slight rounding on corners */
+  overflow-x: auto !important;        /* horizontal scroll for long lines */
+  font-size: 1em !important;          /* from your old style */
+}
+
+/* The <code> tag itself:
+   - Replicates your old .chat_conversation-wrapper code rules 
+   - Stays consistent with the pre’s background & spacing
+*/
+.code-block-container code {
+  font-family: 'Courier New', monospace !important;
+  background: #f4f4f4 !important; /* match <pre>'s background */
+  padding: 4px 6px !important;
+  border-radius: 3px !important;
+  color: #333 !important;         /* neutral dark gray */
+  font-size: 1em !important;      /* keep consistent sizing */
+}
+
 
 /* Horizontal Rules */
 .chat_conversation-wrapper hr {
