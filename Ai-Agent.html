@@ -1236,30 +1236,27 @@
     };
 
     
-    //-----------------------------------------------------------
-    // Hook into the existing message rendering logic
-    //-----------------------------------------------------------
     const originalCreateChatBlock = createChatBlock; // Keep a reference
     
     createChatBlock = (isUser, content) => {
-      // Call the original function so the message is rendered
+      // 1) Render the message as before
       originalCreateChatBlock(isUser, content);
     
-      // Only scroll if the bot (AI) posted the message
-      if (!isUser) {
-        // 1) Short delay so new message fully renders (avoid partial layout)
-        setTimeout(() => {
-          window.scrollTo({
-            top: document.body.scrollHeight,
-            left: 0,
-            behavior: "smooth", // Or "auto" if you don't want smooth scrolling
-          });
-        }, 50);
+      // 2) Always scroll to the bottom after *any* message (user or bot)
+      setTimeout(() => {
+        window.scrollTo({
+          top: document.body.scrollHeight,
+          left: 0,
+          behavior: "smooth", // or "auto" if you prefer no smooth scrolling
+        });
+      }, 50);
     
-        // 2) Existing voice output logic
+      // 3) Only trigger text-to-speech (TTS) for AI messages
+      if (!isUser) {
         playVoiceOutput(content);
       }
     };
+
 
 
 
