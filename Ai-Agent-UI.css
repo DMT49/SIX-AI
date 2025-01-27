@@ -457,7 +457,7 @@ textarea.w-select {
   margin-left: 0;
   margin-right: 0;
 }
-.w-col {
+.w-c{
   position: relative;
   float: left;
   width: 100%;
@@ -465,7 +465,7 @@ textarea.w-select {
   padding-left: 10px;
   padding-right: 10px;
 }
-.w-col .w-col {
+.w-c.w-c{
   padding-left: 0;
   padding-right: 0;
 }
@@ -575,7 +575,7 @@ textarea.w-select {
     margin-left: 0;
     margin-right: 0;
   }
-  .w-col {
+  .w-c{
     width: 100%;
     left: auto;
     right: auto;
@@ -633,7 +633,7 @@ textarea.w-select {
   .w-hidden-tiny {
     display: none !important;
   }
-  .w-col {
+  .w-c{
     width: 100%;
   }
   .w-col-tiny-1 {
@@ -832,14 +832,14 @@ textarea.w-select {
   display: none !important;
   -webkit-appearance: none;
 }
-.w-background-video--control {
+.w-background-video--contr{
   position: absolute;
   bottom: 1em;
   right: 1em;
   background-color: transparent;
   padding: 0;
 }
-.w-background-video--control > [hidden] {
+.w-background-video--contr> [hidden] {
   display: none !important;
 }
 .w-slider {
@@ -1188,7 +1188,7 @@ textarea.w-select {
   width: 100%;
   height: 100%;
 }
-.w-lightbox-control {
+.w-lightbox-contr{
   position: absolute;
   top: 0;
   width: 4em;
@@ -1928,7 +1928,7 @@ button {
 }
 /**
  * Address inconsistent `text-transform` inheritance for `button` and `select`.
- * All other form control elements do not inherit `text-transform` values.
+ * All other form contrelements do not inherit `text-transform` values.
  * Correct `button` style inheritance in Firefox, IE 8/9/10/11, and Opera.
  * Correct `select` style inheritance in Firefox.
  */
@@ -2265,6 +2265,7 @@ figcaption {
 .shell15_wrapper {
   display: flex;
   position: relative;
+  margin-bottom: 80px;
 }
 
 .shell15_main-wrapper {
@@ -2274,7 +2275,7 @@ figcaption {
   position: relative;
 }
 
-.chat_conversation-wrapper {
+. {
   flex-flow: column;
   flex: 1;
   justify-content: flex-start;
@@ -2740,7 +2741,7 @@ figcaption {
   margin-top: 0 !important;
 }
 /* Get rid of bottom margin on last element in any rich text element */
-.w-richtext>:last-child, .w-richtext ol li:last-child, .w-richtext ul li:last-child {
+.w-richtext>:last-child, .w-richtext li:last-child, .w-richtext ul li:last-child {
 	margin-bottom: 0 !important;
 }
 /* Prevent all click and hover interaction with an element */
@@ -2935,56 +2936,56 @@ margin: 0rem !important;
 
 
 /* General Reset */
-.chat_conversation-wrapper body {
+. body {
   line-height: 1.6 !important;
   color: #000 !important; /* Standard black text */
 }
 
 /* Headings */
-.chat_conversation-wrapper h1, 
-.chat_conversation-wrapper h2, 
-.chat_conversation-wrapper h3, 
-.chat_conversation-wrapper h4, 
-.chat_conversation-wrapper h5, 
-.chat_conversation-wrapper h6 {
+.chat_inner-wrapper h1, 
+.chat_inner-wrapper h2, 
+.chat_inner-wrapper h3, 
+.chat_inner-wrapper h4, 
+.chat_inner-wrapper h5, 
+.chat_inner-wrapper h6 {
   margin-top: 1em !important;
   margin-bottom: 0.5em !important;
   font-weight: bold !important;
   color: #000 !important; /* Standard black text for all headings */
 }
 
-.chat_conversation-wrapper h4,
-.chat_conversation-wrapper h5,
-.chat_conversation-wrapper h6 {
+.chat_inner-wrapper h4,
+.chat_inner-wrapper h5,
+.chat_inner-wrapper h6 {
   padding-bottom: 0 !important; /* No bottom padding */
 }
 
-.chat_conversation-wrapper h1 {
+.chat_inner-wrapper h1 {
   font-size: 1.3em !important;
 }
 
-.chat_conversation-wrapper h2 {
+.chat_inner-wrapper h2 {
   font-size: 1.3em !important;
 }
 
-.chat_conversation-wrapper h3 {
+.chat_inner-wrapper h3 {
   font-size: 1.15em !important;
 }
 
-.chat_conversation-wrapper h4 {
+.chat_inner-wrapper h4 {
   font-size: 1.15em !important;
 }
 
-.chat_conversation-wrapper h5 {
+.chat_inner-wrapper h5 {
   font-size: 1em !important;
 }
 
-.chat_conversation-wrapper h6 {
+.chat_inner-wrapper h6 {
   font-size: 1em !important;
 }
 
 /* Paragraphs */
-.chat_conversation-wrapper p {
+.chat_inner-wrapper p {
   margin-top: 0 !important;
   margin-bottom: 16px !important;
   color: #000 !important;
@@ -2995,7 +2996,7 @@ margin: 0rem !important;
 }
 
 /* Blockquotes */
-.chat_conversation-wrapper blockquote {
+.chat_inner-wrapper blockquote {
   border-left: 5px solid #ddd !important; /* Neutral gray border */
   padding-left: 15px !important;
   font-style: italic !important;
@@ -3003,11 +3004,17 @@ margin: 0rem !important;
   margin: 1em 0 !important;
 }
 
+
 /* Lists */
-.chat_conversation-wrapper ul, 
+. ul, 
 .chat_conversation-wrapper ol {
   margin: 1em 0 !important;
-  padding-left: 30px !important; /* Reduced indentation */
+  font-size: 16px !important;
+}
+
+.chat_conversation-wrapper ul {
+  margin: 1em 0 !important;
+  font-size: 16px !important;
 }
 
 .chat_conversation-wrapper ul ul, 
