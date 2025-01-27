@@ -92,21 +92,30 @@
     let airtableRecordId = null;
 
     function parseMarkdownInsideCode(parentElement) {
-      // 1) Find any <pre><code> blocks
+      // Find all <pre><code> blocks
       const codeBlocks = parentElement.querySelectorAll('pre code');
       
       codeBlocks.forEach((codeBlock) => {
-        // 2) Grab the raw text (which might contain Markdown)
+        // Extract raw text from the code block
         const rawText = codeBlock.textContent || '';
     
-        // 3) Re-parse this text as Markdown, then sanitize
-        const renderedHtml = marked.parse(rawText);
-        const sanitized = DOMPurify.sanitize(renderedHtml);
+        // Clean and normalize the content
+        const cleanedContent = rawText
+          .replace(/^\s+|\s+$/g, '') // Trim leading/trailing spaces
+          .replace(/\n{2,}/g, '\n')  // Replace multiple line breaks with a single one
+          .trim(); // Final trim to ensure no extra spacing
     
-        // 4) Replace the code block's content with the newly rendered HTML
-        codeBlock.innerHTML = sanitized;
+        // Parse the cleaned Markdown into HTML
+        const renderedHtml = marked.parse(cleanedContent);
+    
+        // Sanitize the rendered HTML to prevent XSS
+        const sanitizedHtml = DOMPurify.sanitize(renderedHtml);
+    
+        // Replace the code block's content with the sanitized HTML
+        codeBlock.innerHTML = sanitizedHtml;
       });
     }
+
 
 
     function addCopyButtonsToCodeBlocks(parentElement) {
@@ -748,55 +757,53 @@
     function renderTextSegment(text, isUser, hideAvatar) {
       if (!text) return;
     
-      // 1) Preserve user line breaks by converting "\n" to Markdown line breaks
+      // Preserve user line breaks by converting "\n" to Markdown line breaks
       if (isUser) {
-        // Marked normally doesn't treat single \n as <br>.
-        // Replace them with "  \n" which Marked interprets as a line break.
-        text = text.replace(/\n/g, "  \n");
+        text = text.replace(/\n/g, '  \n'); // Markdown soft break
       }
     
-      // 2) Create the chat block DOM elements
-      const chatBlockWrapper = document.createElement("div");
-      chatBlockWrapper.className = "chat_block-wrapper";
+      // Create the chat block DOM elements
+      const chatBlockWrapper = document.createElement('div');
+      chatBlockWrapper.className = 'chat_block-wrapper';
     
-      const chatBlock = document.createElement("div");
-      chatBlock.className = "chat_block";
+      const chatBlock = document.createElement('div');
+      chatBlock.className = 'chat_block';
     
-      const botAvatar = document.createElement("div");
-      botAvatar.className = "chat_bot-avatar";
-      if (isUser || hideAvatar) botAvatar.classList.add("opacity-0");
+      const botAvatar = document.createElement('div');
+      botAvatar.className = 'chat_bot-avatar';
+      if (isUser || hideAvatar) botAvatar.classList.add('opacity-0');
     
-      const userAvatar = document.createElement("div");
-      userAvatar.className = "chat_user-avatar";
-      if (!isUser) userAvatar.classList.add("opacity-0");
+      const userAvatar = document.createElement('div');
+      userAvatar.className = 'chat_user-avatar';
+      if (!isUser) userAvatar.classList.add('opacity-0');
     
-      const chatInnerWrapper = document.createElement("div");
-      chatInnerWrapper.className = `chat_inner-wrapper ${isUser ? "user-message" : ""}`;
+      const chatInnerWrapper = document.createElement('div');
+      chatInnerWrapper.className = `chat_inner-wrapper ${isUser ? 'user-message' : ''}`;
     
-      // 3) Convert text to HTML (first pass), then sanitize
+      // Parse text as Markdown
       const parsedHtml = marked.parse(text);
       const sanitizedHtml = DOMPurify.sanitize(parsedHtml);
     
-      // 4) Inject the sanitized HTML into chatInnerWrapper
+      // Inject sanitized HTML into chatInnerWrapper
       chatInnerWrapper.innerHTML = sanitizedHtml;
     
-      // 5) NEW STEP: "Second pass" parse of the code blocks
-      //    This re-parses any Markdown that was inside triple backticks
+      // Second pass: Parse and clean Markdown inside code blocks
       parseMarkdownInsideCode(chatInnerWrapper);
     
-      // 6) Add "Copy" buttons to any code blocks (the new re-rendered blocks)
+      // Add "Copy" buttons to the cleaned code blocks
       addCopyButtonsToCodeBlocks(chatInnerWrapper);
     
-      // 7) Append DOM elements into the conversation
+      // Append elements to the chat block
       chatBlock.appendChild(botAvatar);
       chatBlock.appendChild(chatInnerWrapper);
       chatBlock.appendChild(userAvatar);
       chatBlockWrapper.appendChild(chatBlock);
       conversationWrapper.appendChild(chatBlockWrapper);
     
-      // 8) Ensure the conversation is scrolled to the bottom
+      // Scroll to the bottom
       conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
     }
+
 
 
     
