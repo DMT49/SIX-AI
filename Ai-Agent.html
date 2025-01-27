@@ -91,6 +91,23 @@
 
     let airtableRecordId = null;
 
+    function parseMarkdownInsideCode(parentElement) {
+      // 1) Find any <pre><code> blocks
+      const codeBlocks = parentElement.querySelectorAll('pre code');
+      
+      codeBlocks.forEach((codeBlock) => {
+        // 2) Grab the raw text (which might contain Markdown)
+        const rawText = codeBlock.textContent || '';
+    
+        // 3) Re-parse this text as Markdown, then sanitize
+        const renderedHtml = marked.parse(rawText);
+        const sanitized = DOMPurify.sanitize(renderedHtml);
+    
+        // 4) Replace the code block's content with the newly rendered HTML
+        codeBlock.innerHTML = sanitized;
+      });
+    }
+
 
     function addCopyButtonsToCodeBlocks(parentElement) {
       const codeBlocks = parentElement.querySelectorAll('pre code');
@@ -756,26 +773,31 @@
       const chatInnerWrapper = document.createElement("div");
       chatInnerWrapper.className = `chat_inner-wrapper ${isUser ? "user-message" : ""}`;
     
-      // 3) Convert text to HTML, then sanitize
+      // 3) Convert text to HTML (first pass), then sanitize
       const parsedHtml = marked.parse(text);
       const sanitizedHtml = DOMPurify.sanitize(parsedHtml);
     
-      // Inject the sanitized HTML
+      // 4) Inject the sanitized HTML into chatInnerWrapper
       chatInnerWrapper.innerHTML = sanitizedHtml;
     
-      // 4) Add "Copy" buttons to any code blocks
+      // 5) NEW STEP: "Second pass" parse of the code blocks
+      //    This re-parses any Markdown that was inside triple backticks
+      parseMarkdownInsideCode(chatInnerWrapper);
+    
+      // 6) Add "Copy" buttons to any code blocks (the new re-rendered blocks)
       addCopyButtonsToCodeBlocks(chatInnerWrapper);
     
-      // 5) Append DOM elements into the conversation
+      // 7) Append DOM elements into the conversation
       chatBlock.appendChild(botAvatar);
       chatBlock.appendChild(chatInnerWrapper);
       chatBlock.appendChild(userAvatar);
       chatBlockWrapper.appendChild(chatBlock);
       conversationWrapper.appendChild(chatBlockWrapper);
     
-      // Ensure the conversation is scrolled to the bottom
+      // 8) Ensure the conversation is scrolled to the bottom
       conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
     }
+
 
     
     /**
