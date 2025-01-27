@@ -92,69 +92,83 @@
     let airtableRecordId = null;
 
     function addCopyButtonsToCodeBlocks(parentElement) {
-      // Find all <code> blocks inside <pre>
+      // 1. Find all <code> blocks inside <pre>
       const codeBlocks = parentElement.querySelectorAll('pre code');
     
       codeBlocks.forEach((codeBlock) => {
+        // 2. Locate the parent <pre>
         const pre = codeBlock.closest('pre');
         if (!pre) return;
     
-        // Ensure the <pre> can host an absolutely positioned button
-        pre.style.position = 'relative';
-    
-        // Create the copy button
+        // 3. Create a wrapping container for the entire code block
+        //    This lets us place a "header" above the actual <pre>.
+        const codeBlockContainer = document.createElement('div');
+        codeBlockContainer.style.border = '1px solid #ccc';
+        codeBlockContainer.style.borderRadius = '4px';
+        codeBlockContainer.style.overflow = 'hidden'; 
+        codeBlockContainer.style.margin = '1em 0'; // some spacing
+        
+        // 4. Create a header bar (grey background, full width, 32px tall)
+        const headerBar = document.createElement('div');
+        headerBar.style.backgroundColor = '#f1f1f1';
+        headerBar.style.display = 'flex';
+        headerBar.style.alignItems = 'center';
+        headerBar.style.justifyContent = 'flex-end'; // push “Copy” button to the right
+        headerBar.style.height = '32px';
+        headerBar.style.padding = '0 8px';
+        
+        // 5. Create the "Copy" button (icon + text)
         const copyBtn = document.createElement('button');
-        copyBtn.classList.add('copy-code-btn');
-        copyBtn.style.position = 'absolute';
-        copyBtn.style.top = '8px';
-        copyBtn.style.right = '8px';
+        copyBtn.style.display = 'flex';
+        copyBtn.style.alignItems = 'center';
+        copyBtn.style.gap = '4px';
         copyBtn.style.cursor = 'pointer';
         copyBtn.style.border = 'none';
-        copyBtn.style.background = '#f1f1f1';  // adjust to match your theme
-        copyBtn.style.padding = '4px 8px';
+        copyBtn.style.background = 'transparent';
         copyBtn.style.fontSize = '14px';
-        copyBtn.style.borderRadius = '4px';
     
         // Default icon + text
         copyBtn.innerHTML = `
-          <span style="margin-right:4px; vertical-align:middle;">
-            <!-- Use your COPY SVG here -->
-            <svg xmlns="http://www.w3.org/2000/svg" 
-                 aria-hidden="true" 
-                 role="img" 
-                 width="16" 
-                 height="16" 
-                 viewBox="0 0 24 24">
-              <path fill="currentColor" 
-                d="M15 20H5V7c0-.55-.45-1-1-1s-1 .45-1 1v13c0 1.1.9 2 2 2h10c.55 
-                   0 1-.45 1-1s-.45-1-1-1m5-4V4c0-1.1-.9-2-2-2H9c-1.1 
-                   0-2 .9-2 2v12c0 1.1.9 2 2 2h9c1.1 
-                   0 2-.9 2-2m-2 0H9V4h9z">
+          <span style="display:inline-flex; vertical-align:middle;">
+            <!-- Your COPY SVG icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true"
+                 role="img" width="16" height="16" viewBox="0 0 24 24">
+              <path fill="currentColor"
+                    d="M15 20H5V7c0-.55-.45-1-1-1s-1 
+                       .45-1 1v13c0 1.1.9 2 2 
+                       2h10c.55 0 1-.45 
+                       1-1s-.45-1-1-1m5-4V4
+                       c0-1.1-.9-2-2-2H9c-1.1 
+                       0-2 .9-2 2v12c0 1.1.9 
+                       2 2 2h9c1.1 
+                       0 2-.9 2-2m-2 
+                       0H9V4h9z">
               </path>
             </svg>
           </span>
           Copy
         `;
     
-        // On click: copy the code text
+        // 6. “Copy” button logic
         copyBtn.addEventListener('click', () => {
+          // Copy the code block’s text
           navigator.clipboard.writeText(codeBlock.innerText)
             .then(() => {
-              // Change the button to "Copied!"
+              // Change to “Copied!” + check mark
               copyBtn.innerHTML = `
-                <span style="margin-right:4px; vertical-align:middle;">
-                  <!-- Use your CHECK SVG here -->
-                  <svg xmlns="http://www.w3.org/2000/svg" 
+                <span style="display:inline-flex; vertical-align:middle;">
+                  <!-- Your CHECK SVG icon -->
+                  <svg xmlns="http://www.w3.org/2000/svg"
                        aria-hidden="true" 
-                       role="img" 
-                       width="16" 
-                       height="16" 
-                       viewBox="0 0 24 24">
-                    <path fill="currentColor" d="M20.29 5.71a1 1 0 0 
-                      0-1.42 0L10 14.59l-4.29-4.3a1 
-                      1 0 0 0-1.42 1.42l5 5a1 
-                      1 0 0 0 1.42 0l10-10a1 
-                      1 0 0 0 0-1.42Z"/>
+                       role="img" width="16" height="16" viewBox="0 0 24 24">
+                    <path fill="currentColor"
+                          d="M20.29 5.71a1 1 0 
+                             0 0-1.42 0L10 14.59l-4.29-4.3
+                             a1 1 0 0 0-1.42 
+                             1.42l5 5a1 1 0 0 
+                             0 1.42 0l10-10a1 
+                             1 0 0 0 0-1.42Z">
+                    </path>
                   </svg>
                 </span>
                 Copied!
@@ -162,22 +176,20 @@
               // Revert after 3 seconds
               setTimeout(() => {
                 copyBtn.innerHTML = `
-                  <span style="margin-right:4px; vertical-align:middle;">
+                  <span style="display:inline-flex; vertical-align:middle;">
                     <!-- Revert to your COPY SVG -->
-                    <svg xmlns="http://www.w3.org/2000/svg" 
+                    <svg xmlns="http://www.w3.org/2000/svg"
                          aria-hidden="true" 
-                         role="img" 
-                         width="16" 
-                         height="16" 
-                         viewBox="0 0 24 24">
-                      <path fill="currentColor" 
-                        d="M15 20H5V7c0-.55-.45-1-1-1s-1 
-                           .45-1 1v13c0 1.1.9 2 2 
-                           2h10c.55 0 1-.45 
-                           1-1s-.45-1-1-1m5-4V4c0-1.1-.9-2-2-2H9c-1.1 
-                           0-2 .9-2 2v12c0 1.1.9 2 2 
-                           2h9c1.1 0 2-.9 2-2m-2 
-                           0H9V4h9z">
+                         role="img" width="16" height="16" viewBox="0 0 24 24">
+                      <path fill="currentColor"
+                            d="M15 20H5V7c0-.55-.45-1-1-1
+                               s-1 .45-1 1v13c0 1.1.9 2 
+                               2 2h10c.55 0 1-.45 
+                               1-1s-.45-1-1-1m5-4V4
+                               c0-1.1-.9-2-2-2H9c-1.1 
+                               0-2 .9-2 2v12c0 1.1.9 
+                               2 2 2h9c1.1 0 2-.9 
+                               2-2m-2 0H9V4h9z">
                       </path>
                     </svg>
                   </span>
@@ -190,10 +202,22 @@
             });
         });
     
-        // Attach the button to <pre>
-        pre.appendChild(copyBtn);
+        // 7. Build the new structure
+        //    (headerBar) + (pre/code)
+        headerBar.appendChild(copyBtn);
+    
+        // Insert the container before <pre>
+        pre.parentNode.insertBefore(codeBlockContainer, pre);
+    
+        // Move the <pre> inside the container
+        codeBlockContainer.appendChild(headerBar);
+        codeBlockContainer.appendChild(pre);
+    
+        // Adjust <pre> styling so it has no extra top/bottom margins
+        pre.style.margin = '0';
       });
     }
+
 
 
     // Function to handle PDF upload and append the URL to the input field
