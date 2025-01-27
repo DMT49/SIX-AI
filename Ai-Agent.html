@@ -91,6 +91,111 @@
 
     let airtableRecordId = null;
 
+    function addCopyButtonsToCodeBlocks(parentElement) {
+      // Find all <code> blocks inside <pre>
+      const codeBlocks = parentElement.querySelectorAll('pre code');
+    
+      codeBlocks.forEach((codeBlock) => {
+        const pre = codeBlock.closest('pre');
+        if (!pre) return;
+    
+        // Ensure the <pre> can host an absolutely positioned button
+        pre.style.position = 'relative';
+    
+        // Create the copy button
+        const copyBtn = document.createElement('button');
+        copyBtn.classList.add('copy-code-btn');
+        copyBtn.style.position = 'absolute';
+        copyBtn.style.top = '8px';
+        copyBtn.style.right = '8px';
+        copyBtn.style.cursor = 'pointer';
+        copyBtn.style.border = 'none';
+        copyBtn.style.background = '#f1f1f1';  // adjust to match your theme
+        copyBtn.style.padding = '4px 8px';
+        copyBtn.style.fontSize = '14px';
+        copyBtn.style.borderRadius = '4px';
+    
+        // Default icon + text
+        copyBtn.innerHTML = `
+          <span style="margin-right:4px; vertical-align:middle;">
+            <!-- Use your COPY SVG here -->
+            <svg xmlns="http://www.w3.org/2000/svg" 
+                 aria-hidden="true" 
+                 role="img" 
+                 width="16" 
+                 height="16" 
+                 viewBox="0 0 24 24">
+              <path fill="currentColor" 
+                d="M15 20H5V7c0-.55-.45-1-1-1s-1 .45-1 1v13c0 1.1.9 2 2 2h10c.55 
+                   0 1-.45 1-1s-.45-1-1-1m5-4V4c0-1.1-.9-2-2-2H9c-1.1 
+                   0-2 .9-2 2v12c0 1.1.9 2 2 2h9c1.1 
+                   0 2-.9 2-2m-2 0H9V4h9z">
+              </path>
+            </svg>
+          </span>
+          Copy
+        `;
+    
+        // On click: copy the code text
+        copyBtn.addEventListener('click', () => {
+          navigator.clipboard.writeText(codeBlock.innerText)
+            .then(() => {
+              // Change the button to "Copied!"
+              copyBtn.innerHTML = `
+                <span style="margin-right:4px; vertical-align:middle;">
+                  <!-- Use your CHECK SVG here -->
+                  <svg xmlns="http://www.w3.org/2000/svg" 
+                       aria-hidden="true" 
+                       role="img" 
+                       width="16" 
+                       height="16" 
+                       viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M20.29 5.71a1 1 0 0 
+                      0-1.42 0L10 14.59l-4.29-4.3a1 
+                      1 0 0 0-1.42 1.42l5 5a1 
+                      1 0 0 0 1.42 0l10-10a1 
+                      1 0 0 0 0-1.42Z"/>
+                  </svg>
+                </span>
+                Copied!
+              `;
+              // Revert after 3 seconds
+              setTimeout(() => {
+                copyBtn.innerHTML = `
+                  <span style="margin-right:4px; vertical-align:middle;">
+                    <!-- Revert to your COPY SVG -->
+                    <svg xmlns="http://www.w3.org/2000/svg" 
+                         aria-hidden="true" 
+                         role="img" 
+                         width="16" 
+                         height="16" 
+                         viewBox="0 0 24 24">
+                      <path fill="currentColor" 
+                        d="M15 20H5V7c0-.55-.45-1-1-1s-1 
+                           .45-1 1v13c0 1.1.9 2 2 
+                           2h10c.55 0 1-.45 
+                           1-1s-.45-1-1-1m5-4V4c0-1.1-.9-2-2-2H9c-1.1 
+                           0-2 .9-2 2v12c0 1.1.9 2 2 
+                           2h9c1.1 0 2-.9 2-2m-2 
+                           0H9V4h9z">
+                      </path>
+                    </svg>
+                  </span>
+                  Copy
+                `;
+              }, 3000);
+            })
+            .catch((err) => {
+              console.error('Clipboard copy failed:', err);
+            });
+        });
+    
+        // Attach the button to <pre>
+        pre.appendChild(copyBtn);
+      });
+    }
+
+
     // Function to handle PDF upload and append the URL to the input field
     function handlePdfUpload() {
       // Create a hidden file input element for selecting PDFs
@@ -619,7 +724,6 @@
       return false;
     }
     
-    // Function to render a text segment in the chat
     function renderTextSegment(text, isUser, hideAvatar) {
       if (!text) return;
     
@@ -648,18 +752,25 @@
       const chatInnerWrapper = document.createElement("div");
       chatInnerWrapper.className = `chat_inner-wrapper ${isUser ? "user-message" : ""}`;
     
-      // 3) Convert text (with forced line breaks) into HTML via Marked,
-      //    then sanitize it with DOMPurify
+      // 3) Convert text to HTML, then sanitize
       const parsedHtml = marked.parse(text);
       const sanitizedHtml = DOMPurify.sanitize(parsedHtml);
     
-      // 4) Insert the result into the DOM
+      // Inject the sanitized HTML
       chatInnerWrapper.innerHTML = sanitizedHtml;
+    
+      // 4) Add "Copy" buttons to any code blocks
+      addCopyButtonsToCodeBlocks(chatInnerWrapper);
+    
+      // 5) Append DOM elements into the conversation
       chatBlock.appendChild(botAvatar);
       chatBlock.appendChild(chatInnerWrapper);
       chatBlock.appendChild(userAvatar);
       chatBlockWrapper.appendChild(chatBlock);
       conversationWrapper.appendChild(chatBlockWrapper);
+    
+      // Ensure the conversation is scrolled to the bottom
+      conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
     }
 
     
