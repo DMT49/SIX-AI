@@ -3039,8 +3039,8 @@ margin: 0rem !important;
 */
 
 .code-block-container {
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  border: 1px solid #67b8d9 !important;
+  border-radius: 10px;
   overflow: hidden;
   margin: 1em 0; /* space around the box */
 }
@@ -3076,8 +3076,7 @@ margin: 0rem !important;
 .code-block-container pre {
   margin: 0 !important;          /* No extra spacing above/below */
   padding: 10px !important;      /* Inner padding for the code area */
-  background: #f4f4f4 !important;/* Light gray box background */
-  border-radius: 5px !important; /* Slightly rounded corners */
+  background: #fbfbfb !important;/* Light gray box background */
   overflow-x: auto !important;   /* Horizontal scroll for wide code */
   /* If you want black text in the box:
      color: #000 !important; 
