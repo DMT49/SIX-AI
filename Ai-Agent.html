@@ -1428,7 +1428,7 @@
       let hoverTimer = null;
       let currentTarget = null;
     
-      // Query all buttons that have .my-btn + data-tooltip
+      // Query all buttons with class .my-btn and data-tooltip
       const tooltipButtons = document.querySelectorAll(".my-btn[data-tooltip]");
       console.log("Tooltip: found", tooltipButtons.length, "buttons.");
     
@@ -1437,30 +1437,35 @@
           currentTarget = e.currentTarget;
           const tooltipText = currentTarget.getAttribute("data-tooltip");
     
-          // Use a shorter delay: 500ms
+          // 1 second delay before showing the tooltip
           hoverTimer = setTimeout(() => {
             // Insert text
             tooltipEl.textContent = tooltipText;
     
-            // Make it visible so we can measure its size
+            // Make it visible so we can measure its width/height
             tooltipEl.classList.remove("tooltip-hidden");
             tooltipEl.classList.add("tooltip-visible");
     
-            // Measure positions
+            // Calculate positions with getBoundingClientRect
             const rect = currentTarget.getBoundingClientRect();
+    
+            // Measure the tooltip once it's visible
             const tooltipWidth = tooltipEl.offsetWidth;
             const tooltipHeight = tooltipEl.offsetHeight;
     
-            // Calculate top: above the button with a 10px gap
-            const top = window.scrollY + rect.top - tooltipHeight - 10;
+            // Place it above the button: 
+            // top = button's top coordinate - tooltip height - 10px gap
+            const top = rect.top - tooltipHeight - 10;
     
-            // Center horizontally:
-            //  left edge = button’s left + half button width - half tooltip width
-            const left = window.scrollX + rect.left + (rect.width / 2) - (tooltipWidth / 2);
+            // Center horizontally over the button:
+            // left = button's left + (button width / 2) - (half of tooltip width)
+            const left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
     
-            tooltipEl.style.top = top + "px";
-            tooltipEl.style.left = left + "px";
-          }, 1000);
+            // Because we're using position: fixed, 
+            // these coordinates are relative to the viewport
+            tooltipEl.style.top = `${top}px`;
+            tooltipEl.style.left = `${left}px`;
+          }, 1000); // <-- 1 second delay
         });
     
         btn.addEventListener("mouseleave", () => {
