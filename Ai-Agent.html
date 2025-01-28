@@ -91,6 +91,122 @@
 
     let airtableRecordId = null;
 
+    function markdownToPlainText(markdown) {
+      // 1) Parse to HTML
+      const html = marked.parse(markdown);
+    
+      // 2) Sanitize
+      const sanitizedHtml = DOMPurify.sanitize(html);
+    
+      // 3) Put it in a temporary <div> to extract text
+      const tmpDiv = document.createElement('div');
+      tmpDiv.innerHTML = sanitizedHtml;
+    
+      // 4) Return the plain text (this preserves line breaks)
+      return tmpDiv.innerText || '';
+    }
+
+    function replacePreCodeWithMarkdown(parentElement) {
+      // STEP 1: Define your icons (copy + check)
+      const COPY_ICON_SVG = `
+        <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true"
+             role="img" width="16" height="16" viewBox="0 0 24 24">
+          <path fill="currentColor"
+                d="M15 20H5V7c0-.55-.45-1-1-1s-1
+                   .45-1 1v13c0 1.1.9 2 2 
+                   2h10c.55 0 1-.45 
+                   1-1s-.45-1-1-1m5-4V4
+                   c0-1.1-.9-2-2-2H9c-1.1 
+                   0-2 .9-2 2v12c0 1.1.9 
+                   2 2 2h9c1.1 
+                   0 2-.9 2-2m-2 
+                   0H9V4h9z">
+          </path>
+        </svg>
+      `;
+    
+      const CHECK_ICON_SVG = `
+        <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true"
+             role="img" width="16" height="16" viewBox="0 0 24 24">
+          <path fill="currentColor"
+                d="M20.29 5.71a1 1 0 
+                   0 0-1.42 0L10 14.59l-4.29-4.3
+                   a1 1 0 0 0-1.42 
+                   1.42l5 5a1 1 0 0 
+                   0 1.42 0l10-10a1 
+                   1 0 0 0 0-1.42Z">
+          </path>
+        </svg>
+      `;
+    
+      const codeBlocks = parentElement.querySelectorAll('pre code');
+    
+      codeBlocks.forEach((codeBlock) => {
+        // 1) Grab the raw text inside <code>
+        const rawText = codeBlock.textContent || '';
+    
+        // 2) Render it as normal Markdown HTML for DISPLAY
+        const renderedHtml = marked.parse(rawText);
+        const sanitizedHtml = DOMPurify.sanitize(renderedHtml);
+    
+        // 3) Create a container <div> for that rendered content
+        const mdContainer = document.createElement('div');
+        mdContainer.classList.add('md-block-container');
+        mdContainer.innerHTML = sanitizedHtml;
+    
+        // 4) Convert rawText to plain text (if you want no markdown in the copied text)
+        const plainText = markdownToPlainText(rawText);
+    
+        // 5) Create a "Copy" button with icon + text
+        const copyBtn = document.createElement('button');
+        copyBtn.classList.add('md-copy-btn');
+        copyBtn.innerHTML = `
+          <span class="icon-container">${COPY_ICON_SVG}</span>
+          <span class="button-text">Copy</span>
+        `;
+        
+        // 6) On click, copy plainText to clipboard
+        copyBtn.addEventListener('click', () => {
+          navigator.clipboard.writeText(plainText)
+            .then(() => {
+              // Swap to tick icon + "Copied!"
+              copyBtn.innerHTML = `
+                <span class="icon-container">${CHECK_ICON_SVG}</span>
+                <span class="button-text">Copied!</span>
+              `;
+              setTimeout(() => {
+                copyBtn.innerHTML = `
+                  <span class="icon-container">${COPY_ICON_SVG}</span>
+                  <span class="button-text">Copy</span>
+                `;
+              }, 2000);
+            })
+            .catch((err) => {
+              console.error('Clipboard copy failed:', err);
+            });
+        });
+    
+        // 7) Optionally wrap the button in a small header
+        const headerDiv = document.createElement('div');
+        headerDiv.classList.add('md-header');
+        headerDiv.appendChild(copyBtn);
+    
+        mdContainer.insertBefore(headerDiv, mdContainer.firstChild);
+    
+        // 8) Replace the entire <pre> with mdContainer
+        const preEl = codeBlock.closest('pre');
+        if (preEl?.parentNode) {
+          preEl.parentNode.replaceChild(mdContainer, preEl);
+        }
+      });
+    }
+
+
+    
+
+
+
+
     // Function to handle PDF upload and append the URL to the input field
     function handlePdfUpload() {
       // Create a hidden file input element for selecting PDFs
@@ -619,47 +735,54 @@
       return false;
     }
     
-    // Function to render a text segment in the chat
     function renderTextSegment(text, isUser, hideAvatar) {
       if (!text) return;
     
-      // 1) Preserve user line breaks by converting "\n" to Markdown line breaks
+      // 1) (Optional) Convert user line breaks to Markdown line breaks
       if (isUser) {
-        // Marked normally doesn't treat single \n as <br>.
-        // Replace them with "  \n" which Marked interprets as a line break.
-        text = text.replace(/\n/g, "  \n");
+        text = text.replace(/\n/g, '  \n');
       }
     
-      // 2) Create the chat block DOM elements
-      const chatBlockWrapper = document.createElement("div");
-      chatBlockWrapper.className = "chat_block-wrapper";
+      // 2) Create the outer chat block elements
+      const chatBlockWrapper = document.createElement('div');
+      chatBlockWrapper.className = 'chat_block-wrapper';
     
-      const chatBlock = document.createElement("div");
-      chatBlock.className = "chat_block";
+      const chatBlock = document.createElement('div');
+      chatBlock.className = 'chat_block';
     
-      const botAvatar = document.createElement("div");
-      botAvatar.className = "chat_bot-avatar";
-      if (isUser || hideAvatar) botAvatar.classList.add("opacity-0");
+      const botAvatar = document.createElement('div');
+      botAvatar.className = 'chat_bot-avatar';
+      if (isUser || hideAvatar) botAvatar.classList.add('opacity-0');
     
-      const userAvatar = document.createElement("div");
-      userAvatar.className = "chat_user-avatar";
-      if (!isUser) userAvatar.classList.add("opacity-0");
+      const userAvatar = document.createElement('div');
+      userAvatar.className = 'chat_user-avatar';
+      if (!isUser) userAvatar.classList.add('opacity-0');
     
-      const chatInnerWrapper = document.createElement("div");
-      chatInnerWrapper.className = `chat_inner-wrapper ${isUser ? "user-message" : ""}`;
+      const chatInnerWrapper = document.createElement('div');
+      chatInnerWrapper.className = `chat_inner-wrapper ${isUser ? 'user-message' : ''}`;
     
-      // 3) Convert text (with forced line breaks) into HTML via Marked,
-      //    then sanitize it with DOMPurify
+      // 3) Parse the text as Markdown, sanitize it
       const parsedHtml = marked.parse(text);
       const sanitizedHtml = DOMPurify.sanitize(parsedHtml);
     
-      // 4) Insert the result into the DOM
+      // 4) Insert the sanitized HTML into the DOM
       chatInnerWrapper.innerHTML = sanitizedHtml;
+    
+      // 5) **Call replacePreCodeWithMarkdown**: 
+      //    This function will look for any <pre><code> blocks 
+      //    in 'chatInnerWrapper' and replace them with a normal <div> 
+      //    plus a "Copy" button that copies plain text.
+      replacePreCodeWithMarkdown(chatInnerWrapper);
+    
+      // 6) Append these elements to form the final chat message
       chatBlock.appendChild(botAvatar);
       chatBlock.appendChild(chatInnerWrapper);
       chatBlock.appendChild(userAvatar);
       chatBlockWrapper.appendChild(chatBlock);
       conversationWrapper.appendChild(chatBlockWrapper);
+    
+      // 7) Scroll to the bottom of the chat
+      conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
     }
 
     
