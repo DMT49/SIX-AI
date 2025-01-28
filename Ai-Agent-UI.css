@@ -3254,17 +3254,7 @@ margin: 0rem !important;
   justify-content: flex-end; 
   height: 32px;
   padding: 0 8px;
-
-  /* If you want the header to span the full width
-     (ignoring the .md-block-container's padding),
-     you can do negative margins:
-  
-     margin: -10px -10px 10px -10px;
-  
-     That "pulls" the header outside the container padding,
-     effectively creating a full-width grey bar at the top.
-     Then the 10px bottom margin reintroduces spacing.
-  */
+  margin: -10px -10px 10px -10px;
 }
 
 /*
