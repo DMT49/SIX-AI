@@ -3239,7 +3239,7 @@ margin: 0rem !important;
   overflow: hidden;      /* so header corners remain rounded */
   margin: 1em 0;         /* space around the box */
   background: #fbfbfb;   /* light gray background, same as old <pre> */
-  padding: 10px;         /* add some inner padding for the text */
+  padding: 20px;         /* add some inner padding for the text */
 }
 
 /*
@@ -3254,7 +3254,7 @@ margin: 0rem !important;
   justify-content: flex-end; 
   height: 32px;
   padding: 0 8px;
-  margin: -10px -10px 10px -10px;
+  margin: -20px -20px 20px -20px;
 }
 
 /*
