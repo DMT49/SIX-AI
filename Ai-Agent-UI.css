@@ -3227,3 +3227,28 @@ margin: 0rem !important;
   overflow-wrap: break-word;
   word-break: break-word;
 }
+
+/* Container that replaces <pre><code> */
+.md-block-container {
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  padding: 12px;
+  margin: 1rem 0;
+}
+
+/* A small header area for the copy button */
+.md-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+/* The copy button itself */
+.md-copy-btn {
+  background: #eee;
+  border: 1px solid #ccc;
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
