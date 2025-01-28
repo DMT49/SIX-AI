@@ -3234,7 +3234,7 @@ margin: 0rem !important;
 ===================================
 */
 .md-block-container {
-  border: 1px solid #67b8d9 !important;
+  border: 1px solid #67b8d999 !important;
   border-radius: 10px;
   overflow: hidden;       /* Ensures rounded corners on the whole container */
   margin: 1em 0;          /* Space above/below the box */
@@ -3248,7 +3248,7 @@ margin: 0rem !important;
 ==========================================
 */
 .md-header {
-  background-color: #f1f1f1;
+  background-color: #f4f4f4;
   display: flex;
   align-items: center;
   justify-content: flex-end; 
