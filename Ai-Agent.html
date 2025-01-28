@@ -91,33 +91,47 @@
 
     let airtableRecordId = null;
 
-    /**
-     * Replaces all <pre><code> blocks with a normal <div>
-     * that displays the same text as Markdown,
-     * plus a "Copy" button to copy the original snippet.
-     */
+    function markdownToPlainText(markdown) {
+      // 1) Parse to HTML
+      const html = marked.parse(markdown);
+    
+      // 2) Sanitize
+      const sanitizedHtml = DOMPurify.sanitize(html);
+    
+      // 3) Put it in a temporary <div> to extract text
+      const tmpDiv = document.createElement('div');
+      tmpDiv.innerHTML = sanitizedHtml;
+    
+      // 4) Return the plain text (this preserves line breaks)
+      return tmpDiv.innerText || '';
+    }
+
+
     function replacePreCodeWithMarkdown(parentElement) {
       const codeBlocks = parentElement.querySelectorAll('pre code');
     
       codeBlocks.forEach((codeBlock) => {
-        // 1) Grab the raw text from inside <code>
+        // 1) Grab the raw text inside <code>
         const rawText = codeBlock.textContent || '';
     
-        // 2) Render it as normal Markdown HTML
+        // 2) Render it as normal Markdown HTML for DISPLAY
         const renderedHtml = marked.parse(rawText);
         const sanitizedHtml = DOMPurify.sanitize(renderedHtml);
     
-        // 3) Create a container <div> for the rendered result
+        // 3) Create a container <div> for that rendered content
         const mdContainer = document.createElement('div');
         mdContainer.classList.add('md-block-container');
         mdContainer.innerHTML = sanitizedHtml;
     
-        // 4) Build a "Copy" button that copies the *original* raw text
+        // 4) Build a plain-text version for COPY (no Markdown)
+        const plainText = markdownToPlainText(rawText);
+    
+        // 5) Create a "Copy" button that copies `plainText`
         const copyBtn = document.createElement('button');
         copyBtn.classList.add('md-copy-btn');
         copyBtn.textContent = 'Copy';
         copyBtn.addEventListener('click', () => {
-          navigator.clipboard.writeText(rawText)
+          navigator.clipboard.writeText(plainText)
             .then(() => {
               copyBtn.textContent = 'Copied!';
               setTimeout(() => {
@@ -129,21 +143,22 @@
             });
         });
     
-        // Optionally wrap the button in a small "header" area
+        // Optionally wrap the button in a small header
         const headerDiv = document.createElement('div');
         headerDiv.classList.add('md-header');
         headerDiv.appendChild(copyBtn);
     
-        // Insert the header at the top of the container
+        // Insert header at the top of our container
         mdContainer.insertBefore(headerDiv, mdContainer.firstChild);
     
-        // 5) Finally, replace the entire <pre> with our new <div>
+        // 6) Replace the entire <pre> with mdContainer
         const preEl = codeBlock.closest('pre');
         if (preEl?.parentNode) {
           preEl.parentNode.replaceChild(mdContainer, preEl);
         }
       });
     }
+
     
 
 
