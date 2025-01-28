@@ -91,137 +91,60 @@
 
     let airtableRecordId = null;
 
-    function parseMarkdownInsideCode(parentElement) {
-      // Find all <pre><code> blocks
+    /**
+     * Replaces all <pre><code> blocks with a normal <div>
+     * that displays the same text as Markdown,
+     * plus a "Copy" button to copy the original snippet.
+     */
+    function replacePreCodeWithMarkdown(parentElement) {
       const codeBlocks = parentElement.querySelectorAll('pre code');
-      
+    
       codeBlocks.forEach((codeBlock) => {
-        // Extract raw text from the code block
+        // 1) Grab the raw text from inside <code>
         const rawText = codeBlock.textContent || '';
     
-        // Clean and normalize the content
-        const cleanedContent = rawText
-          .replace(/^\s+|\s+$/g, '') // Trim leading/trailing spaces
-          .replace(/\n{2,}/g, '\n')  // Replace multiple line breaks with a single one
-          .trim(); // Final trim to ensure no extra spacing
-    
-        // Parse the cleaned Markdown into HTML
-        const renderedHtml = marked.parse(cleanedContent);
-    
-        // Sanitize the rendered HTML to prevent XSS
+        // 2) Render it as normal Markdown HTML
+        const renderedHtml = marked.parse(rawText);
         const sanitizedHtml = DOMPurify.sanitize(renderedHtml);
     
-        // Replace the code block's content with the sanitized HTML
-        codeBlock.innerHTML = sanitizedHtml;
-      });
-    }
-
-
-
-    function addCopyButtonsToCodeBlocks(parentElement) {
-      const codeBlocks = parentElement.querySelectorAll('pre code');
+        // 3) Create a container <div> for the rendered result
+        const mdContainer = document.createElement('div');
+        mdContainer.classList.add('md-block-container');
+        mdContainer.innerHTML = sanitizedHtml;
     
-      codeBlocks.forEach((codeBlock) => {
-        const pre = codeBlock.closest('pre');
-        if (!pre) return;
-    
-        // --- Create an outer container for the code block
-        const codeBlockContainer = document.createElement('div');
-        codeBlockContainer.classList.add('code-block-container');
-    
-        // --- Create the header bar
-        const headerBar = document.createElement('div');
-        headerBar.classList.add('code-block-header');
-    
-        // --- Create the copy button
+        // 4) Build a "Copy" button that copies the *original* raw text
         const copyBtn = document.createElement('button');
-        copyBtn.classList.add('copy-code-btn');
-    
-        // Default icon + text
-        copyBtn.innerHTML = `
-          <span class="copy-code-icon">
-            <!-- COPY SVG icon -->
-            <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true"
-                 role="img" width="16" height="16" viewBox="0 0 24 24">
-              <path fill="currentColor"
-                    d="M15 20H5V7c0-.55-.45-1-1-1s-1
-                       .45-1 1v13c0 1.1.9 2 2 
-                       2h10c.55 0 1-.45 
-                       1-1s-.45-1-1-1m5-4V4
-                       c0-1.1-.9-2-2-2H9c-1.1 
-                       0-2 .9-2 2v12c0 1.1.9 
-                       2 2 2h9c1.1 
-                       0 2-.9 2-2m-2 
-                       0H9V4h9z">
-              </path>
-            </svg>
-          </span>
-          Copy
-        `;
-    
-        // --- Handle click: copy code text
+        copyBtn.classList.add('md-copy-btn');
+        copyBtn.textContent = 'Copy';
         copyBtn.addEventListener('click', () => {
-          navigator.clipboard.writeText(codeBlock.innerText)
+          navigator.clipboard.writeText(rawText)
             .then(() => {
-              // Switch to "Copied!" icon + text
-              copyBtn.innerHTML = `
-                <span class="copy-code-icon">
-                  <!-- CHECK SVG icon -->
-                  <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" 
-                       role="img" width="16" height="16" viewBox="0 0 24 24">
-                    <path fill="currentColor"
-                          d="M20.29 5.71a1 1 0 
-                             0 0-1.42 0L10 14.59l-4.29-4.3
-                             a1 1 0 0 0-1.42 
-                             1.42l5 5a1 1 0 0 
-                             0 1.42 0l10-10a1 
-                             1 0 0 0 0-1.42Z">
-                    </path>
-                  </svg>
-                </span>
-                Copied!
-              `;
-    
-              // Revert after 3 seconds
+              copyBtn.textContent = 'Copied!';
               setTimeout(() => {
-                copyBtn.innerHTML = `
-                  <span class="copy-code-icon">
-                    <!-- COPY SVG icon -->
-                    <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true"
-                         role="img" width="16" height="16" viewBox="0 0 24 24">
-                      <path fill="currentColor"
-                            d="M15 20H5V7c0-.55-.45-1-1-1
-                               s-1 .45-1 1v13c0 1.1.9 2
-                               2 2h10c.55 0 1-.45 
-                               1-1s-.45-1-1-1m5-4V4
-                               c0-1.1-.9-2-2-2H9c-1.1 
-                               0-2 .9-2 2v12c0 1.1.9 
-                               2 2 2h9c1.1 0 2-.9 
-                               2-2m-2 
-                               0H9V4h9z">
-                      </path>
-                    </svg>
-                  </span>
-                  Copy
-                `;
-              }, 3000);
+                copyBtn.textContent = 'Copy';
+              }, 2000);
             })
             .catch((err) => {
               console.error('Clipboard copy failed:', err);
             });
         });
     
-        // --- Build final structure
-        headerBar.appendChild(copyBtn);
-        codeBlockContainer.appendChild(headerBar);
+        // Optionally wrap the button in a small "header" area
+        const headerDiv = document.createElement('div');
+        headerDiv.classList.add('md-header');
+        headerDiv.appendChild(copyBtn);
     
-        // Insert our container before the <pre>, then move <pre> inside
-        pre.parentNode.insertBefore(codeBlockContainer, pre);
-        codeBlockContainer.appendChild(pre);
+        // Insert the header at the top of the container
+        mdContainer.insertBefore(headerDiv, mdContainer.firstChild);
     
-        // You can remove margin from <pre> in CSS (below) if desired
+        // 5) Finally, replace the entire <pre> with our new <div>
+        const preEl = codeBlock.closest('pre');
+        if (preEl?.parentNode) {
+          preEl.parentNode.replaceChild(mdContainer, preEl);
+        }
       });
     }
+    
 
 
 
@@ -757,18 +680,19 @@
     function renderTextSegment(text, isUser, hideAvatar) {
       if (!text) return;
     
-      // Preserve user line breaks by converting "\n" to Markdown line breaks
+      // Preserve user line breaks by converting "\n" to Markdown line breaks (for user messages)
       if (isUser) {
         text = text.replace(/\n/g, '  \n'); // Markdown soft break
       }
     
-      // Create the chat block DOM elements
+      // 1) Create the outer block
       const chatBlockWrapper = document.createElement('div');
       chatBlockWrapper.className = 'chat_block-wrapper';
     
       const chatBlock = document.createElement('div');
       chatBlock.className = 'chat_block';
     
+      // 2) Avatars
       const botAvatar = document.createElement('div');
       botAvatar.className = 'chat_bot-avatar';
       if (isUser || hideAvatar) botAvatar.classList.add('opacity-0');
@@ -777,32 +701,32 @@
       userAvatar.className = 'chat_user-avatar';
       if (!isUser) userAvatar.classList.add('opacity-0');
     
+      // 3) Inner content wrapper
       const chatInnerWrapper = document.createElement('div');
       chatInnerWrapper.className = `chat_inner-wrapper ${isUser ? 'user-message' : ''}`;
     
-      // Parse text as Markdown
+      // 4) Parse the text as Markdown, sanitize it
       const parsedHtml = marked.parse(text);
       const sanitizedHtml = DOMPurify.sanitize(parsedHtml);
     
-      // Inject sanitized HTML into chatInnerWrapper
+      // 5) Insert it into our content wrapper
       chatInnerWrapper.innerHTML = sanitizedHtml;
     
-      // Second pass: Parse and clean Markdown inside code blocks
-      parseMarkdownInsideCode(chatInnerWrapper);
+      // 6) Convert any <pre><code> to normal <div> with a Copy button
+      //    (This is the new call that does all the "nice" logic)
+      replacePreCodeWithMarkdown(chatInnerWrapper);
     
-      // Add "Copy" buttons to the cleaned code blocks
-      addCopyButtonsToCodeBlocks(chatInnerWrapper);
-    
-      // Append elements to the chat block
+      // 7) Append everything into the DOM
       chatBlock.appendChild(botAvatar);
       chatBlock.appendChild(chatInnerWrapper);
       chatBlock.appendChild(userAvatar);
       chatBlockWrapper.appendChild(chatBlock);
       conversationWrapper.appendChild(chatBlockWrapper);
     
-      // Scroll to the bottom
+      // 8) Scroll down
       conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
     }
+
 
 
 
