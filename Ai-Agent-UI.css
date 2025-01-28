@@ -3288,3 +3288,26 @@ margin: 0rem !important;
   height: 16px;
   /* fill: #333;  <- uncomment if you want a specific icon color */
 }
+
+#global-tooltip {
+  position: absolute;
+  background: #333; /* dark gray background */
+  color: #fff;      /* white text */
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 14px;  /* adjust as you like */
+  max-width: 200px;
+  pointer-events: none; /* ignore pointer so it doesn't interfere with hovering */
+  transition: opacity 0.2s ease;
+  z-index: 9999; /* ensure it appears on top of other elements */
+}
+
+.tooltip-hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.tooltip-visible {
+  opacity: 1;
+  visibility: visible;
+}
