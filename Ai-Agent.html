@@ -106,8 +106,39 @@
       return tmpDiv.innerText || '';
     }
 
-
     function replacePreCodeWithMarkdown(parentElement) {
+      // STEP 1: Define your icons (copy + check)
+      const COPY_ICON_SVG = `
+        <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true"
+             role="img" width="16" height="16" viewBox="0 0 24 24">
+          <path fill="currentColor"
+                d="M15 20H5V7c0-.55-.45-1-1-1s-1
+                   .45-1 1v13c0 1.1.9 2 2 
+                   2h10c.55 0 1-.45 
+                   1-1s-.45-1-1-1m5-4V4
+                   c0-1.1-.9-2-2-2H9c-1.1 
+                   0-2 .9-2 2v12c0 1.1.9 
+                   2 2 2h9c1.1 
+                   0 2-.9 2-2m-2 
+                   0H9V4h9z">
+          </path>
+        </svg>
+      `;
+    
+      const CHECK_ICON_SVG = `
+        <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true"
+             role="img" width="16" height="16" viewBox="0 0 24 24">
+          <path fill="currentColor"
+                d="M20.29 5.71a1 1 0 
+                   0 0-1.42 0L10 14.59l-4.29-4.3
+                   a1 1 0 0 0-1.42 
+                   1.42l5 5a1 1 0 0 
+                   0 1.42 0l10-10a1 
+                   1 0 0 0 0-1.42Z">
+          </path>
+        </svg>
+      `;
+    
       const codeBlocks = parentElement.querySelectorAll('pre code');
     
       codeBlocks.forEach((codeBlock) => {
@@ -123,19 +154,31 @@
         mdContainer.classList.add('md-block-container');
         mdContainer.innerHTML = sanitizedHtml;
     
-        // 4) Build a plain-text version for COPY (no Markdown)
+        // 4) Convert rawText to plain text (if you want no markdown in the copied text)
         const plainText = markdownToPlainText(rawText);
     
-        // 5) Create a "Copy" button that copies `plainText`
+        // 5) Create a "Copy" button with icon + text
         const copyBtn = document.createElement('button');
         copyBtn.classList.add('md-copy-btn');
-        copyBtn.textContent = 'Copy';
+        copyBtn.innerHTML = `
+          <span class="icon-container">${COPY_ICON_SVG}</span>
+          <span class="button-text">Copy</span>
+        `;
+        
+        // 6) On click, copy plainText to clipboard
         copyBtn.addEventListener('click', () => {
           navigator.clipboard.writeText(plainText)
             .then(() => {
-              copyBtn.textContent = 'Copied!';
+              // Swap to tick icon + "Copied!"
+              copyBtn.innerHTML = `
+                <span class="icon-container">${CHECK_ICON_SVG}</span>
+                <span class="button-text">Copied!</span>
+              `;
               setTimeout(() => {
-                copyBtn.textContent = 'Copy';
+                copyBtn.innerHTML = `
+                  <span class="icon-container">${COPY_ICON_SVG}</span>
+                  <span class="button-text">Copy</span>
+                `;
               }, 2000);
             })
             .catch((err) => {
@@ -143,21 +186,21 @@
             });
         });
     
-        // Optionally wrap the button in a small header
+        // 7) Optionally wrap the button in a small header
         const headerDiv = document.createElement('div');
         headerDiv.classList.add('md-header');
         headerDiv.appendChild(copyBtn);
     
-        // Insert header at the top of our container
         mdContainer.insertBefore(headerDiv, mdContainer.firstChild);
     
-        // 6) Replace the entire <pre> with mdContainer
+        // 8) Replace the entire <pre> with mdContainer
         const preEl = codeBlock.closest('pre');
         if (preEl?.parentNode) {
           preEl.parentNode.replaceChild(mdContainer, preEl);
         }
       });
     }
+
 
     
 
