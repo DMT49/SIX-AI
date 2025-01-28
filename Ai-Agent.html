@@ -91,23 +91,6 @@
 
     let airtableRecordId = null;
 
-
-    // STEP 1: ADD THIS UTILITY FUNCTION
-    function scrollChatToBottom() {
-      // 1) Scroll inside the conversation wrapper
-      conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
-      
-      // 2) Also scroll the entire browser window (like your override now does)
-      setTimeout(() => {
-        window.scrollTo({
-          top: document.body.scrollHeight,
-          left: 0,
-          behavior: "smooth", // or "auto" if you don't want smooth scrolling
-        });
-      }, 50);
-    }
-
-
     function markdownToPlainText(markdown) {
       // 1) Parse to HTML
       const html = marked.parse(markdown);
@@ -1027,6 +1010,7 @@
       }
     }
     
+    // Function to create a loading block
     function createLoadingBlock() {
       const chatBlockWrapper = document.createElement("div");
       chatBlockWrapper.className = "chat_block-wrapper";
@@ -1040,28 +1024,25 @@
       const chatInnerWrapper = document.createElement("div");
       chatInnerWrapper.className = "chat_inner-wrapper";
     
-      // Loading animation container
+      // Create the loading animation container
       const loadAnimationContainer = document.createElement("div");
       loadAnimationContainer.className = "load-animation";
     
+      // Use the GIF instead of a lottie
       const gifImage = document.createElement("img");
       gifImage.src = "https://cdn.prod.website-files.com/64e508e8bea103fa08b8f130/6761f50a16ce8196496d4724_load-animation.gif";
       gifImage.alt = "Loading...";
-    
       loadAnimationContainer.appendChild(gifImage);
-      chatInnerWrapper.appendChild(loadAnimationContainer);
     
+      chatInnerWrapper.appendChild(loadAnimationContainer);
       chatBlock.appendChild(botAvatar);
       chatBlock.appendChild(chatInnerWrapper);
       chatBlockWrapper.appendChild(chatBlock);
       conversationWrapper.appendChild(chatBlockWrapper);
-    
-      // Use new scroll helper
-      scrollChatToBottom();
+      conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
     
       return { chatInnerWrapper, chatBlockWrapper };
     }
-
     
     async function handleSubmit() {
         stopVoiceTranscription(); // Existing voice transcription logic
@@ -1378,20 +1359,28 @@
     };
 
     
-    const originalCreateChatBlock = createChatBlock;
+    const originalCreateChatBlock = createChatBlock; // Keep a reference
     
     createChatBlock = (isUser, content) => {
       // 1) Render the message as before
       originalCreateChatBlock(isUser, content);
     
-      // 2) Scroll to bottom
-      scrollChatToBottom();
+      // 2) Always scroll to the bottom after *any* message (user or bot)
+      setTimeout(() => {
+        window.scrollTo({
+          top: document.body.scrollHeight,
+          left: 0,
+          behavior: "smooth", // or "auto" if you prefer no smooth scrolling
+        });
+      }, 50);
     
-      // 3) TTS logic (only if AI)
+      // 3) Only trigger text-to-speech (TTS) for AI messages
       if (!isUser) {
         playVoiceOutput(content);
       }
     };
+
+
 
 
   })();
