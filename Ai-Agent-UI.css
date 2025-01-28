@@ -3290,16 +3290,16 @@ margin: 0rem !important;
 }
 
 #global-tooltip {
-  position: absolute;
-  background: #333; /* dark gray background */
-  color: #fff;      /* white text */
+  position: fixed; /* instead of absolute */
+  background: #333;
+  color: #fff;
   padding: 8px 12px;
   border-radius: 4px;
-  font-size: 14px;  /* adjust as you like */
+  font-size: 14px;
   max-width: 200px;
-  pointer-events: none; /* ignore pointer so it doesn't interfere with hovering */
+  pointer-events: none;
   transition: opacity 0.2s ease;
-  z-index: 9999; /* ensure it appears on top of other elements */
+  z-index: 999999; /* keep it on top */
 }
 
 .tooltip-hidden {
@@ -3311,3 +3311,4 @@ margin: 0rem !important;
   opacity: 1;
   visibility: visible;
 }
+
