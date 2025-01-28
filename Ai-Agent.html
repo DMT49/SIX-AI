@@ -695,19 +695,18 @@
     function renderTextSegment(text, isUser, hideAvatar) {
       if (!text) return;
     
-      // Preserve user line breaks by converting "\n" to Markdown line breaks (for user messages)
+      // 1) (Optional) Convert user line breaks to Markdown line breaks
       if (isUser) {
-        text = text.replace(/\n/g, '  \n'); // Markdown soft break
+        text = text.replace(/\n/g, '  \n');
       }
     
-      // 1) Create the outer block
+      // 2) Create the outer chat block elements
       const chatBlockWrapper = document.createElement('div');
       chatBlockWrapper.className = 'chat_block-wrapper';
     
       const chatBlock = document.createElement('div');
       chatBlock.className = 'chat_block';
     
-      // 2) Avatars
       const botAvatar = document.createElement('div');
       botAvatar.className = 'chat_bot-avatar';
       if (isUser || hideAvatar) botAvatar.classList.add('opacity-0');
@@ -716,34 +715,32 @@
       userAvatar.className = 'chat_user-avatar';
       if (!isUser) userAvatar.classList.add('opacity-0');
     
-      // 3) Inner content wrapper
       const chatInnerWrapper = document.createElement('div');
       chatInnerWrapper.className = `chat_inner-wrapper ${isUser ? 'user-message' : ''}`;
     
-      // 4) Parse the text as Markdown, sanitize it
+      // 3) Parse the text as Markdown, sanitize it
       const parsedHtml = marked.parse(text);
       const sanitizedHtml = DOMPurify.sanitize(parsedHtml);
     
-      // 5) Insert it into our content wrapper
+      // 4) Insert the sanitized HTML into the DOM
       chatInnerWrapper.innerHTML = sanitizedHtml;
     
-      // 6) Convert any <pre><code> to normal <div> with a Copy button
-      //    (This is the new call that does all the "nice" logic)
+      // 5) **Call replacePreCodeWithMarkdown**: 
+      //    This function will look for any <pre><code> blocks 
+      //    in 'chatInnerWrapper' and replace them with a normal <div> 
+      //    plus a "Copy" button that copies plain text.
       replacePreCodeWithMarkdown(chatInnerWrapper);
     
-      // 7) Append everything into the DOM
+      // 6) Append these elements to form the final chat message
       chatBlock.appendChild(botAvatar);
       chatBlock.appendChild(chatInnerWrapper);
       chatBlock.appendChild(userAvatar);
       chatBlockWrapper.appendChild(chatBlock);
       conversationWrapper.appendChild(chatBlockWrapper);
     
-      // 8) Scroll down
+      // 7) Scroll to the bottom of the chat
       conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
     }
-
-
-
 
     
     /**
