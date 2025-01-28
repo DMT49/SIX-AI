@@ -1418,58 +1418,63 @@
       return newBlock;
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
-      // The reusable tooltip <div> you already placed in your HTML:
-      // <div id="global-tooltip" class="tooltip-hidden"></div>
+    function initTooltips() {
+      // 1) Locate the global tooltip DIV on the page
       const tooltipEl = document.getElementById("global-tooltip");
-    
       if (!tooltipEl) {
-        console.warn("No #global-tooltip div found, tooltips won't work.");
+        console.warn("No #global-tooltip element found. Tooltips won't appear.");
         return;
       }
     
       let hoverTimer = null;
       let currentTarget = null;
     
-      // Select all elements with .my-btn and data-tooltip
+      // 2) Find all elements with class .my-btn that also have a data-tooltip attribute
       const tooltipButtons = document.querySelectorAll(".my-btn[data-tooltip]");
+      console.log("Tooltip: found", tooltipButtons.length, "buttons to attach tooltips to.");
     
+      // 3) Attach mouseenter + mouseleave events
       tooltipButtons.forEach((btn) => {
         btn.addEventListener("mouseenter", (e) => {
           currentTarget = e.currentTarget;
           const tooltipText = currentTarget.getAttribute("data-tooltip");
     
-          // Wait 2 seconds before showing tooltip
+          // Start a 2-second timer before showing tooltip
           hoverTimer = setTimeout(() => {
-            // Insert text
+            // Insert the text
             tooltipEl.textContent = tooltipText;
     
-            // Show
+            // Show the tooltip
             tooltipEl.classList.remove("tooltip-hidden");
             tooltipEl.classList.add("tooltip-visible");
     
-            // Position the tooltip above the button by default
+            // Position it above the button by default
             const rect = currentTarget.getBoundingClientRect();
             const tooltipHeight = tooltipEl.offsetHeight;
-            const top = window.scrollY + rect.top - tooltipHeight - 10; // 10px gap
-            const left = window.scrollX + rect.left; // align left edges, or adjust for centering
+            // e.g., 10px gap above the button
+            const top = window.scrollY + rect.top - tooltipHeight - 10;
+            // align left edges (or adjust for centering if you like)
+            const left = window.scrollX + rect.left;
     
             tooltipEl.style.top = top + "px";
             tooltipEl.style.left = left + "px";
-          }, 2000);
+          }, 2000); // 2000ms delay = 2 seconds
         });
     
         btn.addEventListener("mouseleave", () => {
-          // Cancel the show-tooltip timer
+          // Clear the timer if mouse leaves before 2s
           clearTimeout(hoverTimer);
     
-          // Hide the tooltip (if shown)
+          // Hide the tooltip if it was shown
           tooltipEl.classList.remove("tooltip-visible");
           tooltipEl.classList.add("tooltip-hidden");
           currentTarget = null;
         });
       });
-    });
+    }
+    
+    // Call initTooltips at the end of your script
+    initTooltips();
 
   })();
 </script>
