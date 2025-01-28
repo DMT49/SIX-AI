@@ -3028,29 +3028,87 @@ margin: 0rem !important;
 
 /* Bold Text */
 .chat_conversation-wrapper strong {
-  font-family: 'Roboto Black', sans-serif !important; /* Heavy font */
-  font-weight: 900 !important; /* Maximum bold */
+  font-weight: 700 !important; /* Maximum bold */
   color: #000 !important;
 }
 
-/* Code */
-.chat_conversation-wrapper code {
-  font-family: 'Courier New', monospace !important;
-  background: #f4f4f4 !important; /* Light gray background */
-  padding: 4px 6px !important; /* Slightly more padding */
-  border-radius: 3px !important;
-  color: #333 !important; /* Neutral dark gray for text */
-  font-size: 1em !important; /* Increased font size */
+/* 
+===============================
+ 1) Outer Container + Header
+===============================
+*/
+
+.code-block-container {
+  border: 1px solid #67b8d9 !important;
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 1em 0; /* space around the box */
 }
 
-.chat_conversation-wrapper pre {
-  background: #f4f4f4 !important; /* Light gray */
-  color: #000 !important; /* Standard black */
-  padding: 10px !important;
-  border-radius: 5px !important;
-  overflow-x: auto !important;
-  font-size: 1em !important; /* Increased font size */
+.code-block-header {
+  background-color: #f1f1f1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; 
+  height: 32px;
+  padding: 0 8px;
 }
+
+.copy-code-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  font-size: 14px; /* This is just for the button text */
+}
+
+.copy-code-icon svg {
+  vertical-align: middle;
+}
+
+/*
+==========================================
+ 2) <pre>: The Box for the Code Content
+==========================================
+*/
+.code-block-container pre {
+  margin: 0 !important;          /* No extra spacing above/below */
+  padding: 10px !important;      /* Inner padding for the code area */
+  background: #fbfbfb !important;/* Light gray box background */
+  overflow-x: auto !important;   /* Horizontal scroll for wide code */
+  /* If you want black text in the box:
+     color: #000 !important; 
+     (or remove to let .code styles apply)
+  */
+}
+
+/*
+==========================================
+ 3) <code>: Force Raleway Text at 16px
+    EXACTLY Like Your Standard Text
+==========================================
+*/
+.code-block-container code {
+  /* Match the font styles from your plain text */
+  font-family: "Raleway", sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 400 !important;    /* or 300 if that matches your normal text weight */
+  line-height: 28px !important;   /* or whichever line-height you prefer (28px from your screenshot) */
+  color: #000 !important;         /* match your normal text color */
+
+  /* Remove default "code" styling (monospace, backgrounds, etc.) */
+  background: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  /* If you don’t want italic or anything else, you can override that too:
+     font-style: normal !important; 
+  */
+}
+
+
+
 
 /* Horizontal Rules */
 .chat_conversation-wrapper hr {
@@ -3168,4 +3226,65 @@ margin: 0rem !important;
 .chat_inner-wrapper * {  /* Targets all descendants of .chat_inner-wrapper */
   overflow-wrap: break-word;
   word-break: break-word;
+}
+
+/* 
+===================================
+ 1) Outer Container: .md-block-container
+===================================
+*/
+.md-block-container {
+  border: 1px solid #67b8d9 !important;
+  border-radius: 10px;
+  overflow: hidden;       /* Ensures rounded corners on the whole container */
+  margin: 1em 0;          /* Space above/below the box */
+  background: #fbfbfb;    /* Light gray background (like old <pre>) */
+  padding: 20px;          /* Inner padding for the text area */
+}
+
+/*
+==========================================
+ 2) Header Bar: .md-header
+==========================================
+*/
+.md-header {
+  background-color: #f1f1f1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; 
+  height: 32px;
+  padding: 0 8px;
+  /* Negative margins to stretch the header 
+     across the container’s padding so it 
+     looks full-width and flush with the border. */
+  margin: -20px -20px 20px -20px;
+}
+
+/*
+==========================================
+ 3) Copy Button: .md-copy-btn
+==========================================
+*/
+.md-copy-btn {
+  display: flex;          /* icon + text side by side */
+  align-items: center;
+  gap: 4px;               /* space between icon and text */
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 400;       /* change to 600/700 if you prefer bold */
+}
+
+/*
+==========================================
+ 4) Optional SVG Styling
+     If you want to control color, size, etc.
+==========================================
+*/
+.md-copy-btn svg {
+  vertical-align: middle;
+  width: 16px;
+  height: 16px;
+  /* fill: #333;  <- uncomment if you want a specific icon color */
 }
