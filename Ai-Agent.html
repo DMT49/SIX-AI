@@ -670,7 +670,6 @@
       }
     }
     
-    // Function to create a chat block (user or bot)
     function createChatBlock(isUser, content) {
       // Preprocess content to remove bullet points before { ... }
       content = content.replace(/(^|\n)[\s]*[-*]\s*(?=\{)/g, '$1');
@@ -697,6 +696,9 @@
       let lastOptionIndex = -1;
       let hasRenderedBotAvatar = false;
     
+      // ====== ADDED: We'll track the "last created text block"
+      let lastCreatedBlock = null;
+    
       segments.forEach((segment, index) => {
         if (segment.type === "text") {
           const textContent = segment.content.trim();
@@ -707,11 +709,14 @@
               optionGroup = [];
             }
             const hideAvatar = !isUser && hasRenderedBotAvatar;
-            renderTextSegment(textContent, isUser, hideAvatar);
+    
+            // ====== MOVED: store what renderTextSegment returns
+            lastCreatedBlock = renderTextSegment(textContent, isUser, hideAvatar);
+    
             hasRenderedBotAvatar = true;
           }
         } else if (segment.type === "option") {
-          optionGroup.push((segment.content.slice(1, -1).trim()));
+          optionGroup.push(segment.content.slice(1, -1).trim());
           lastOptionIndex = index;
         }
       });
@@ -722,8 +727,13 @@
         optionGroup = [];
       }
     
+      // Keep your existing conversationWrapper scroll
       conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
+    
+      // ====== ADDED: Return the last text block we created
+      return lastCreatedBlock;
     }
+
     
     // Helper function to check if there's non-empty text after a given index
     function hasNonEmptyTextAfterIndex(segments, currentIndex) {
@@ -783,6 +793,8 @@
     
       // 7) Scroll to the bottom of the chat
       conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
+      return chatBlockWrapper;
+
     }
 
     
@@ -1009,8 +1021,7 @@
         await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     }
-    
-    // Function to create a loading block
+
     function createLoadingBlock() {
       const chatBlockWrapper = document.createElement("div");
       chatBlockWrapper.className = "chat_block-wrapper";
@@ -1028,9 +1039,10 @@
       const loadAnimationContainer = document.createElement("div");
       loadAnimationContainer.className = "load-animation";
     
-      // Use the GIF instead of a lottie
+      // Use a GIF for loading
       const gifImage = document.createElement("img");
-      gifImage.src = "https://cdn.prod.website-files.com/64e508e8bea103fa08b8f130/6761f50a16ce8196496d4724_load-animation.gif";
+      gifImage.src =
+        "https://cdn.prod.website-files.com/64e508e8bea103fa08b8f130/6761f50a16ce8196496d4724_load-animation.gif";
       gifImage.alt = "Loading...";
       loadAnimationContainer.appendChild(gifImage);
     
@@ -1039,10 +1051,24 @@
       chatBlock.appendChild(chatInnerWrapper);
       chatBlockWrapper.appendChild(chatBlock);
       conversationWrapper.appendChild(chatBlockWrapper);
+    
+      // 1) Scroll the chat container itself to the bottom
       conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
+    
+      // 2) ALSO scroll the entire window to the bottom (like for AI/user messages)
+      setTimeout(() => {
+        window.scrollTo({
+          top: document.body.scrollHeight,
+          left: 0,
+          behavior: "smooth", // Or "auto" if you want an instant jump
+        });
+      }, 50);
     
       return { chatInnerWrapper, chatBlockWrapper };
     }
+
+
+    
     
     async function handleSubmit() {
         stopVoiceTranscription(); // Existing voice transcription logic
@@ -1098,6 +1124,7 @@
       let newFinal = "";
       let newPartial = "";
     
+
       // 2) Loop through all the results from this speech event
       for (let i = event.resultIndex; i < event.results.length; i++) {
         if (event.results[i].isFinal) {
@@ -1359,29 +1386,43 @@
     };
 
     
-    const originalCreateChatBlock = createChatBlock; // Keep a reference
+    const originalCreateChatBlock = createChatBlock;
+    createChatBlock = function (isUser, content) {
+      // 1) Render the message by calling the original
+      const newBlock = originalCreateChatBlock(isUser, content);
     
-    createChatBlock = (isUser, content) => {
-      // 1) Render the message as before
-      originalCreateChatBlock(isUser, content);
+      // 2) If this is a USER message, do the old "scroll to bottom"
+      if (isUser) {
+        setTimeout(() => {
+          window.scrollTo({
+            top: document.body.scrollHeight,
+            left: 0,
+            behavior: "smooth",
+          });
+        }, 50);
+      } else {
+        // 3) If this is an AI message, scroll so top of newBlock is at top of screen w/ padding
+        setTimeout(() => {
+          // Instead of newBlock.offsetTop, use getBoundingClientRect()
+          const rect = newBlock.getBoundingClientRect();
+          const absoluteY = rect.top + window.scrollY; // Y position in the page
+          let scrollTarget = absoluteY - 80;           // 80px offset from top
+          if (scrollTarget < 0) scrollTarget = 0;      // clamp to 0
     
-      // 2) Always scroll to the bottom after *any* message (user or bot)
-      setTimeout(() => {
-        window.scrollTo({
-          top: document.body.scrollHeight,
-          left: 0,
-          behavior: "smooth", // or "auto" if you prefer no smooth scrolling
-        });
-      }, 50);
+          window.scrollTo({
+            top: scrollTarget,
+            left: 0,
+            behavior: "smooth",
+          });
+        }, 50);
     
-      // 3) Only trigger text-to-speech (TTS) for AI messages
-      if (!isUser) {
+        // Also keep TTS for AI messages
         playVoiceOutput(content);
       }
-    };
-
-
-
+    
+      // Return newly created block
+      return newBlock;
+    }
 
   })();
 </script>
