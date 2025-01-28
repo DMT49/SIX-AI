@@ -3234,12 +3234,12 @@ margin: 0rem !important;
 ===================================
 */
 .md-block-container {
-  border: 1px solid #67b8d9 !important; /* same blue border */
+  border: 1px solid #67b8d9 !important;
   border-radius: 10px;
-  overflow: hidden;      /* so header corners remain rounded */
-  margin: 1em 0;         /* space around the box */
-  background: #fbfbfb;   /* light gray background, same as old <pre> */
-  padding: 20px;         /* add some inner padding for the text */
+  overflow: hidden;       /* Ensures rounded corners on the whole container */
+  margin: 1em 0;          /* Space above/below the box */
+  background: #fbfbfb;    /* Light gray background (like old <pre>) */
+  padding: 20px;          /* Inner padding for the text area */
 }
 
 /*
@@ -3254,6 +3254,9 @@ margin: 0rem !important;
   justify-content: flex-end; 
   height: 32px;
   padding: 0 8px;
+  /* Negative margins to stretch the header 
+     across the container’s padding so it 
+     looks full-width and flush with the border. */
   margin: -20px -20px 20px -20px;
 }
 
@@ -3263,18 +3266,28 @@ margin: 0rem !important;
 ==========================================
 */
 .md-copy-btn {
-  display: flex;
+  display: flex;          /* icon + text side by side */
   align-items: center;
-  gap: 4px;
+  gap: 4px;               /* space between icon and text */
   cursor: pointer;
   border: none;
   background: transparent;
   font-size: 14px;
-  font-weight: 400; /* adjust if you prefer bold text */
+  font-weight: 400;       /* change to 600/700 if you prefer bold */
 }
 
-/* If your button has an icon (SVG), center it vertically */
+/*
+==========================================
+ 4) Optional SVG Styling
+     If you want to control color, size, etc.
+==========================================
+*/
 .md-copy-btn svg {
   vertical-align: middle;
+  width: 16px;
+  height: 16px;
+  /* fill: #333;  <- uncomment if you want a specific icon color */
 }
+
+
 
