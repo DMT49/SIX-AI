@@ -670,7 +670,6 @@
       }
     }
     
-    // Function to create a chat block (user or bot)
     function createChatBlock(isUser, content) {
       // Preprocess content to remove bullet points before { ... }
       content = content.replace(/(^|\n)[\s]*[-*]\s*(?=\{)/g, '$1');
@@ -697,6 +696,9 @@
       let lastOptionIndex = -1;
       let hasRenderedBotAvatar = false;
     
+      // ====== ADDED: We'll track the "last created text block"
+      let lastCreatedBlock = null;
+    
       segments.forEach((segment, index) => {
         if (segment.type === "text") {
           const textContent = segment.content.trim();
@@ -707,11 +709,14 @@
               optionGroup = [];
             }
             const hideAvatar = !isUser && hasRenderedBotAvatar;
-            renderTextSegment(textContent, isUser, hideAvatar);
+    
+            // ====== MOVED: store what renderTextSegment returns
+            lastCreatedBlock = renderTextSegment(textContent, isUser, hideAvatar);
+    
             hasRenderedBotAvatar = true;
           }
         } else if (segment.type === "option") {
-          optionGroup.push((segment.content.slice(1, -1).trim()));
+          optionGroup.push(segment.content.slice(1, -1).trim());
           lastOptionIndex = index;
         }
       });
@@ -722,9 +727,13 @@
         optionGroup = [];
       }
     
+      // Keep your existing conversationWrapper scroll
       conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
-      return chatBlockWrapper;
+    
+      // ====== ADDED: Return the last text block we created
+      return lastCreatedBlock;
     }
+
     
     // Helper function to check if there's non-empty text after a given index
     function hasNonEmptyTextAfterIndex(segments, currentIndex) {
@@ -784,6 +793,8 @@
     
       // 7) Scroll to the bottom of the chat
       conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
+      return chatBlockWrapper;
+
     }
 
     
