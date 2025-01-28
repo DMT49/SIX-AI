@@ -3237,7 +3237,7 @@ margin: 0rem !important;
   border: 1px solid #67b8d999 !important;
   border-radius: 10px;
   overflow: hidden;       /* Ensures rounded corners on the whole container */
-  margin: 1em 0;          /* Space above/below the box */
+  margin: 2em 0;          /* Space above/below the box */
   background: #fbfbfb;    /* Light gray background (like old <pre>) */
   padding: 20px;          /* Inner padding for the text area */
 }
