@@ -1009,8 +1009,7 @@
         await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     }
-    
-    // Function to create a loading block
+
     function createLoadingBlock() {
       const chatBlockWrapper = document.createElement("div");
       chatBlockWrapper.className = "chat_block-wrapper";
@@ -1028,9 +1027,10 @@
       const loadAnimationContainer = document.createElement("div");
       loadAnimationContainer.className = "load-animation";
     
-      // Use the GIF instead of a lottie
+      // Use a GIF for loading
       const gifImage = document.createElement("img");
-      gifImage.src = "https://cdn.prod.website-files.com/64e508e8bea103fa08b8f130/6761f50a16ce8196496d4724_load-animation.gif";
+      gifImage.src =
+        "https://cdn.prod.website-files.com/64e508e8bea103fa08b8f130/6761f50a16ce8196496d4724_load-animation.gif";
       gifImage.alt = "Loading...";
       loadAnimationContainer.appendChild(gifImage);
     
@@ -1039,10 +1039,24 @@
       chatBlock.appendChild(chatInnerWrapper);
       chatBlockWrapper.appendChild(chatBlock);
       conversationWrapper.appendChild(chatBlockWrapper);
+    
+      // 1) Scroll the chat container itself to the bottom
       conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
+    
+      // 2) ALSO scroll the entire window to the bottom (like for AI/user messages)
+      setTimeout(() => {
+        window.scrollTo({
+          top: document.body.scrollHeight,
+          left: 0,
+          behavior: "smooth", // Or "auto" if you want an instant jump
+        });
+      }, 50);
     
       return { chatInnerWrapper, chatBlockWrapper };
     }
+
+
+    
     
     async function handleSubmit() {
         stopVoiceTranscription(); // Existing voice transcription logic
