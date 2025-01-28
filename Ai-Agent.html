@@ -723,6 +723,7 @@
       }
     
       conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
+      return chatBlockWrapper;
     }
     
     // Helper function to check if there's non-empty text after a given index
@@ -1373,25 +1374,42 @@
     };
 
     
-    const originalCreateChatBlock = createChatBlock; // Keep a reference
+    const originalCreateChatBlock = createChatBlock;
+    createChatBlock = function (isUser, content) {
+      // 1) Render the message by calling the original (which now returns the wrapper)
+      const newBlock = originalCreateChatBlock(isUser, content);
     
-    createChatBlock = (isUser, content) => {
-      // 1) Render the message as before
-      originalCreateChatBlock(isUser, content);
+      // 2) If this is a USER message, do the old "scroll to bottom"
+      if (isUser) {
+        setTimeout(() => {
+          window.scrollTo({
+            top: document.body.scrollHeight,
+            left: 0,
+            behavior: "smooth",
+          });
+        }, 50);
+      } else {
+        // 3) If this is an AI message, scroll so that the *top* of newBlock 
+        //    is near the TOP of the viewport, with padding
+        setTimeout(() => {
+          // Example: 80px offset from the top
+          let offsetTop = newBlock.offsetTop - 80;
+          if (offsetTop < 0) offsetTop = 0; // clamp to 0 just in case
     
-      // 2) Always scroll to the bottom after *any* message (user or bot)
-      setTimeout(() => {
-        window.scrollTo({
-          top: document.body.scrollHeight,
-          left: 0,
-          behavior: "smooth", // or "auto" if you prefer no smooth scrolling
-        });
-      }, 50);
+          window.scrollTo({
+            top: offsetTop,
+            left: 0,
+            behavior: "smooth", // or "auto" if you dislike animated scrolling
+          });
+        }, 50);
     
-      // 3) Only trigger text-to-speech (TTS) for AI messages
-      if (!isUser) {
+        // Also keep TTS for AI messages
         playVoiceOutput(content);
       }
+    
+      // OPTIONAL: Return the newly created block 
+      // (In case you want to do more with it)
+      return newBlock;
     };
 
 
