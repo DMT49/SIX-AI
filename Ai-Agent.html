@@ -1124,6 +1124,7 @@
       let newFinal = "";
       let newPartial = "";
     
+
       // 2) Loop through all the results from this speech event
       for (let i = event.resultIndex; i < event.results.length; i++) {
         if (event.results[i].isFinal) {
@@ -1421,11 +1422,7 @@
     
       // Return newly created block
       return newBlock;
-    };
-
-
-
-
+    }
 
   })();
 </script>
