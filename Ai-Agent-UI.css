@@ -3293,7 +3293,7 @@ margin: 0rem !important;
   position: fixed;
   background: #444; /* Slightly lighter than pure black */
   color: #fff;
-  padding: 4px 8px; /* Reduced vertical padding */
+  padding: 4px 11px; /* Reduced vertical padding */
   border-radius: 999px; /* Fully rounded corners */
   font-size: 14px;
   max-width: 200px;
