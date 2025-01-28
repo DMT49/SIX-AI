@@ -3228,27 +3228,63 @@ margin: 0rem !important;
   word-break: break-word;
 }
 
-/* Container that replaces <pre><code> */
+/* 
+===================================
+ 1) Outer Container: .md-block-container
+===================================
+*/
 .md-block-container {
-  background: #f9f9f9;
-  border: 1px solid #ddd;
-  padding: 12px;
-  margin: 1rem 0;
+  border: 1px solid #67b8d9 !important; /* same blue border */
+  border-radius: 10px;
+  overflow: hidden;      /* so header corners remain rounded */
+  margin: 1em 0;         /* space around the box */
+  background: #fbfbfb;   /* light gray background, same as old <pre> */
+  padding: 10px;         /* add some inner padding for the text */
 }
 
-/* A small header area for the copy button */
+/*
+==========================================
+ 2) Header Bar: .md-header
+==========================================
+*/
 .md-header {
+  background-color: #f1f1f1;
   display: flex;
-  justify-content: flex-end;
-  margin-bottom: 8px;
+  align-items: center;
+  justify-content: flex-end; 
+  height: 32px;
+  padding: 0 8px;
+
+  /* If you want the header to span the full width
+     (ignoring the .md-block-container's padding),
+     you can do negative margins:
+  
+     margin: -10px -10px 10px -10px;
+  
+     That "pulls" the header outside the container padding,
+     effectively creating a full-width grey bar at the top.
+     Then the 10px bottom margin reintroduces spacing.
+  */
 }
 
-/* The copy button itself */
+/*
+==========================================
+ 3) Copy Button: .md-copy-btn
+==========================================
+*/
 .md-copy-btn {
-  background: #eee;
-  border: 1px solid #ccc;
-  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
   cursor: pointer;
-  border-radius: 4px;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 400; /* adjust if you prefer bold text */
+}
+
+/* If your button has an icon (SVG), center it vertically */
+.md-copy-btn svg {
+  vertical-align: middle;
 }
 
