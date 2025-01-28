@@ -1387,7 +1387,7 @@
     
     const originalCreateChatBlock = createChatBlock;
     createChatBlock = function (isUser, content) {
-      // 1) Render the message by calling the original (which now returns the wrapper)
+      // 1) Render the message by calling the original
       const newBlock = originalCreateChatBlock(isUser, content);
     
       // 2) If this is a USER message, do the old "scroll to bottom"
@@ -1400,17 +1400,18 @@
           });
         }, 50);
       } else {
-        // 3) If this is an AI message, scroll so that the *top* of newBlock 
-        //    is near the TOP of the viewport, with padding
+        // 3) If this is an AI message, scroll so top of newBlock is at top of screen w/ padding
         setTimeout(() => {
-          // Example: 80px offset from the top
-          let offsetTop = newBlock.offsetTop - 80;
-          if (offsetTop < 0) offsetTop = 0; // clamp to 0 just in case
+          // Instead of newBlock.offsetTop, use getBoundingClientRect()
+          const rect = newBlock.getBoundingClientRect();
+          const absoluteY = rect.top + window.scrollY; // Y position in the page
+          let scrollTarget = absoluteY - 80;           // 80px offset from top
+          if (scrollTarget < 0) scrollTarget = 0;      // clamp to 0
     
           window.scrollTo({
-            top: offsetTop,
+            top: scrollTarget,
             left: 0,
-            behavior: "smooth", // or "auto" if you dislike animated scrolling
+            behavior: "smooth",
           });
         }, 50);
     
@@ -1418,10 +1419,10 @@
         playVoiceOutput(content);
       }
     
-      // OPTIONAL: Return the newly created block 
-      // (In case you want to do more with it)
+      // Return newly created block
       return newBlock;
     };
+
 
 
 
