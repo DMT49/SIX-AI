@@ -690,7 +690,8 @@
       let lastOptionIndex = -1;
       let hasRenderedBotAvatar = false;
     
-      // ====== ADDED: We'll track the "last created text block"
+      // --- ADDED: We'll track both the first and last block
+      let firstCreatedBlock = null;
       let lastCreatedBlock = null;
     
       segments.forEach((segment, index) => {
@@ -702,10 +703,15 @@
               renderOptions(optionGroup, isOptionsAtEnd);
               optionGroup = [];
             }
-            const hideAvatar = !isUser && hasRenderedBotAvatar;
     
-            // ====== MOVED: store what renderTextSegment returns
-            lastCreatedBlock = renderTextSegment(textContent, isUser, hideAvatar);
+            const hideAvatar = !isUser && hasRenderedBotAvatar;
+            const newlyRenderedBlock = renderTextSegment(textContent, isUser, hideAvatar);
+    
+            // Keep track of the first and last blocks
+            if (!firstCreatedBlock) {
+              firstCreatedBlock = newlyRenderedBlock;
+            }
+            lastCreatedBlock = newlyRenderedBlock;
     
             hasRenderedBotAvatar = true;
           }
@@ -717,16 +723,30 @@
     
       if (optionGroup.length > 0) {
         const isOptionsAtEnd = !hasNonEmptyTextAfterIndex(segments, lastOptionIndex);
-        renderOptions(optionGroup, isOptionsAtEnd);
+        const newlyRenderedBlock = renderOptions(optionGroup, isOptionsAtEnd);
+    
+        // If renderOptions returns a wrapper, track it as well
+        if (newlyRenderedBlock) {
+          if (!firstCreatedBlock) {
+            firstCreatedBlock = newlyRenderedBlock;
+          }
+          lastCreatedBlock = newlyRenderedBlock;
+        }
         optionGroup = [];
       }
     
-      // Keep your existing conversationWrapper scroll
+      // Scroll the conversation wrapper to the bottom (existing behavior)
       conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
     
-      // ====== ADDED: Return the last text block we created
+      // Attach a pointer on the LAST block to reference the FIRST one
+      if (lastCreatedBlock) {
+        lastCreatedBlock.__myFirstBlock = firstCreatedBlock;
+      }
+    
+      // Return the LAST block as before (so you don’t break any existing code)
       return lastCreatedBlock;
     }
+
 
     
     // Helper function to check if there's non-empty text after a given index
@@ -1379,13 +1399,12 @@
         }
     };
 
-    
     const originalCreateChatBlock = createChatBlock;
     createChatBlock = function (isUser, content) {
-      // 1) Render the message by calling the original
+      // 1) Render the message by calling the original function
       const newBlock = originalCreateChatBlock(isUser, content);
     
-      // 2) If this is a USER message, do the old "scroll to bottom"
+      // 2) If this is a USER message, we do the old "scroll to bottom"
       if (isUser) {
         setTimeout(() => {
           window.scrollTo({
@@ -1395,13 +1414,17 @@
           });
         }, 50);
       } else {
-        // 3) If this is an AI message, scroll so top of newBlock is at top of screen w/ padding
+        // 3) If this is an AI message:
+        //    scroll so top of the FIRST sub-block is near the top of the screen
         setTimeout(() => {
-          // Instead of newBlock.offsetTop, use getBoundingClientRect()
-          const rect = newBlock.getBoundingClientRect();
-          const absoluteY = rect.top + window.scrollY; // Y position in the page
-          let scrollTarget = absoluteY - 80;           // 80px offset from top
-          if (scrollTarget < 0) scrollTarget = 0;      // clamp to 0
+          // newBlock.__myFirstBlock is assigned in the original function
+          const firstBlock = newBlock.__myFirstBlock || newBlock;
+    
+          // Use getBoundingClientRect() to find the Y position
+          const rect = firstBlock.getBoundingClientRect();
+          const absoluteY = rect.top + window.scrollY;
+          let scrollTarget = absoluteY - 80; // 80px offset from top
+          if (scrollTarget < 0) scrollTarget = 0;
     
           window.scrollTo({
             top: scrollTarget,
@@ -1414,9 +1437,10 @@
         playVoiceOutput(content);
       }
     
-      // Return newly created block
+      // Return the block so existing code is unchanged
       return newBlock;
-    }
+    };
+
 
     function initTooltips() {
       const tooltipEl = document.getElementById("global-tooltip");
