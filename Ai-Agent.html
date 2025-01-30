@@ -197,10 +197,10 @@
 
 
     function handlePdfUpload() {
-      // Create a hidden file input element for selecting PDFs or images
+      // Create a hidden file input element for selecting PDFs, images, audio, or videos
       const fileInput = document.createElement("input");
       fileInput.type = "file";
-      fileInput.accept = "application/pdf,image/*"; // <-- Accept both PDFs & images
+      fileInput.accept = "application/pdf,image/*,audio/*,video/*"; // Updated accept types
       fileInput.style.display = "none";
     
       // DOM Elements for toggling visibility
@@ -218,19 +218,26 @@
         loadingGif.style.display = "block";
     
         let uploadUrl = "https://api.cloudinary.com/v1_1/dgt84jatm"; // base endpoint
-        let fileLabel = ""; // will be "PDF" or "Image"
+        let fileLabel = ""; // "PDF", "Image", "Audio", or "Video"
     
         try {
           // 1) Detect file type to decide resource type
           if (file.type === "application/pdf") {
-            uploadUrl += "/raw/upload"; // ensures .pdf extension
+            uploadUrl += "/raw/upload";
             fileLabel = "PDF";
           } else if (file.type.startsWith("image/")) {
-            uploadUrl += "/image/upload"; // ensures image extension
+            uploadUrl += "/image/upload";
             fileLabel = "Image";
+          } else if (file.type.startsWith("audio/")) {
+            // Cloudinary treats audio under "video"
+            uploadUrl += "/video/upload";
+            fileLabel = "Audio";
+          } else if (file.type.startsWith("video/")) {
+            uploadUrl += "/video/upload";
+            fileLabel = "Video";
           } else {
-            // Neither PDF nor image
-            alert("Please select a valid PDF or image file.");
+            // Neither PDF, image, audio, nor video
+            alert("Please select a valid PDF, image, audio, or video file.");
             fileIcon.style.display = "block";
             loadingGif.style.display = "none";
             return;
@@ -279,6 +286,7 @@
       // Trigger the file input dialog
       fileInput.click();
     }
+
 
 
     // Attach the event listener to the chat-file-input button
