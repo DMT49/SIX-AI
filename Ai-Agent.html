@@ -196,106 +196,78 @@
     }
 
 
-    function handlePdfUpload() {
-      // Create a hidden file input element for selecting PDFs, images, audio, or videos
+    function handleFileUpload() {
+      // Create a hidden file input element
       const fileInput = document.createElement("input");
       fileInput.type = "file";
-      fileInput.accept = "application/pdf,image/*,audio/*,video/*"; // Updated accept types
+      fileInput.accept = "*/*"; // Accept ANY file type
       fileInput.style.display = "none";
-    
-      // DOM Elements for toggling visibility
+  
+      // DOM elements for toggling visibility
       const fileIcon = document.getElementById("chat-file-input-icon");
       const loadingGif = document.getElementById("chat-file-loading");
       const userInput = document.getElementById("chat-user-input");
-    
-      // Listen for file selection
+  
       fileInput.addEventListener("change", async (event) => {
         const file = event.target.files[0];
         if (!file) return;
-    
-        // Show the loading animation and hide the file icon
+  
         fileIcon.style.display = "none";
         loadingGif.style.display = "block";
-    
-        let uploadUrl = "https://api.cloudinary.com/v1_1/dgt84jatm"; // base endpoint
-        let fileLabel = ""; // "PDF", "Image", "Audio", or "Video"
-    
+  
+        // Adjusted Cloudinary endpoint with your actual cloud name
+        let uploadUrl = "https://api.cloudinary.com/v1_1/dgt84jatm";
+        let fileLabel = "";
+  
         try {
-          // 1) Detect file type to decide resource type
-          if (file.type === "application/pdf") {
-            uploadUrl += "/raw/upload";
-            fileLabel = "PDF";
-          } else if (file.type.startsWith("image/")) {
+          if (file.type.startsWith("image/")) {
             uploadUrl += "/image/upload";
             fileLabel = "Image";
-          } else if (file.type.startsWith("audio/")) {
-            // Cloudinary treats audio under "video"
+          } else if (file.type.startsWith("audio/") || file.type.startsWith("video/")) {
             uploadUrl += "/video/upload";
-            fileLabel = "Audio";
-          } else if (file.type.startsWith("video/")) {
-            uploadUrl += "/video/upload";
-            fileLabel = "Video";
+            fileLabel = file.type.startsWith("audio/") ? "Audio" : "Video";
           } else {
-            // Neither PDF, image, audio, nor video
-            alert("Please select a valid PDF, image, audio, or video file.");
-            fileIcon.style.display = "block";
-            loadingGif.style.display = "none";
-            return;
+            uploadUrl += "/raw/upload";
+            fileLabel = "File";
           }
-    
-          // 2) Prepare FormData for Cloudinary upload
+  
           const formData = new FormData();
           formData.append("file", file);
-          formData.append("upload_preset", "my_unsigned_preset"); // Use your unsigned preset name
-    
-          // 3) Upload the file to Cloudinary
+          formData.append("upload_preset", "my_unsigned_preset"); // Replace with your preset if needed
+  
           const response = await fetch(uploadUrl, {
             method: "POST",
             body: formData,
           });
-    
+  
           if (!response.ok) {
             throw new Error("Failed to upload the file to Cloudinary");
           }
-    
-          // 4) Parse the response JSON
+  
           const data = await response.json();
-    
-          // 5) Extract the secure URL of the uploaded file
           const hostedUrl = data.secure_url;
-    
-          // 6) Format the output for the textarea
           const formattedOutput = `(${fileLabel}: ${hostedUrl})`;
-    
-          // 7) Append the formatted output to the chat-user-input textarea
+  
           userInput.value += ` ${formattedOutput}`;
-    
-          // Dynamically adjust the textarea height
-          adjustHeight();
-    
+          adjustHeight(); // Already defined in your code
+  
         } catch (error) {
           console.error("Error uploading file:", error);
           alert("There was an issue uploading your file. Please try again.");
         } finally {
-          // Hide the loading animation and show the file icon again
           fileIcon.style.display = "block";
           loadingGif.style.display = "none";
         }
       });
-    
-      // Trigger the file input dialog
+  
       fileInput.click();
     }
 
 
-
-    // Attach the event listener to the chat-file-input button
-    const chatFileInputButton = document.getElementById("chat-file-input");
-    if (chatFileInputButton) {
-      chatFileInputButton.addEventListener("click", handlePdfUpload);
-    } else {
-      console.error("Button with ID 'chat-file-input' not found.");
-    }
+  const chatFileInputButton = document.getElementById("chat-file-input");
+  if (chatFileInputButton) {
+    chatFileInputButton.addEventListener("click", handleFileUpload);
+  }
 
 
     function stopCurrentVoiceOutput() {
