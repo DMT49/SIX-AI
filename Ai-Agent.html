@@ -85,6 +85,8 @@
 
     let airtableRecordId = null;
 
+    let isBusy = false; // NEW: Blocks user while AI is responding
+
     function markdownToPlainText(markdown) {
       // 1) Parse to HTML
       const html = marked.parse(markdown);
@@ -812,21 +814,6 @@
 
     }
 
-    
-    /**
-     * Renders multiple choice options in the chat UI.
-     * 
-     * Dependencies/Variables:
-     *  - conversationWrapper (DOM element)
-     *  - stopCurrentVoiceOutput() 
-     *  - createChatBlock(isUser, text)
-     *  - airtableRecordId, updateTimeLastEdited(recordId)
-     *  - createLoadingBlock()
-     *  - startConversation(message)
-     *  - adjustHeight() – adjusts the textarea height
-     *  - chat-user-input (the <textarea> element)
-     */
-    
     function renderOptions(options, isEnd) {
       if (options.length === 0) return;
     
@@ -858,7 +845,12 @@
                height="32" 
                viewBox="0 0 24 24">
             <path fill="currentColor" 
-                  d="M15 20H5V7c0-.55-.45-1-1-1s-1 .45-1 1v13c0 1.1.9 2 2 2h10c.55 0 1-.45 1-1s-.45-1-1-1m5-4V4c0-1.1-.9-2-2-2H9c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h9c1.1 0 2-.9 2-2m-2 0H9V4h9z">
+                  d="M15 20H5V7c0-.55-.45-1-1-1s-1 .45-1 1v13c0 1.1.9 2 2 
+                  2h10c.55 0 1-.45 1-1s-.45-1-1-1m5-4V4c0-1.1-.9-2-2-2H9c-1.1 
+                  0-2 .9-2 2v12c0 1.1.9 
+                  2 2 2h9c1.1 
+                  0 2-.9 2-2m-2 
+                  0H9V4h9z">
             </path>
           </svg>`;
     
@@ -880,78 +872,108 @@
         // Add container to the overall chat block
         chatBlock.appendChild(optionContainer);
     
-        // --- CLIPBOARD ICON CLICK (NEW/UPDATED) ---
+        // --- CLIPBOARD ICON CLICK ---
         clipboardIcon.addEventListener("click", (e) => {
           e.stopPropagation(); // Prevent triggering the send-text logic
     
           // 1) Copy the option text to clipboard
           navigator.clipboard.writeText(optionText)
             .then(() => {
-              // Switch to tick for 2 seconds
+              // Switch icon to "✅" for 2 seconds
               clipboardIcon.innerHTML = "✅";
               setTimeout(() => {
-                  clipboardIcon.innerHTML = `
-                      <svg xmlns="http://www.w3.org/2000/svg" 
-                           aria-hidden="true" 
-                           role="img" 
-                           class="clipboard-svg" 
-                           width="32" 
-                           height="32" 
-                           viewBox="0 0 24 24">
-                          <path fill="currentColor" 
-                                d="M15 20H5V7c0-.55-.45-1-1-1s-1 .45-1 1v13c0 1.1.9 2 2 2h10c.55 0 1-.45 1-1s-.45-1-1-1m5-4V4c0-1.1-.9-2-2-2H9c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h9c1.1 0 2-.9 2-2m-2 0H9V4h9z">
-                          </path>
-                      </svg>`;
+                clipboardIcon.innerHTML = `
+                  <svg xmlns="http://www.w3.org/2000/svg" 
+                       aria-hidden="true" 
+                       role="img" 
+                       class="clipboard-svg" 
+                       width="32" 
+                       height="32" 
+                       viewBox="0 0 24 24">
+                    <path fill="currentColor" 
+                          d="M15 20H5V7c0-.55-.45-1-1-1s-1 .45-1 
+                          1v13c0 1.1.9 2 2 2h10c.55 0 1-.45 
+                          1-1s-.45-1-1-1m5-4V4c0-1.1-.9-2-2-2H9c-1.1 
+                          0-2 .9-2 2v12c0 1.1.9 
+                          2 2 2h9c1.1 
+                          0 2-.9 2-2m-2 
+                          0H9V4h9z">
+                    </path>
+                  </svg>`;
               }, 2000);
             })
             .catch((err) => {
               console.error("Clipboard copy failed:", err);
             });
     
-          // 2) ALSO append the text to the user's input area with a line break
+          // 2) Also append the text to the user's input area with a line break
           const userInput = document.getElementById("chat-user-input");
           userInput.value += `${optionText}\n`;
           adjustHeight(); // Re-adjust textarea size if needed
         });
     
-        // --- MAIN OPTION CLICK (unchanged) ---
+        // --- MAIN OPTION CLICK (UPDATED) ---
         optionDiv.addEventListener("click", async () => {
-          if (optionClicked) return;
-          optionDiv.classList.add("is-chosen");
-          optionClicked = true;
+          // 1) If we are already busy, do nothing
+          if (isBusy) return;
     
-          // Disable other options
-          Array.from(chatBlock.children).forEach((child) => {
-            if (child !== optionContainer) {
-              child.classList.add("is-disabled");
-              child.style.pointerEvents = "none";
+          // 2) Mark busy
+          isBusy = true;
+    
+          try {
+            if (optionClicked) {
+              // If user has already clicked once, bail out
+              isBusy = false;
+              return;
             }
-          });
     
-          // Stop current voice output
-          stopCurrentVoiceOutput();
+            optionDiv.classList.add("is-chosen");
+            optionClicked = true;
     
-          // Show user-chosen option in the chat
-          createChatBlock(true, optionText);
+            // Disable other options
+            Array.from(chatBlock.children).forEach((child) => {
+              if (child !== optionContainer) {
+                child.classList.add("is-disabled");
+                child.style.pointerEvents = "none";
+              }
+            });
     
-          // Update Airtable time if record ID exists
-          if (airtableRecordId) {
-            console.log("Updating Time-Last-Edited for record ID:", airtableRecordId);
-            await updateTimeLastEdited(airtableRecordId);
+            // Stop current voice output
+            stopCurrentVoiceOutput();
+    
+            // Show user-chosen option in the chat
+            createChatBlock(true, optionText);
+    
+            // Update Airtable time if record ID exists
+            if (airtableRecordId) {
+              console.log("Updating Time-Last-Edited for record ID:", airtableRecordId);
+              await updateTimeLastEdited(airtableRecordId);
+            }
+    
+            // Show loading block
+            const { chatInnerWrapper: loadingWrapper, chatBlockWrapper: loadingBlockWrapper } = createLoadingBlock();
+    
+            let agentResponse;
+            try {
+              // Send the text to the agent, get response
+              agentResponse = await startConversation(optionText);
+            } catch (error) {
+              console.error("Error in multi-choice submission:", error);
+              agentResponse = "Sorry, something went wrong with your choice.";
+            }
+    
+            // Remove loading block, then show the agent's response
+            conversationWrapper.removeChild(loadingBlockWrapper);
+            createChatBlock(false, agentResponse);
+    
+          } finally {
+            // 3) Unlock once done
+            isBusy = false;
           }
-    
-          // Show loading block
-          const { chatInnerWrapper: loadingWrapper, chatBlockWrapper: loadingBlockWrapper } = createLoadingBlock();
-    
-          // Send the text to the agent, get response
-          const agentResponse = await startConversation(optionText);
-    
-          // Remove loading block, show response
-          conversationWrapper.removeChild(loadingBlockWrapper);
-          createChatBlock(false, agentResponse);
         });
       });
     
+      // Finally, append everything
       chatBlockWrapper.appendChild(chatBlock);
       conversationWrapper.appendChild(chatBlockWrapper);
     }
@@ -1083,33 +1105,62 @@
     }
 
 
-    
-    
     async function handleSubmit() {
-        stopVoiceTranscription(); // Existing voice transcription logic
-        stopCurrentVoiceOutput(); // New logic to stop current voice output
+      // 1) If the AI is already processing, do nothing
+      if (isBusy) return;
     
-        const message = textarea.value.trim();
-        if (!message) return;
+      // 2) Mark the system as busy
+      isBusy = true;
     
-        console.log("User submitted message:", message);
+      // (Optional) Disable the user input fields (visual feedback)
+      textarea.disabled = true;
+      userSubmit.disabled = true;
     
-        // Update Time-Last-Edited in Airtable if recordId exists
-        if (airtableRecordId) {
-            console.log("Updating Time-Last-Edited for record ID:", airtableRecordId);
-            await updateTimeLastEdited(airtableRecordId);
-        }
+      // 3) Stop any ongoing speech or TTS
+      stopVoiceTranscription();
+      stopCurrentVoiceOutput();
     
-        createChatBlock(true, message); // Render user message
-        resetHeight(); // Reset textarea height
+      // 4) Grab the user's message
+      const message = textarea.value.trim();
+      if (!message) {
+        // If empty, unlock so user can try again
+        isBusy = false;
+        textarea.disabled = false;
+        userSubmit.disabled = false;
+        return;
+      }
     
-        const { chatInnerWrapper, chatBlockWrapper } = createLoadingBlock(); // Show loading block
-        const agentResponse = await startConversation(message); // Get AI response
-        conversationWrapper.removeChild(chatBlockWrapper); // Remove loading block
-        createChatBlock(false, agentResponse); // Render AI response
-
+      // 5) Render user’s message immediately
+      createChatBlock(true, message);
+      resetHeight(); // Clears + resets textarea
+    
+      // 6) Show the loading block
+      const { chatInnerWrapper, chatBlockWrapper } = createLoadingBlock();
+    
+      try {
+        // 7) Send to AI + wait for response
+        const agentResponse = await startConversation(message);
+    
+        // 8) Remove loading block + show AI response
+        conversationWrapper.removeChild(chatBlockWrapper);
+        createChatBlock(false, agentResponse);
+      } catch (error) {
+        console.error("Error while waiting for AI response:", error);
+        // You could show an error message in the UI
+        conversationWrapper.removeChild(chatBlockWrapper);
+        createChatBlock(false, "Sorry, something went wrong.");
+      } finally {
+        // 9) Unlock the system so user can send next message
+        isBusy = false;
+    
+        // (Optional) Re-enable user input
+        textarea.disabled = false;
+        userSubmit.disabled = false;
+    
+        // 10) Reset partial transcripts
         finalSoFar = "";
         lastPartial = "";
+      }
     }
 
 
