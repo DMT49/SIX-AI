@@ -3227,8 +3227,6 @@ margin: 0rem !important;
 /* RESTORE BULLETS FOR UL (SUB-LISTS) */
 .chat_inner-wrapper ul {
   list-style: disc;            /* Bullet points for <ul> */
-  margin: 0 0 1em 2em;         /* Indent sub-lists */
-  padding-left: 0;
 }
 
 
