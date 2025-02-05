@@ -3228,6 +3228,7 @@ margin: 0rem !important;
 .chat_inner-wrapper ul {
   list-style: disc;            /* Bullet points for <ul> */
   margin-left: 2em !important;
+  padding-left: 0px !important;
 }
 
 
