@@ -3200,28 +3200,37 @@ margin: 0rem !important;
 }
 
 
-/* RESET LISTS */
+/* RESET TOP-LEVEL ORDERED LIST AND SET COUNTER */
 .chat_inner-wrapper ol {
-  list-style: none;
+  list-style: none;            /* Hide default numbering */
   padding-left: 0;
   margin: 0;
+  counter-reset: list-counter; /* Start a custom counter */
 }
 
-/* CUSTOM NUMBERING */
-.chat_inner-wrapper ol li {
+/* CUSTOM NUMBERING ONLY FOR DIRECT CHILD LI OF OL */
+.chat_inner-wrapper ol > li {
   position: relative;
   padding-left: 2em;
   counter-increment: list-counter;
 }
 
-.chat_inner-wrapper ol li::before {
-  content: counter(list-counter) ".";
+.chat_inner-wrapper ol > li::before {
+  content: counter(list-counter) ". ";
   position: absolute;
   left: 0;
   top: 0;
   width: 2em;
   text-align: center;
 }
+
+/* RESTORE BULLETS FOR UL (SUB-LISTS) */
+.chat_inner-wrapper ul {
+  list-style: disc;            /* Bullet points for <ul> */
+  margin: 0 0 1em 2em;         /* Indent sub-lists */
+  padding-left: 0;
+}
+
 
 .chat_inner-wrapper * {  /* Targets all descendants of .chat_inner-wrapper */
   overflow-wrap: break-word;
