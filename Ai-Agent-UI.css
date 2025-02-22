@@ -2362,7 +2362,7 @@ figcaption {
   grid-template-rows: auto auto;
   grid-template-columns: 6% 84% 6%;
   grid-auto-columns: 1fr;
-  max-width: 48rem;
+  max-width: 54rem;
   display: grid;
   position: relative;
 }
