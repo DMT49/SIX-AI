@@ -89,17 +89,18 @@
 
     let isBusy = false; // NEW: Blocks user while AI is responding
 
+    // Declare customRenderer as a global variable.
+    var customRenderer;
+    
     document.addEventListener("DOMContentLoaded", function() {
-      // NEW: Custom marked renderer to force links to open in a new tab
-      const customRendererLocal = new marked.Renderer();
-      customRendererLocal.link = function(href, title, text) {
+      // NEW: Define and assign the custom marked renderer after DOM is loaded.
+      customRenderer = new marked.Renderer();
+      customRenderer.link = function(href, title, text) {
         const titleAttr = title ? ` title="${title}"` : '';
         return `<a href="${href}"${titleAttr} target="_blank" rel="noopener noreferrer">${text}</a>`;
       };
-    
-      // Expose the custom renderer globally so existing functions can access it
-      window.customRenderer = customRendererLocal;
     });
+
 
 
 
