@@ -89,12 +89,17 @@
 
     let isBusy = false; // NEW: Blocks user while AI is responding
 
-    // CUSTOM MARKED RENDERER: Forces all links to open in a new tab
-    const customRenderer = new marked.Renderer();
-    customRenderer.link = function(href, title, text) {
-      const titleAttr = title ? ` title="${title}"` : '';
-      return `<a href="${href}"${titleAttr} target="_blank" rel="noopener noreferrer">${text}</a>`;
-    };
+    document.addEventListener("DOMContentLoaded", function() {
+      // NEW: Custom marked renderer to force links to open in a new tab
+      const customRenderer = new marked.Renderer();
+      customRenderer.link = function(href, title, text) {
+        const titleAttr = title ? ` title="${title}"` : '';
+        return `<a href="${href}"${titleAttr} target="_blank" rel="noopener noreferrer">${text}</a>`;
+      };
+    
+      // Now use 'customRenderer' with marked.parse in your existing functions.
+    });
+
 
     function markdownToPlainText(markdown) {
       // Parse Markdown to HTML using the custom renderer
