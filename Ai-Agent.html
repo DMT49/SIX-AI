@@ -91,19 +91,23 @@
 
     (function waitForMarked() {
       if (typeof marked !== "undefined") {
+        // Create a global custom renderer
         window.customRenderer = new marked.Renderer();
         window.customRenderer.link = function(href, title, text) {
-          // If text is an array, join its elements into a string.
-          if (Array.isArray(text)) {
-            text = text.join("");
+          // Ensure text is a proper string:
+          if (typeof text !== "string") {
+            // If text is an object and has a 'text' property, use that.
+            if (text && typeof text === "object" && text.text) {
+              text = text.text;
+            } else {
+              // Otherwise, convert it to a string.
+              text = String(text);
+            }
           }
-          // If text is an object (not a string), try extracting its 'text' property.
-          else if (typeof text === "object" && text !== null) {
-            text = text.text || "";
-          }
-          // Fallback: if text is empty, use the href as the link text.
+          // Fallback to href if text is still empty.
           text = text || href;
           var titleAttr = title ? ' title="' + title + '"' : '';
+          // Return the link HTML with target and rel attributes.
           return '<a href="' + href + '"' + titleAttr + ' target="_blank" rel="noopener noreferrer">' + text + '</a>';
         };
         console.log("Custom renderer defined.");
@@ -112,6 +116,7 @@
         setTimeout(waitForMarked, 50);
       }
     })();
+
 
 
 
