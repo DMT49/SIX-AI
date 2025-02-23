@@ -91,9 +91,10 @@
 
     (function waitForMarked() {
       if (typeof marked !== "undefined") {
-        // Once marked is available, create the custom renderer
         window.customRenderer = new marked.Renderer();
         window.customRenderer.link = function(href, title, text) {
+          // Fallback: if text is undefined, use href as the link text
+          text = text || href;
           var titleAttr = title ? ' title="' + title + '"' : '';
           return '<a href="' + href + '"' + titleAttr + ' target="_blank" rel="noopener noreferrer">' + text + '</a>';
         };
@@ -103,6 +104,7 @@
         setTimeout(waitForMarked, 50);
       }
     })();
+
 
 
 
