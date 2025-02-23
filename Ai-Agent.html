@@ -93,7 +93,15 @@
       if (typeof marked !== "undefined") {
         window.customRenderer = new marked.Renderer();
         window.customRenderer.link = function(href, title, text) {
-          // Fallback: if text is undefined, use href as the link text
+          // If text is an array, join its elements into a string.
+          if (Array.isArray(text)) {
+            text = text.join("");
+          }
+          // If text is an object (not a string), try extracting its 'text' property.
+          else if (typeof text === "object" && text !== null) {
+            text = text.text || "";
+          }
+          // Fallback: if text is empty, use the href as the link text.
           text = text || href;
           var titleAttr = title ? ' title="' + title + '"' : '';
           return '<a href="' + href + '"' + titleAttr + ' target="_blank" rel="noopener noreferrer">' + text + '</a>';
@@ -104,6 +112,7 @@
         setTimeout(waitForMarked, 50);
       }
     })();
+
 
 
 
