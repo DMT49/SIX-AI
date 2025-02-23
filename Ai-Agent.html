@@ -91,14 +91,16 @@
 
     document.addEventListener("DOMContentLoaded", function() {
       // NEW: Custom marked renderer to force links to open in a new tab
-      const customRenderer = new marked.Renderer();
-      customRenderer.link = function(href, title, text) {
+      const customRendererLocal = new marked.Renderer();
+      customRendererLocal.link = function(href, title, text) {
         const titleAttr = title ? ` title="${title}"` : '';
         return `<a href="${href}"${titleAttr} target="_blank" rel="noopener noreferrer">${text}</a>`;
       };
     
-      // Now use 'customRenderer' with marked.parse in your existing functions.
+      // Expose the custom renderer globally so existing functions can access it
+      window.customRenderer = customRendererLocal;
     });
+
 
 
     function markdownToPlainText(markdown) {
