@@ -89,19 +89,20 @@
 
     let isBusy = false; // NEW: Blocks user while AI is responding
 
-    window.addEventListener("load", function() {
-      // Define the custom marked renderer after all resources are loaded
-      var customRenderer = new marked.Renderer();
-      customRenderer.link = function(href, title, text) {
-        var titleAttr = title ? ' title="' + title + '"' : '';
-        return '<a href="' + href + '"' + titleAttr + ' target="_blank" rel="noopener noreferrer">' + text + '</a>';
-      };
-      // Expose it globally for use in your existing functions
-      window.customRenderer = customRenderer;
-    });
-
-
-
+    (function waitForMarked() {
+      if (typeof marked !== "undefined") {
+        // Once marked is available, create the custom renderer
+        window.customRenderer = new marked.Renderer();
+        window.customRenderer.link = function(href, title, text) {
+          var titleAttr = title ? ' title="' + title + '"' : '';
+          return '<a href="' + href + '"' + titleAttr + ' target="_blank" rel="noopener noreferrer">' + text + '</a>';
+        };
+        console.log("Custom renderer defined.");
+      } else {
+        console.log("Marked not available yet, retrying...");
+        setTimeout(waitForMarked, 50);
+      }
+    })();
 
 
 
