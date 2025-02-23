@@ -89,12 +89,17 @@
 
     let isBusy = false; // NEW: Blocks user while AI is responding
 
-    // NEW: Define the custom marked renderer immediately (since marked is already loaded)
-    var customRenderer = new marked.Renderer();
-    customRenderer.link = function(href, title, text) {
-      const titleAttr = title ? ` title="${title}"` : '';
-      return `<a href="${href}"${titleAttr} target="_blank" rel="noopener noreferrer">${text}</a>`;
-    };
+    window.addEventListener("load", function() {
+      // Define the custom marked renderer after all resources are loaded
+      var customRenderer = new marked.Renderer();
+      customRenderer.link = function(href, title, text) {
+        var titleAttr = title ? ' title="' + title + '"' : '';
+        return '<a href="' + href + '"' + titleAttr + ' target="_blank" rel="noopener noreferrer">' + text + '</a>';
+      };
+      // Expose it globally for use in your existing functions
+      window.customRenderer = customRenderer;
+    });
+
 
 
 
