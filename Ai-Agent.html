@@ -56,9 +56,11 @@
     const container = document.getElementById("ai-agent-container");
     
     // 2) Read data attributes (fallback to defaults if missing)
-    const agentId = container?.getAttribute("data-agent-id") || "6a12b1cd-b7d5-4b00-80ee-d2829af810dc";
-    const name    = container?.getAttribute("data-user-name") || "Guest";
-    const email   = container?.getAttribute("data-user-email") || "noemail@domain.com";
+    const agentId  = container?.getAttribute("data-agent-id") || "6a12b1cd-b7d5-4b00-80ee-d2829af810dc";
+    const name     = container?.getAttribute("data-user-name") || "Guest";
+    const email    = container?.getAttribute("data-user-email") || "noemail@domain.com";
+    const agentInfo = container?.getAttribute("data-agent-info") || "";  // New attribute
+
     
     // Configuration for AI agent
     const region = "bcbe5a"; // Replace with your region
@@ -1289,9 +1291,12 @@
     
       // Construct the initial message
       const currentTime = new Date().toLocaleString();
-      const initialMessage = `conversation_name=${currentTime}, current_username=${name}, current_user_email=${email}`;
+      let initialMessage = `conversation_name=${currentTime}, current_username=${name}, current_user_email=${email}`;
+      if (agentInfo) {
+        initialMessage += `, additional_info=${agentInfo}`;
+      }
       console.log("Sending initial message to AI:", initialMessage);
-    
+
       // Send initial message to AI (not shown as user's message)
       const agentResponse = await startConversation(initialMessage);
     
