@@ -3321,3 +3321,15 @@ margin: 0rem !important;
   opacity: 1;
   visibility: visible;
 }
+
+/*
+==========================================
+MOBILE STYLES BELOW
+==========================================
+*/
+
+@media (max-width: 768px) {
+	.tve-u-19457812927{
+		max-width: unset;
+	}
+}
