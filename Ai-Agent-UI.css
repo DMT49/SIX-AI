@@ -3331,26 +3331,59 @@ body {
 MOBILE STYLES BELOW
 ==========================================
 */
-@media screen and (max-width: 768px) {
-.chat_input-wrapper{
-	bottom: 0px;
-	left:0px;
-	right:0px;
-	border-radius:0px;
-	padding:6px;
-	padding-right:16px;
-	width: 100% !important;
-	display: grid;
-  	grid-template-rows: auto auto;          /* Two rows: text input & buttons */
-    	grid-template-columns: 1fr;   /* Four equal columns for the buttons */
-	gap: 8px;
-}
-#hamburger-menu-mobile {
-	display: inline-block;
-  }
-	
-}
 @media (min-width: 768px) {
   #hamburger-menu-mobile {
     display: none;
   }
+}
+	
+@media screen and (max-width: 768px) {
+  /* Overall chat input container */
+  .chat_input-wrapper {
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    border-radius: 0px;
+    padding: 6px 16px;
+    width: 100% !important;
+    display: grid;
+
+    /* 2 rows: row 1 = the text input, row 2 = the buttons */
+    grid-template-rows: auto auto;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  /* Make the text input span the entire first row */
+  .chat_input-text {
+    grid-row: 1;  /* Puts the text-area in row 1 */
+    grid-column: 1;
+  }
+
+  /* Put all 5 buttons in the second row (side by side) */
+  #hamburger-menu-mobile,
+  #chat-file-input,
+  #chat-user-input-mic,
+  #chat-voice-toggle,
+  #chat-user-submit {
+    grid-row: 2;           /* Puts these in row 2 */
+    grid-column: 1;
+  }
+
+  /* Give them a flex row layout so they line up horizontally */
+  #hamburger-menu-mobile,
+  #chat-file-input,
+  #chat-user-input-mic,
+  #chat-voice-toggle,
+  #chat-user-submit {
+    display: inline-flex;   /* or inline-block; both will line up horizontally */
+    margin-right: 6px;      /* small spacing between them */
+  }
+
+  /* Optional: remove the margin on the last button to avoid extra trailing gap */
+  #chat-user-submit {
+    margin-right: 0;
+  }
+}
+
+
