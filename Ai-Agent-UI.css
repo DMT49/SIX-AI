@@ -3332,14 +3332,13 @@ MOBILE STYLES BELOW
 ==========================================
 */
 @media screen and (max-width: 768px) {
-  /* 1) chat_input-wrapper: remove 16px padding, keep only 6px, width at 97% */
   .chat_input-wrapper {
     display: flex !important;
     flex-wrap: wrap !important;
-    gap: 8px !important;           /* Space between items (you can reduce if you want) */
+    gap: 8px !important;
     align-items: center;
     justify-content: flex-start;
-    padding: 6px !important;       /* Only 6px padding on all sides */
+    padding: 6px !important;
     width: 97% !important;
     border-radius: 0 !important;
     left: 0 !important;
@@ -3347,27 +3346,23 @@ MOBILE STYLES BELOW
     bottom: 0 !important;
   }
 
-  /* 2) Text input at top row, full width (unchanged) */
   .chat_input-text {
     order: 1 !important;
     flex: 0 0 100% !important;
   }
 
-  /* 3) Buttons become 50×50 px */
+  /* Force all chat buttons to 50×50px */
   .chat_input-button {
     width: 50px !important;
     height: 50px !important;
   }
 
-  /* Show hamburger on mobile, center icon */
   #hamburger-menu-mobile {
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
     order: 2 !important;
   }
-
-  /* The other buttons line up after hamburger, side by side */
   #chat-file-input {
     order: 3 !important;
   }
@@ -3378,20 +3373,24 @@ MOBILE STYLES BELOW
     order: 5 !important;
   }
 
-  /* 4) Submit button on the far right */
+  /* Submit button specifically forced to 50×50 too */
   #chat-user-submit {
     order: 6 !important;
-    margin-left: auto !important;  /* pushes it to the far right */
-    display: flex !important;      /* keep icon centered within */
+    margin-left: auto !important;
+    display: flex !important;
     justify-content: center !important;
     align-items: center !important;
+
+    /* Ensure this button can't override the 50×50 set above */
+    width: 50px !important;
+    height: 50px !important;
   }
 }
 
-/* Hide hamburger above 768px */
 @media (min-width: 768px) {
   #hamburger-menu-mobile {
     display: none !important;
   }
 }
+
 
