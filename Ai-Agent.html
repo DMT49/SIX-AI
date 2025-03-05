@@ -111,64 +111,15 @@
 
     let isBusy = false; // NEW: Blocks user while AI is responding
 
-    /******************************
-     *  MOBILE SIDEBAR DRAWER LOGIC
-     ******************************/
-    const hamburgerMenu = document.getElementById("hamburger-menu-mobile");
-    const sidebar = document.querySelector(".sAsCont");
-    
-    // 1) Insert the 2 SVG constants from step #2 above, e.g.:
-    const HAMBURGER_SVG = `...`; // (copy from step #2)
-    const CLOSE_SVG = `...`;      // (copy from step #2)
-    
-    // 2) We'll look for the icon container inside #hamburger-menu-mobile:
-    let hamburgerIconContainer = null;
-    if (hamburgerMenu) {
-      hamburgerIconContainer = hamburgerMenu.querySelector('.icon-embed-small');
-    }
-    
-    /**
-     * 3) Toggle the sidebar AND swap the icon
-     */
-    function toggleSidebarOnMobile() {
-      // Only do the toggle if screen width <= 939
-      if (window.innerWidth <= 939 && sidebar && hamburgerIconContainer) {
-        // If .mobile-drawer-open wasn't there, it means "closed" -> now open
-        const isNowOpen = !sidebar.classList.contains('mobile-drawer-open');
-        // Toggle the class
-        sidebar.classList.toggle('mobile-drawer-open');
-    
-        // Switch the icon
-        if (isNowOpen) {
-          // Just opened, so show the X
-          hamburgerIconContainer.innerHTML = CLOSE_SVG;
-        } else {
-          // Just closed, so revert to the hamburger
-          hamburgerIconContainer.innerHTML = HAMBURGER_SVG;
-        }
-      }
-    }
-    
-    // 4) Initialize the hamburger menu icon to the "hamburger" by default
-    if (hamburgerIconContainer) {
-      hamburgerIconContainer.innerHTML = HAMBURGER_SVG;
-    }
-    
-    // 5) Attach the click event
-    if (hamburgerMenu) {
-      hamburgerMenu.addEventListener("click", toggleSidebarOnMobile);
-    } else {
-      console.warn("Hamburger menu not found in the DOM!");
-    }
-
-    // SVG for the 3-lines "hamburger"
+    /****************************************************
+     * 1) HAMBURGER + CLOSE ICON SVGs (Declared Once)
+     ****************************************************/
     const HAMBURGER_SVG = `
     <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" width="100%" height="100%" viewBox="0 0 24 24">
       <path fill="currentColor" d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"></path>
     </svg>
     `;
     
-    // SVG for the "X" close icon
     const CLOSE_SVG = `
     <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" width="100%" height="100%" viewBox="0 0 24 24">
       <path fill="currentColor" d="M18.3 5.71a1 1 0 0 0-1.41 0L12 10.59 
@@ -176,17 +127,53 @@
       16.88 18.3a1 1 0 0 0 1.42-1.41L13.41 12l4.88-4.88a1 1 0 0 0 0-1.41Z"/>
     </svg>
     `;
-
     
-    /* 3) Attach the click event to the hamburger menu */
+    /****************************************************
+     * 2) MOBILE SIDEBAR DRAWER LOGIC (Hamburger Toggles)
+     ****************************************************/
+    // Grab references to hamburger + sidebar
+    const hamburgerMenu = document.getElementById("hamburger-menu-mobile");
+    const sidebar = document.querySelector(".sAsCont");
+    
+    // We'll look for the 'icon-embed-small' div inside #hamburger-menu-mobile
+    let hamburgerIconContainer = null;
+    if (hamburgerMenu) {
+      hamburgerIconContainer = hamburgerMenu.querySelector('.icon-embed-small');
+    }
+    
+    /**
+     * Toggle the sidebar on mobile (<= 939px) AND swap the icon
+     */
+    function toggleSidebarOnMobile() {
+      if (window.innerWidth <= 939 && sidebar && hamburgerIconContainer) {
+        const isCurrentlyOpen = sidebar.classList.contains('mobile-drawer-open');
+        // Toggle the sidebar class
+        sidebar.classList.toggle('mobile-drawer-open');
+        // Update the icon (X if just opened, hamburger if just closed)
+        hamburgerIconContainer.innerHTML = isCurrentlyOpen ? HAMBURGER_SVG : CLOSE_SVG;
+      }
+    }
+    
+    // Initialize the hamburger menu icon to the hamburger by default
+    if (hamburgerIconContainer) {
+      hamburgerIconContainer.innerHTML = HAMBURGER_SVG;
+    }
+    
+    // Attach the click event
     if (hamburgerMenu && sidebar) {
       hamburgerMenu.addEventListener("click", toggleSidebarOnMobile);
     } else {
-      console.warn("Hamburger menu or .sAsCont sidebar not found in DOM.");
+      console.warn("Hamburger menu or .sAsCont sidebar not found in the DOM.");
     }
-
-
+    
+    
+    /****************************************************
+     * 3) SHOWCHATINPUTWRAPPER() HELPER
+     *    For your chat input bar
+     ****************************************************/
     function showChatInputWrapper() {
+      // Make sure you have: const chatInputWrapper = document.querySelector(".chat_input-wrapper");
+      // somewhere above in your code
       const isMobile = window.innerWidth <= 940;
       if (!chatInputWrapper) {
         console.warn("chatInputWrapper not found. Cannot show the input wrapper.");
@@ -195,8 +182,12 @@
       // Use flex on mobile; grid on desktop
       chatInputWrapper.style.display = isMobile ? "flex" : "grid";
     }
-
-
+    
+    
+    /****************************************************
+     * 4) MARKDOWN + CODE-BLOCK FUNCTIONS
+     *    (Used if your code needs them)
+     ****************************************************/
     function markdownToPlainText(markdown) {
       // 1) Parse to HTML
       const html = marked.parse(markdown);
@@ -211,9 +202,9 @@
       // 4) Return the plain text (this preserves line breaks)
       return tmpDiv.innerText || '';
     }
-
+    
     function replacePreCodeWithMarkdown(parentElement) {
-      // STEP 1: Define your icons (copy + check)
+      // Icons for code copy functionality
       const COPY_ICON_SVG = `
         <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true"
              role="img" width="16" height="16" viewBox="0 0 24 24">
@@ -230,7 +221,6 @@
           </path>
         </svg>
       `;
-    
       const CHECK_ICON_SVG = `
         <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true"
              role="img" width="16" height="16" viewBox="0 0 24 24">
@@ -244,6 +234,70 @@
           </path>
         </svg>
       `;
+    
+      // Query <pre><code> blocks inside parentElement
+      const codeBlocks = parentElement.querySelectorAll('pre code');
+    
+      codeBlocks.forEach((codeBlock) => {
+        // 1) Grab the raw text
+        const rawText = codeBlock.textContent || '';
+    
+        // 2) Render as Markdown HTML
+        const renderedHtml = marked.parse(rawText);
+        const sanitizedHtml = DOMPurify.sanitize(renderedHtml);
+    
+        // 3) Create container <div> to hold that HTML
+        const mdContainer = document.createElement('div');
+        mdContainer.classList.add('md-block-container');
+        mdContainer.innerHTML = sanitizedHtml;
+    
+        // 4) Convert rawText to plain text for copying
+        const plainText = markdownToPlainText(rawText);
+    
+        // 5) Create copy button
+        const copyBtn = document.createElement('button');
+        copyBtn.classList.add('md-copy-btn');
+        copyBtn.innerHTML = `
+          <span class="icon-container">${COPY_ICON_SVG}</span>
+          <span class="button-text">Copy</span>
+        `;
+    
+        // 6) On click, copy plainText to clipboard
+        copyBtn.addEventListener('click', () => {
+          navigator.clipboard.writeText(plainText)
+            .then(() => {
+              // Switch to "Copied!"
+              copyBtn.innerHTML = `
+                <span class="icon-container">${CHECK_ICON_SVG}</span>
+                <span class="button-text">Copied!</span>
+              `;
+              setTimeout(() => {
+                copyBtn.innerHTML = `
+                  <span class="icon-container">${COPY_ICON_SVG}</span>
+                  <span class="button-text">Copy</span>
+                `;
+              }, 2000);
+            })
+            .catch((err) => {
+              console.error('Clipboard copy failed:', err);
+            });
+        });
+    
+        // 7) Put the button in a small header
+        const headerDiv = document.createElement('div');
+        headerDiv.classList.add('md-header');
+        headerDiv.appendChild(copyBtn);
+    
+        mdContainer.insertBefore(headerDiv, mdContainer.firstChild);
+    
+        // 8) Replace <pre> with mdContainer
+        const preEl = codeBlock.closest('pre');
+        if (preEl?.parentNode) {
+          preEl.parentNode.replaceChild(mdContainer, preEl);
+        }
+      });
+    }
+
     
       const codeBlocks = parentElement.querySelectorAll('pre code');
     
