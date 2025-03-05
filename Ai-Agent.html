@@ -114,6 +114,31 @@
 
     let isBusy = false; // NEW: Blocks user while AI is responding
 
+    /******************************
+     *  MOBILE SIDEBAR DRAWER LOGIC
+     ******************************/
+    
+    /* 1) Grab references to the hamburger + sidebar. 
+          If they don’t exist, the code won't break anything. */
+    const hamburgerMenu = document.getElementById("hamburger-menu-mobile");
+    const sidebar = document.querySelector(".sAsCont");
+    
+    /* 2) Function to toggle the .mobile-drawer-open class on .sAsCont */
+    function toggleSidebarOnMobile() {
+      // Only do this if screen width is under 940px
+      if (window.innerWidth <= 939) {
+        sidebar.classList.toggle("mobile-drawer-open");
+      }
+    }
+    
+    /* 3) Attach the click event to the hamburger menu */
+    if (hamburgerMenu && sidebar) {
+      hamburgerMenu.addEventListener("click", toggleSidebarOnMobile);
+    } else {
+      console.warn("Hamburger menu or .sAsCont sidebar not found in DOM.");
+    }
+
+
     function showChatInputWrapper() {
       const isMobile = window.innerWidth <= 940;
       if (!chatInputWrapper) {
