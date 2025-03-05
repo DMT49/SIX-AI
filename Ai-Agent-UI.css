@@ -3333,7 +3333,6 @@ MOBILE STYLES BELOW
 */
 @media screen and (max-width: 768px) {
   .chat_input-wrapper {
-    display: flex !important;
     flex-wrap: wrap !important;
     gap: 8px !important;
     align-items: center;
