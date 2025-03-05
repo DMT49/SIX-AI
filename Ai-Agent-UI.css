@@ -3322,6 +3322,10 @@ margin: 0rem !important;
   visibility: visible;
 }
 
+body {
+  overflow: hidden !important;
+}
+
 /*
 ==========================================
 MOBILE STYLES BELOW
@@ -3333,5 +3337,7 @@ MOBILE STYLES BELOW
 	left:0px;
 	right:0px;
 	border-radius:0px;
+	padding:6px;
+	
 }
 
