@@ -3327,5 +3327,11 @@ margin: 0rem !important;
 MOBILE STYLES BELOW
 ==========================================
 */
-
+@media screen and (max-width: 768px) {
+.chat_input-wrapper{
+	bottom: 0px;
+	left:0px;
+	right:0px;
+	border-radius:0px;
+}
 
