@@ -3345,41 +3345,12 @@ MOBILE STYLES BELOW
     	grid-template-columns: 1fr;   /* Four equal columns for the buttons */
 	gap: 8px;
 }
-  /* Text Input Row */
-  .chat_input-text {
-    grid-column: 1 / -1;
-    margin-bottom: 8px;
+#hamburger-menu-mobile {
+	display: inline-block;
   }
-  /* Buttons Row Container */
-  .chat_input-buttons {
-    grid-column: 1 / -1;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  /* Left Buttons Group */
-  .chat_input-buttons-left {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
-  .chat_input-buttons-left .chat_input-button {
-    width: 60px;
-    height: 60px;
-  }
-  /* Right Submit Button */
-  #chat-user-submit {
-    width: 60px;
-    height: 60px;
-  }
-}
-
-/* Desktop Styles: Hide Mobile Hamburger Button */
-@media screen and (min-width: 769px) {
-  #mobile-hamburger {
-    display: none;
-  }
-}
 	
 }
-
+@media (min-width: 768px) {
+  #hamburger-menu-mobile {
+    display: none;
+  }
