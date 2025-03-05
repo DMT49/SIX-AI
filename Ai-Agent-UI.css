@@ -3331,7 +3331,7 @@ body {
 MOBILE STYLES BELOW
 ==========================================
 */
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 940px) {
   .chat_input-wrapper {
     flex-wrap: wrap !important;
     gap: 8px !important;
@@ -3391,7 +3391,7 @@ MOBILE STYLES BELOW
   }
 }
 
-@media (min-width: 768px) {
+@media (min-width: 940px) {
   #hamburger-menu-mobile {
     display: none !important;
   }
