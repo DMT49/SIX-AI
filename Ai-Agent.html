@@ -11,9 +11,6 @@
           <!-- New hamburger button (visible only on mobile) -->
           <div id="hamburger-menu-mobile" class="chat_input-button my-btn" data-tooltip="Open Menu">
             <div class="icon-embed-small w-embed">
-              <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24">
-                <path fill="currentColor" d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"></path>
-              </svg>
             </div>
           </div>
           <!-- End new hamburger button -->
@@ -117,19 +114,69 @@
     /******************************
      *  MOBILE SIDEBAR DRAWER LOGIC
      ******************************/
-    
-    /* 1) Grab references to the hamburger + sidebar. 
-          If they don’t exist, the code won't break anything. */
     const hamburgerMenu = document.getElementById("hamburger-menu-mobile");
     const sidebar = document.querySelector(".sAsCont");
     
-    /* 2) Function to toggle the .mobile-drawer-open class on .sAsCont */
+    // 1) Insert the 2 SVG constants from step #2 above, e.g.:
+    const HAMBURGER_SVG = `...`; // (copy from step #2)
+    const CLOSE_SVG = `...`;      // (copy from step #2)
+    
+    // 2) We'll look for the icon container inside #hamburger-menu-mobile:
+    let hamburgerIconContainer = null;
+    if (hamburgerMenu) {
+      hamburgerIconContainer = hamburgerMenu.querySelector('.icon-embed-small');
+    }
+    
+    /**
+     * 3) Toggle the sidebar AND swap the icon
+     */
     function toggleSidebarOnMobile() {
-      // Only do this if screen width is under 940px
-      if (window.innerWidth <= 939) {
-        sidebar.classList.toggle("mobile-drawer-open");
+      // Only do the toggle if screen width <= 939
+      if (window.innerWidth <= 939 && sidebar && hamburgerIconContainer) {
+        // If .mobile-drawer-open wasn't there, it means "closed" -> now open
+        const isNowOpen = !sidebar.classList.contains('mobile-drawer-open');
+        // Toggle the class
+        sidebar.classList.toggle('mobile-drawer-open');
+    
+        // Switch the icon
+        if (isNowOpen) {
+          // Just opened, so show the X
+          hamburgerIconContainer.innerHTML = CLOSE_SVG;
+        } else {
+          // Just closed, so revert to the hamburger
+          hamburgerIconContainer.innerHTML = HAMBURGER_SVG;
+        }
       }
     }
+    
+    // 4) Initialize the hamburger menu icon to the "hamburger" by default
+    if (hamburgerIconContainer) {
+      hamburgerIconContainer.innerHTML = HAMBURGER_SVG;
+    }
+    
+    // 5) Attach the click event
+    if (hamburgerMenu) {
+      hamburgerMenu.addEventListener("click", toggleSidebarOnMobile);
+    } else {
+      console.warn("Hamburger menu not found in the DOM!");
+    }
+
+    // SVG for the 3-lines "hamburger"
+    const HAMBURGER_SVG = `
+    <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" width="100%" height="100%" viewBox="0 0 24 24">
+      <path fill="currentColor" d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"></path>
+    </svg>
+    `;
+    
+    // SVG for the "X" close icon
+    const CLOSE_SVG = `
+    <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" width="100%" height="100%" viewBox="0 0 24 24">
+      <path fill="currentColor" d="M18.3 5.71a1 1 0 0 0-1.41 0L12 10.59 
+      7.11 5.7a1 1 0 0 0-1.42 1.41L10.59 12l-4.9 4.88a1 1 0 1 0 1.41 1.42L12 13.41 
+      16.88 18.3a1 1 0 0 0 1.42-1.41L13.41 12l4.88-4.88a1 1 0 0 0 0-1.41Z"/>
+    </svg>
+    `;
+
     
     /* 3) Attach the click event to the hamburger menu */
     if (hamburgerMenu && sidebar) {
