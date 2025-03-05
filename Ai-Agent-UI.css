@@ -3342,38 +3342,44 @@ MOBILE STYLES BELOW
 	width: 100% !important;
 	display: grid;
   	grid-template-rows: auto auto;          /* Two rows: text input & buttons */
- 	grid-template-columns: repeat(4, 1fr);     /* Four equal columns for the buttons */
+    	grid-template-columns: 1fr;   /* Four equal columns for the buttons */
 	gap: 8px;
 }
-  /* Place the text input on its own row spanning all columns */
+  /* Text Input Row */
   .chat_input-text {
-    grid-column: 1 / -1;   /* Span across all 4 columns */
-    grid-row: 1;
-    margin-bottom: 8px;    /* Space below the text input */
+    grid-column: 1 / -1;
+    margin-bottom: 8px;
   }
-  
-  /* Assign each button to a column in the second row */
-  #chat-file-input {
-    grid-column: 1;
-    grid-row: 2;
-    justify-self: center;
+  /* Buttons Row Container */
+  .chat_input-buttons {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
-  #chat-user-input-mic {
-    grid-column: 2;
-    grid-row: 2;
-    justify-self: center;
+  /* Left Buttons Group */
+  .chat_input-buttons-left {
+    display: flex;
+    gap: 8px;
+    align-items: center;
   }
-  #chat-voice-toggle {
-    grid-column: 3;
-    grid-row: 2;
-    justify-self: center;
+  .chat_input-buttons-left .chat_input-button {
+    width: 60px;
+    height: 60px;
   }
+  /* Right Submit Button */
   #chat-user-submit {
-    grid-column: 4;
-    grid-row: 2;
-    justify-self: center;
+    width: 60px;
+    height: 60px;
   }
-}/* Spacing between grid items */
+}
+
+/* Desktop Styles: Hide Mobile Hamburger Button */
+@media screen and (min-width: 769px) {
+  #mobile-hamburger {
+    display: none;
+  }
+}
 	
 }
 
