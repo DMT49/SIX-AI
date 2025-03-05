@@ -3397,4 +3397,26 @@ MOBILE STYLES BELOW
   }
 }
 
+/* 1) Hide the sidebar on mobile (<940px) by default */
+@media (max-width: 939px) {
+  .sAsCont {
+    display: none !important;
+  }
+}
+
+/* 2) Show it as a mobile drawer when .mobile-drawer-open is added */
+@media (max-width: 939px) {
+  .sAsCont.mobile-drawer-open {
+    display: block !important;
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    height: 50vh !important;       /* Takes top 50% of screen */
+    z-index: 9999 !important;      /* On top of everything */
+    background-color: #fff !important;
+    overflow-y: auto !important;   /* If content is tall, scroll */
+  }
+}
+
 
