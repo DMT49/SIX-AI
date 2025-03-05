@@ -3385,6 +3385,11 @@ MOBILE STYLES BELOW
     width: 50px !important;
     height: 50px !important;
   }
+#global-tooltip {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
 }
 
 @media (min-width: 768px) {
