@@ -114,6 +114,17 @@
 
     let isBusy = false; // NEW: Blocks user while AI is responding
 
+    function showChatInputWrapper() {
+      const isMobile = window.innerWidth <= 768;
+      if (!chatInputWrapper) {
+        console.warn("chatInputWrapper not found. Cannot show the input wrapper.");
+        return;
+      }
+      // Use flex on mobile; grid on desktop
+      chatInputWrapper.style.display = isMobile ? "flex" : "grid";
+    }
+
+
     function markdownToPlainText(markdown) {
       // 1) Parse to HTML
       const html = marked.parse(markdown);
@@ -645,25 +656,25 @@
     
     if (conversationID) {
       console.log("Conversation ID found:", conversationID);
-    
       // Fetch and render messages
       fetchConversationMessages(conversationID).then((messages) => {
         if (messages) {
           renderConversationMessages(messages);
-          conversationId = conversationID; // Set global conversationId here
+          conversationId = conversationID; 
           console.log("Global conversationId set to:", conversationId);
         } else {
           console.error("Failed to fetch conversation messages.");
         }
     
         // Show the input wrapper after messages are loaded
-        chatInputWrapper.style.display = "grid";
+        showChatInputWrapper(); // <-- NEW HELPER
         console.log("Input wrapper displayed.");
       });
     } else {
       console.log("No conversation ID found. Hiding input wrapper.");
       chatInputWrapper.style.display = "none";
     }
+
 
     
     let conversationId = null;
@@ -1321,7 +1332,7 @@
         initialMessage += `, additional_info=${agentInfo}`;
       }
       console.log("Sending initial message to AI:", initialMessage);
-
+    
       // Send initial message to AI (not shown as user's message)
       const agentResponse = await startConversation(initialMessage);
     
@@ -1333,10 +1344,11 @@
     
       // Show the input UI so the user can continue
       if (chatInputWrapper) {
-        chatInputWrapper.style.display = "grid";
-        console.log("Input wrapper displayed as grid.");
+        showChatInputWrapper(); // <-- CALL THE HELPER
+        console.log("Input wrapper displayed (grid or flex).");
       }
     }
+
 
     
     const startConversationButton = document.getElementById('start-new-conversation');
