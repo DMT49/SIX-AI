@@ -11,9 +11,6 @@
           <!-- New hamburger button (visible only on mobile) -->
           <div id="hamburger-menu-mobile" class="chat_input-button my-btn" data-tooltip="Open Menu">
             <div class="icon-embed-small w-embed">
-              <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24">
-                <path fill="currentColor" d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"></path>
-              </svg>
             </div>
           </div>
           <!-- End new hamburger button -->
@@ -114,24 +111,64 @@
 
     let isBusy = false; // NEW: Blocks user while AI is responding
 
-    /******************************
-     *  MOBILE SIDEBAR DRAWER LOGIC
-     ******************************/
+    /*********************************************************
+     *  MOBILE SIDEBAR DRAWER LOGIC (Hamburger ⇄ X icon)
+     *********************************************************/
     
-    /* 1) Grab references to the hamburger + sidebar. 
-          If they don’t exist, the code won't break anything. */
+    /* 1) Two icon constants (Hamburger & Close) */
+    const HAMBURGER_SVG = `
+    <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" width="100%" height="100%" viewBox="0 0 24 24">
+      <path fill="currentColor" d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"></path>
+    </svg>
+    `;
+    
+    const CLOSE_SVG = `
+    <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" width="100%" height="100%" viewBox="0 0 24 24">
+      <path fill="currentColor" d="M18.3 5.71a1 1 0 0 0-1.41 0L12 10.59 
+      7.11 5.7a1 1 0 0 0-1.42 1.41L10.59 12l-4.9 4.88a1 1 0 1 0 1.41 1.42L12 13.41 
+      16.88 18.3a1 1 0 0 0 1.42-1.41L13.41 12l4.88-4.88a1 1 0 0 0 0-1.41Z"/>
+    </svg>
+    `;
+    
+    /* 2) Grab references to your hamburger + sidebar */
     const hamburgerMenu = document.getElementById("hamburger-menu-mobile");
     const sidebar = document.querySelector(".sAsCont");
     
-    /* 2) Function to toggle the .mobile-drawer-open class on .sAsCont */
+    /* We'll also find the .icon-embed-small inside the hamburger */
+    let hamburgerIconContainer = null;
+    if (hamburgerMenu) {
+      hamburgerIconContainer = hamburgerMenu.querySelector('.icon-embed-small');
+    }
+    
+    /**
+     * 3) Toggle function
+     *    - Toggles .mobile-drawer-open
+     *    - Swaps icon (hamburger ⇄ close) 
+     */
     function toggleSidebarOnMobile() {
-      // Only do this if screen width is under 940px
-      if (window.innerWidth <= 939) {
-        sidebar.classList.toggle("mobile-drawer-open");
+      // Only if screen width <= 939 AND we have valid elements
+      if (window.innerWidth <= 939 && sidebar && hamburgerIconContainer) {
+        const isOpenNow = sidebar.classList.contains('mobile-drawer-open');
+        
+        // Toggle the class
+        sidebar.classList.toggle('mobile-drawer-open');
+        
+        // If was open, show hamburger (closing it),
+        // If was closed, show X (opening it)
+        if (isOpenNow) {
+          hamburgerIconContainer.innerHTML = HAMBURGER_SVG;
+        } else {
+          hamburgerIconContainer.innerHTML = CLOSE_SVG;
+        }
       }
     }
     
-    /* 3) Attach the click event to the hamburger menu */
+    /* 4) Default icon = hamburger lines (closed state) */
+    if (hamburgerIconContainer) {
+      hamburgerIconContainer.innerHTML = HAMBURGER_SVG;
+    }
+    
+    /* 5) Attach the click event to the hamburger menu */
     if (hamburgerMenu && sidebar) {
       hamburgerMenu.addEventListener("click", toggleSidebarOnMobile);
     } else {
