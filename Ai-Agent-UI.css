@@ -3428,7 +3428,13 @@ MOBILE STYLES BELOW
 }
 .chat-block{
 	max-width: unset !important;
-	
+}
+.chat_bot-avatar{
+	display:none !important;
+}
+.chat_user-avatar{
+	display:none !important;
+}
 }
 
 
