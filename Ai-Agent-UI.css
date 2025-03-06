@@ -3420,7 +3420,14 @@ MOBILE STYLES BELOW
 .sAs{
 	border: unset!important;
 	width: unset !important;
-	
+}
+.form-input.is-app{
+	padding-left: 12px !important;
+	padding-top: 8px !important;
+	padding-bottom: 8px !important;
+}
+.chat-block{
+	max-width: unset !important;
 	
 }
 
