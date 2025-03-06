@@ -3435,6 +3435,12 @@ MOBILE STYLES BELOW
 .chat_user-avatar{
 	display:none !important;
 }
+.chat_block{
+	grid-template-columns:100% !important;
+}
+.grid-template-columns{
+	margin-bottom: 200px;
+}
 }
 
 
