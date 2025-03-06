@@ -3412,11 +3412,16 @@ MOBILE STYLES BELOW
     left: 0 !important;
     top: 0 !important;
     width: 100% !important;
-    height: 50vh !important;       /* Takes top 50% of screen */
+    height: calc(100vh - 135px)!important;
     z-index: 9999 !important;      /* On top of everything */
     background-color: #fff !important;
     overflow-y: auto !important;   /* If content is tall, scroll */
   }
+.sAsCont.sAs{
+	border: unset!important;
+	width: unset !important;
+	
+	
 }
 
 
