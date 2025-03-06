@@ -927,156 +927,39 @@
       const chatBlock = document.createElement("div");
       chatBlock.className = "chat_block is-multi-choice-options";
     
-      let optionClicked = false;
-    
       options.forEach((optionText) => {
-        // 1. Container for icon + main option
+        // Create a container for the option button
         const optionContainer = document.createElement("div");
         optionContainer.className = "chat_multi-choice-container";
     
-        const clipboardIcon = document.createElement("span");
-        clipboardIcon.className = "clipboard-icon";
-        clipboardIcon.innerHTML = `
-          <svg xmlns="http://www.w3.org/2000/svg" 
-               aria-hidden="true" 
-               role="img" 
-               class="clipboard-svg" 
-               width="32" 
-               height="32" 
-               viewBox="0 0 24 24">
-            <path fill="currentColor" 
-                  d="M15 20H5V7c0-.55-.45-1-1-1s-1 .45-1 1v13c0 1.1.9 2 2 
-                  2h10c.55 0 1-.45 1-1s-.45-1-1-1m5-4V4c0-1.1-.9-2-2-2H9c-1.1 
-                  0-2 .9-2 2v12c0 1.1.9 
-                  2 2 2h9c1.1 
-                  0 2-.9 2-2m-2 
-                  0H9V4h9z">
-            </path>
-          </svg>`;
-    
-        // 3. The main clickable option (original button)
+        // Create the main clickable option button
         const optionDiv = document.createElement("div");
         optionDiv.className = "chat_multi-choice-option";
     
         const optionHeading = document.createElement("span");
         optionHeading.className = "chat-button-text";
-        optionHeading.style.fontWeight = "bold"; 
+        optionHeading.style.fontWeight = "bold";
         optionHeading.textContent = optionText;
     
         optionDiv.appendChild(optionHeading);
-    
-        // Add icon + option to the container
-        optionContainer.appendChild(clipboardIcon);
         optionContainer.appendChild(optionDiv);
     
-        // Add container to the overall chat block
-        chatBlock.appendChild(optionContainer);
-    
-        // --- CLIPBOARD ICON CLICK ---
-        clipboardIcon.addEventListener("click", (e) => {
-          e.stopPropagation(); // Prevent triggering the send-text logic
-    
-          // 1) Copy the option text to clipboard
-          navigator.clipboard.writeText(optionText)
-            .then(() => {
-              // Switch icon to "✅" for 2 seconds
-              clipboardIcon.innerHTML = "✅";
-              setTimeout(() => {
-                clipboardIcon.innerHTML = `
-                  <svg xmlns="http://www.w3.org/2000/svg" 
-                       aria-hidden="true" 
-                       role="img" 
-                       class="clipboard-svg" 
-                       width="32" 
-                       height="32" 
-                       viewBox="0 0 24 24">
-                    <path fill="currentColor" 
-                          d="M15 20H5V7c0-.55-.45-1-1-1s-1 .45-1 
-                          1v13c0 1.1.9 2 2 2h10c.55 0 1-.45 
-                          1-1s-.45-1-1-1m5-4V4c0-1.1-.9-2-2-2H9c-1.1 
-                          0-2 .9-2 2v12c0 1.1.9 
-                          2 2 2h9c1.1 
-                          0 2-.9 2-2m-2 
-                          0H9V4h9z">
-                    </path>
-                  </svg>`;
-              }, 2000);
-            })
-            .catch((err) => {
-              console.error("Clipboard copy failed:", err);
-            });
-    
-          // 2) Also append the text to the user's input area with a line break
+        // New behavior: Append option text to the user's input without submitting
+        optionDiv.addEventListener("click", () => {
           const userInput = document.getElementById("chat-user-input");
           userInput.value += `${optionText}\n`;
-          adjustHeight(); // Re-adjust textarea size if needed
+          adjustHeight();
         });
     
-        // --- MAIN OPTION CLICK (UPDATED) ---
-        optionDiv.addEventListener("click", async () => {
-          // 1) If we are already busy, do nothing
-          if (isBusy) return;
-    
-          // 2) Mark busy
-          isBusy = true;
-    
-          try {
-            if (optionClicked) {
-              // If user has already clicked once, bail out
-              isBusy = false;
-              return;
-            }
-    
-            optionDiv.classList.add("is-chosen");
-            optionClicked = true;
-    
-            // Disable other options
-            Array.from(chatBlock.children).forEach((child) => {
-              if (child !== optionContainer) {
-                child.classList.add("is-disabled");
-                child.style.pointerEvents = "none";
-              }
-            });
-    
-            // Stop current voice output
-            stopCurrentVoiceOutput();
-    
-            // Show user-chosen option in the chat
-            createChatBlock(true, optionText);
-    
-            // Update Airtable time if record ID exists
-            if (airtableRecordId) {
-              console.log("Updating Time-Last-Edited for record ID:", airtableRecordId);
-              await updateTimeLastEdited(airtableRecordId);
-            }
-    
-            // Show loading block
-            const { chatInnerWrapper: loadingWrapper, chatBlockWrapper: loadingBlockWrapper } = createLoadingBlock();
-    
-            let agentResponse;
-            try {
-              // Send the text to the agent, get response
-              agentResponse = await startConversation(optionText);
-            } catch (error) {
-              console.error("Error in multi-choice submission:", error);
-              agentResponse = "Sorry, something went wrong with your choice.";
-            }
-    
-            // Remove loading block, then show the agent's response
-            conversationWrapper.removeChild(loadingBlockWrapper);
-            createChatBlock(false, agentResponse);
-    
-          } finally {
-            // 3) Unlock once done
-            isBusy = false;
-          }
-        });
+        // Append the container to the chat block
+        chatBlock.appendChild(optionContainer);
       });
     
-      // Finally, append everything
+      // Append chat block to wrapper, then wrapper to conversation container
       chatBlockWrapper.appendChild(chatBlock);
       conversationWrapper.appendChild(chatBlockWrapper);
     }
+
 
 
 
