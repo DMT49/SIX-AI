@@ -3172,7 +3172,6 @@ margin: 0rem !important;
     align-items: center;
     gap: 14px; /* Space between icon and option button */
     margin-left: 8%;
-    transform: translateX(-35px);
   }
   
 /* Clipboard icon default style */
