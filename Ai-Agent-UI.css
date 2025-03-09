@@ -3461,7 +3461,8 @@ MOBILE STYLES BELOW
 }
 
 .chat_multi-choice-send svg {
-  transform: rotate(-53deg) scale(0.5);
+  transform: rotate(-53deg) scale(0.6);
+  margin-left:3px;
 }
 
 
