@@ -3440,4 +3440,29 @@ MOBILE STYLES BELOW
 }
 }
 
+.chat_multi-choice-send {
+  filter: drop-shadow(0 2px 5px #0000001f);
+  cursor: pointer;
+  background-color: #c0e6f5;
+  border: 1px solid #62b7d9;
+  border-radius: 14px;
+  transition: all .2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Fixed square dimensions */
+  width: 50px;
+  height: 50px;
+}
+
+.chat_multi-choice-send:hover {
+  filter: drop-shadow(0 6px 7px #0000004d);
+  border-color: #271f55;
+  transform: translate(0, -3px);
+}
+
+/* Ensure the SVG inside is rotated properly */
+.chat_multi-choice-send svg {
+  transform: rotate(-53deg);
+}
 
