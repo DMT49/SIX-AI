@@ -3460,8 +3460,8 @@ MOBILE STYLES BELOW
   transform: translate(0, -3px);
 }
 
-/* Ensure the SVG inside is rotated properly */
 .chat_multi-choice-send svg {
-  transform: rotate(-53deg);
+  transform: rotate(-53deg) scale(0.5);
 }
+
 
