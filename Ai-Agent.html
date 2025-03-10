@@ -733,9 +733,13 @@
           if (isUser && conversationUserAvatar) {
             const userAvatarElement = chatBlock.querySelector('.chat_user-avatar');
             if (userAvatarElement) {
-              userAvatarElement.style.backgroundImage = `url("${conversationUserAvatar}")`;
-              userAvatarElement.style.backgroundSize = "cover";
-              userAvatarElement.style.backgroundPosition = "center";
+              // Override any global style using !important inline
+              userAvatarElement.setAttribute("style", `
+                background-image: url("${conversationUserAvatar}") !important;
+                background-size: cover !important;
+                background-position: center !important;
+                background-repeat: no-repeat !important;
+              `);
             }
           }
         }
