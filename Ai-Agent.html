@@ -112,6 +112,24 @@
     let isBusy = false; // NEW: Blocks user while AI is responding
     let conversationUserAvatar = null;
 
+    
+    function updateConversationUserAvatarStyle(imageUrl) {
+      let styleEl = document.getElementById("conversation-user-avatar-style");
+      if (!styleEl) {
+        styleEl = document.createElement("style");
+        styleEl.id = "conversation-user-avatar-style";
+        document.head.appendChild(styleEl);
+      }
+      styleEl.textContent = `
+        .conversation-user-avatar {
+          background-image: url("${imageUrl}") !important;
+          background-size: cover !important;
+          background-position: center !important;
+          background-repeat: no-repeat !important;
+        }
+      `;
+    }
+
 
     /*********************************************************
      *  MOBILE SIDEBAR DRAWER LOGIC (Hamburger ⇄ X icon)
@@ -445,6 +463,10 @@
               console.log("User profile image from conversation email:", userProfileImage);
               // Store the image URL globally for rendering previous messages.
               conversationUserAvatar = userProfileImage;
+              // Inject the CSS rule to override avatars in previous messages.
+              if (userProfileImage) {
+                updateConversationUserAvatarStyle(userProfileImage);
+              }
             } else {
               console.log("No Email field found in the conversation record.");
             }
@@ -731,13 +753,8 @@
           if (isUser && conversationUserAvatar) {
             const userAvatarElement = chatBlock.querySelector('.chat_user-avatar');
             if (userAvatarElement) {
-              // Override any global style using !important inline
-              userAvatarElement.setAttribute("style", `
-                background-image: url("${conversationUserAvatar}") !important;
-                background-size: cover !important;
-                background-position: center !important;
-                background-repeat: no-repeat !important;
-              `);
+              // Add the additional class to override the avatar style.
+              userAvatarElement.classList.add("conversation-user-avatar");
             }
           }
         }
