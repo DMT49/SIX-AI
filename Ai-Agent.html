@@ -413,7 +413,6 @@
 
 
 
-    // Fetch Airtable record ID based on the conversationID
     async function fetchAirtableRecordId(conversationID) {
       const airtableBaseUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/Conversations';
       const airtableHeaders = {
@@ -430,8 +429,21 @@
         if (response.ok) {
           const data = await response.json();
           if (data.records && data.records.length > 0) {
-            airtableRecordId = data.records[0].id; // Save the record ID
+            const record = data.records[0];
+            airtableRecordId = record.id; // Save the record ID
             console.log("Fetched Airtable Record ID:", airtableRecordId);
+    
+            // NEW: Retrieve and log the Email from the conversation record.
+            const conversationEmail = record.fields['Email'];
+            if (conversationEmail) {
+              console.log("Conversation email:", conversationEmail);
+              const encodedEmail = encodeURIComponent(conversationEmail);
+              // Query the Users table using the encoded email.
+              const userProfileImage = await fetchUserProfileImageByEmail(encodedEmail);
+              console.log("User profile image from conversation email:", userProfileImage);
+            } else {
+              console.log("No Email field found in the conversation record.");
+            }
           } else {
             console.log("No matching Airtable record found for Conversation-ID:", conversationID);
           }
@@ -442,6 +454,7 @@
         console.error("Error during Airtable record ID fetch:", error);
       }
     }
+
 
     async function updateTimeLastEdited(recordId) {
       const airtableBaseUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/Conversations';
@@ -546,17 +559,17 @@
     })();
 
 
-    // Function to fetch user profile image from Airtable using Email
-    async function fetchUserProfileImageByEmail(email) {
+    async function fetchUserProfileImageByEmail(encodedEmail) {
       try {
-        const airtableBaseUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/Users'; // Replace with your actual base
+        const airtableBaseUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/Users';
         const airtableHeaders = {
           Authorization: 'Bearer patTeuxUuzgG0ZU8Q.2eb9ff7f31afe3e06f3c128c5b5b832bcc4e4e85bd58a5007a8368f218d28b83',
           'Content-Type': 'application/json',
         };
     
-        // Use the email to filter records
-        const response = await fetch(`${airtableBaseUrl}?filterByFormula={Email}="${email}"`, {
+        // Build the filter formula using the plain email (decoded) then encode the entire string.
+        const filterFormula = encodeURIComponent(`{Email}="${decodeURIComponent(encodedEmail)}"`);
+        const response = await fetch(`${airtableBaseUrl}?filterByFormula=${filterFormula}`, {
           method: 'GET',
           headers: airtableHeaders,
         });
@@ -564,11 +577,11 @@
         if (response.ok) {
           const data = await response.json();
           if (data.records && data.records.length > 0) {
-            const profileImage = data.records[0].fields['Profile-Image'][0].url;
+            const profileImage = data.records[0].fields['Profile-Image']?.[0]?.url;
             console.log("User Profile Image URL:", profileImage);
             return profileImage;
           } else {
-            console.log("No record found for Email:", email);
+            console.log("No user record found for Email:", decodeURIComponent(encodedEmail));
             return null;
           }
         } else {
@@ -580,6 +593,7 @@
         return null;
       }
     }
+
     
     // Function to update the global style for chat_user-avatar
     function updateChatUserAvatarStyle(profileImage) {
