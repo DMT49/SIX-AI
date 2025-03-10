@@ -728,20 +728,23 @@
           // Render the message
           const chatBlock = createChatBlock(isUser, content);
       
-          // If a conversation ID is present and this is a user message,
-          // update its avatar to the conversation user's image.
           if (isUser && conversationUserAvatar) {
             const userAvatarElement = chatBlock.querySelector('.chat_user-avatar');
             if (userAvatarElement) {
-              // Override any global style using !important inline
+              // Set inline style with !important so it overrides any other styles
               userAvatarElement.setAttribute("style", `
                 background-image: url("${conversationUserAvatar}") !important;
                 background-size: cover !important;
                 background-position: center !important;
                 background-repeat: no-repeat !important;
               `);
+              // Remove the class so that the global style rule no longer applies to this element
+              userAvatarElement.classList.remove("chat_user-avatar");
+              // Optionally, add a new class if you want to style previous messages differently:
+              // userAvatarElement.classList.add("previous-user-avatar");
             }
           }
+
         }
       });
 
