@@ -606,7 +606,6 @@
       updateChatUserAvatarStyle(userProfileImage);
     })();
 
-
     async function saveConversationToAirtable(metadata) {
       const conversationsTableUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/conversations';
       const airtableHeaders = {
@@ -624,7 +623,8 @@
               'Agent-ID': metadata.agentID,
               'Conversation-ID': metadata.conversationID,
               'Time-Stamp': metadata.timeStamp,
-              'User-ID': metadata.userId, // Include the User-ID
+              'User-ID': metadata.userId,
+              'Email': metadata.email,  // NEW: Save the user's email
             },
           }),
         });
@@ -642,6 +642,7 @@
         return null;
       }
     }
+
 
 
 
@@ -1347,13 +1348,15 @@
         const agentID = container.getAttribute('data-agent-id') || 'Unknown Agent';
         const timeStamp = new Date().toISOString(); // Current date/time in ISO format
     
-        const metadata = {
-          userName,
-          agentID,
-          conversationID: conversationId || 'Unknown Conversation ID',
-          timeStamp,
-          userId, // Include globally accessible User-ID
-        };
+    const metadata = {
+      userName,
+      agentID,
+      conversationID: conversationId || 'Unknown Conversation ID',
+      timeStamp,
+      userId, // Include globally accessible User-ID
+      email,   // NEW: Include the user's email
+    };
+
     
         // Save to Airtable and set airtableRecordId
         if (userId) {
