@@ -482,6 +482,41 @@
       }
     }
 
+    // --- NEW: Function to fetch conversation metadata from Airtable ---
+    async function fetchConversationMetadata(conversationID) {
+      const airtableBaseUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/Conversations';
+      const airtableHeaders = {
+        Authorization: 'Bearer patTeuxUuzgG0ZU8Q.2eb9ff7f31afe3e06f3c128c5b5b832bcc4e4e85bd58a5007a8368f218d28b83',
+        'Content-Type': 'application/json',
+      };
+      try {
+        const response = await fetch(`${airtableBaseUrl}?filterByFormula={Conversation-ID}="${conversationID}"`, {
+          method: 'GET',
+          headers: airtableHeaders,
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (data.records && data.records.length > 0) {
+            const record = data.records[0];
+            // Retrieve the desired fields
+            const clientName = record.fields['Client-Name'] || 'Unknown';
+            const timeLastEdited = record.fields['Time-Last-Edited'] || 'Unknown';
+            const summary = record.fields['Summary'] || '';
+            return { clientName, timeLastEdited, summary };
+          } else {
+            console.error("No matching Airtable record found for Conversation-ID:", conversationID);
+            return null;
+          }
+        } else {
+          console.error("Error fetching conversation metadata:", await response.text());
+          return null;
+        }
+      } catch (error) {
+        console.error("Error during fetchConversationMetadata:", error);
+        return null;
+      }
+    }
+
 
 
     async function updateTimeLastEdited(recordId) {
@@ -641,6 +676,49 @@
         console.log("No user profile image provided, skipping style update.");
       }
     }
+
+    // --- NEW: Function to render the conversation header ---
+    function renderConversationHeader({ clientName, timeLastEdited, summary }) {
+      // Create a header container element
+      const headerContainer = document.createElement('div');
+      headerContainer.className = 'conversation-header';
+      headerContainer.style.padding = '10px';
+      headerContainer.style.borderBottom = '1px solid #ccc';
+      headerContainer.style.marginBottom = '10px';
+      headerContainer.style.fontFamily = 'Arial, sans-serif';
+    
+      // Create and append "Conversation Started By"
+      const startedByEl = document.createElement('div');
+      startedByEl.className = 'conversation-header-item conversation-started-by';
+      startedByEl.textContent = `Conversation Started By: ${clientName}`;
+      headerContainer.appendChild(startedByEl);
+    
+      // Create and append "Date & Time Last Edited"
+      const lastEditedEl = document.createElement('div');
+      lastEditedEl.className = 'conversation-header-item conversation-last-edited';
+      lastEditedEl.textContent = `Date & Time Last Edited: ${timeLastEdited}`;
+      headerContainer.appendChild(lastEditedEl);
+    
+      // Only add Conversation Summary if available
+      if (summary) {
+        const summaryEl = document.createElement('div');
+        summaryEl.className = 'conversation-header-item conversation-summary';
+        summaryEl.textContent = `Conversation Summary: ${summary}`;
+        headerContainer.appendChild(summaryEl);
+      }
+    
+      // Insert the headerContainer at the top of the conversation wrapper
+      const conversationWrapper = document.getElementById("chat_conversation-wrapper");
+      if (conversationWrapper) {
+        // Remove any existing header to prevent duplicates
+        const existingHeader = conversationWrapper.querySelector('.conversation-header');
+        if (existingHeader) {
+          conversationWrapper.removeChild(existingHeader);
+        }
+        conversationWrapper.insertBefore(headerContainer, conversationWrapper.firstChild);
+      }
+    }
+
     
     // Initialize the process for user profile image
     (async function initializeUserAvatar() {
@@ -765,12 +843,17 @@
       // Scroll to the bottom of the conversation
       conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
     }
-
-
     
     if (conversationID) {
+      // --- NEW: Fetch conversation metadata and render header ---
+      fetchConversationMetadata(conversationID).then((metadata) => {
+        if (metadata) {
+          renderConversationHeader(metadata);
+        }
+      });
+    
       console.log("Conversation ID found:", conversationID);
-      // Fetch and render messages
+      // Fetch and render messages as before
       fetchConversationMessages(conversationID).then((messages) => {
         if (messages) {
           renderConversationMessages(messages);
@@ -779,7 +862,6 @@
         } else {
           console.error("Failed to fetch conversation messages.");
         }
-    
         // Show the input wrapper after messages are loaded
         showChatInputWrapper(); // <-- NEW HELPER
         console.log("Input wrapper displayed.");
@@ -790,7 +872,6 @@
     }
 
 
-    
     let conversationId = null;
     let isListening = false;
     let finalSoFar = "";   // Will store all finalized recognized text.
@@ -1383,7 +1464,6 @@
     }
 
 
-    
     const startConversationButton = document.getElementById('start-new-conversation');
     if (startConversationButton) {
       startConversationButton.addEventListener('click', async (event) => {
@@ -1393,21 +1473,29 @@
         // Start a new conversation
         await startInitialConversation(); // Existing function to start the conversation
     
-        // Collect metadata
+        // Collect metadata for new conversation
         const container = document.getElementById('ai-agent-container');
         const userName = container.getAttribute('data-user-name') || 'Guest';
+        
+        // Render header for new conversation (Summary not available)
+        renderConversationHeader({
+          clientName: userName,
+          timeLastEdited: new Date().toLocaleString(),
+          summary: null // No summary yet for a new conversation
+        });
+    
+        // Collect additional metadata for saving to Airtable
         const agentID = container.getAttribute('data-agent-id') || 'Unknown Agent';
         const timeStamp = new Date().toISOString(); // Current date/time in ISO format
     
-    const metadata = {
-      userName,
-      agentID,
-      conversationID: conversationId || 'Unknown Conversation ID',
-      timeStamp,
-      userId, // Include globally accessible User-ID
-      email,   // NEW: Include the user's email
-    };
-
+        const metadata = {
+          userName,
+          agentID,
+          conversationID: conversationId || 'Unknown Conversation ID',
+          timeStamp,
+          userId, // Include globally accessible User-ID
+          email,   // NEW: Include the user's email
+        };
     
         // Save to Airtable and set airtableRecordId
         if (userId) {
@@ -1423,6 +1511,7 @@
     } else {
       console.error("Button with id 'start-new-conversation' not found.");
     }
+
 
     let isVoiceOn = false; // Declare `isVoiceOn` globally
     
