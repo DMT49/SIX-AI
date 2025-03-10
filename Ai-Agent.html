@@ -110,6 +110,8 @@
     let airtableRecordId = null;
 
     let isBusy = false; // NEW: Blocks user while AI is responding
+    let conversationUserAvatar = null;
+
 
     /*********************************************************
      *  MOBILE SIDEBAR DRAWER LOGIC (Hamburger ⇄ X icon)
@@ -433,7 +435,7 @@
             airtableRecordId = record.id; // Save the record ID
             console.log("Fetched Airtable Record ID:", airtableRecordId);
     
-            // NEW: Retrieve and log the Email from the conversation record.
+            // Retrieve and log the Email from the conversation record.
             const conversationEmail = record.fields['Email'];
             if (conversationEmail) {
               console.log("Conversation email:", conversationEmail);
@@ -441,6 +443,8 @@
               // Query the Users table using the encoded email.
               const userProfileImage = await fetchUserProfileImageByEmail(encodedEmail);
               console.log("User profile image from conversation email:", userProfileImage);
+              // Store the image URL globally for rendering previous messages.
+              conversationUserAvatar = userProfileImage;
             } else {
               console.log("No Email field found in the conversation record.");
             }
@@ -454,6 +458,7 @@
         console.error("Error during Airtable record ID fetch:", error);
       }
     }
+
 
 
     async function updateTimeLastEdited(recordId) {
@@ -714,16 +719,28 @@
         return !(index === 0 && role === "user");
       });
     
-      // Render the remaining messages
       filteredMessages.forEach((message) => {
         const role = message?.data?.message?.role;
         const content = message?.data?.message?.content;
-    
+      
         if (role && content) {
           const isUser = role === "user";
-          createChatBlock(isUser, content);
+          // Render the message
+          const chatBlock = createChatBlock(isUser, content);
+      
+          // If a conversation ID is present and this is a user message,
+          // update its avatar to the conversation user's image.
+          if (isUser && conversationUserAvatar) {
+            const userAvatarElement = chatBlock.querySelector('.chat_user-avatar');
+            if (userAvatarElement) {
+              userAvatarElement.style.backgroundImage = `url("${conversationUserAvatar}")`;
+              userAvatarElement.style.backgroundSize = "cover";
+              userAvatarElement.style.backgroundPosition = "center";
+            }
+          }
         }
       });
+
     
       // Scroll to the bottom of the conversation
       conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
