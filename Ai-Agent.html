@@ -677,7 +677,6 @@
       }
     }
 
-    // --- FULL UPDATED Function: renderConversationHeader with increased specificity for bold text ---
     function renderConversationHeader({ clientName, timeLastEdited, summary }) {
       // Create a header container element
       const headerContainer = document.createElement('div');
@@ -688,23 +687,39 @@
       headerContainer.style.color = '#b1b1b1'; // Overall text color
       headerContainer.style.fontSize = '14px'; // Overall font size
     
-      // Create and append "Conversation Started By"
-      const startedByEl = document.createElement('div');
-      startedByEl.className = 'conversation-header-item conversation-started-by';
-      startedByEl.innerHTML = `<strong style="color: #b1b1b1 !important; font-weight: bold;">Conversation Started By:</strong> ${clientName}`;
+      // Helper function to create a labeled line using <span>
+      function createHeaderLine(label, value) {
+        const lineEl = document.createElement('div');
+        lineEl.className = 'conversation-header-item';
+    
+        // Use <span> with "all: revert !important" to undo external styles,
+        // then apply our own color/weight with !important to override everything else.
+        lineEl.innerHTML = `
+          <span 
+            style="
+              all: revert !important;
+              font-weight: 700 !important;
+              color: #b1b1b1 !important;
+            "
+          >
+            ${label}
+          </span>
+          <span style="margin-left: 5px;">${value}</span>
+        `;
+        return lineEl;
+      }
+    
+      // 1) Conversation Started By
+      const startedByEl = createHeaderLine('Conversation Started By:', clientName);
       headerContainer.appendChild(startedByEl);
     
-      // Create and append "Date & Time Last Edited"
-      const lastEditedEl = document.createElement('div');
-      lastEditedEl.className = 'conversation-header-item conversation-last-edited';
-      lastEditedEl.innerHTML = `<strong style="color: #b1b1b1 !important; font-weight: bold;">Date & Time Last Edited:</strong> ${timeLastEdited}`;
+      // 2) Date & Time Last Edited
+      const lastEditedEl = createHeaderLine('Date & Time Last Edited:', timeLastEdited);
       headerContainer.appendChild(lastEditedEl);
     
-      // Only add Conversation Summary if available
+      // 3) Conversation Summary (if present)
       if (summary) {
-        const summaryEl = document.createElement('div');
-        summaryEl.className = 'conversation-header-item conversation-summary';
-        summaryEl.innerHTML = `<strong style="color: #b1b1b1 !important; font-weight: bold;">Conversation Summary:</strong> ${summary}`;
+        const summaryEl = createHeaderLine('Conversation Summary:', summary);
         headerContainer.appendChild(summaryEl);
       }
     
