@@ -731,20 +731,15 @@
           if (isUser && conversationUserAvatar) {
             const userAvatarElement = chatBlock.querySelector('.chat_user-avatar');
             if (userAvatarElement) {
-              // Set inline style with !important so it overrides any other styles
+              // Override any global style using !important inline
               userAvatarElement.setAttribute("style", `
                 background-image: url("${conversationUserAvatar}") !important;
                 background-size: cover !important;
                 background-position: center !important;
                 background-repeat: no-repeat !important;
               `);
-              // Remove the class so that the global style rule no longer applies to this element
-              userAvatarElement.classList.remove("chat_user-avatar");
-              // Optionally, add a new class if you want to style previous messages differently:
-              // userAvatarElement.classList.add("previous-user-avatar");
             }
           }
-
         }
       });
 
