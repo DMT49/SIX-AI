@@ -677,7 +677,7 @@
       }
     }
 
-    // --- UPDATED: Function to render the conversation header with tweaked styling ---
+    // --- FULL UPDATED Function: renderConversationHeader with increased specificity for bold text ---
     function renderConversationHeader({ clientName, timeLastEdited, summary }) {
       // Create a header container element
       const headerContainer = document.createElement('div');
@@ -685,26 +685,26 @@
       headerContainer.style.padding = '10px';
       headerContainer.style.marginBottom = '10px';
       headerContainer.style.fontFamily = 'Arial, sans-serif';
-      headerContainer.style.color = '#b1b1b1'; // Set text color for all text
-      headerContainer.style.fontSize = '14px'; // Set overall font size
+      headerContainer.style.color = '#b1b1b1'; // Overall text color
+      headerContainer.style.fontSize = '14px'; // Overall font size
     
       // Create and append "Conversation Started By"
       const startedByEl = document.createElement('div');
       startedByEl.className = 'conversation-header-item conversation-started-by';
-      startedByEl.innerHTML = `<strong style="color: #b1b1b1; font-weight: bold;">Conversation Started By:</strong> ${clientName}`;
+      startedByEl.innerHTML = `<strong style="color: #b1b1b1 !important; font-weight: bold;">Conversation Started By:</strong> ${clientName}`;
       headerContainer.appendChild(startedByEl);
     
       // Create and append "Date & Time Last Edited"
       const lastEditedEl = document.createElement('div');
       lastEditedEl.className = 'conversation-header-item conversation-last-edited';
-      lastEditedEl.innerHTML = `<strong style="color: #b1b1b1; font-weight: bold;">Date & Time Last Edited:</strong> ${timeLastEdited}`;
+      lastEditedEl.innerHTML = `<strong style="color: #b1b1b1 !important; font-weight: bold;">Date & Time Last Edited:</strong> ${timeLastEdited}`;
       headerContainer.appendChild(lastEditedEl);
     
       // Only add Conversation Summary if available
       if (summary) {
         const summaryEl = document.createElement('div');
         summaryEl.className = 'conversation-header-item conversation-summary';
-        summaryEl.innerHTML = `<strong style="color: #b1b1b1; font-weight: bold;">Conversation Summary:</strong> ${summary}`;
+        summaryEl.innerHTML = `<strong style="color: #b1b1b1 !important; font-weight: bold;">Conversation Summary:</strong> ${summary}`;
         headerContainer.appendChild(summaryEl);
       }
     
@@ -719,6 +719,7 @@
         conversationWrapper.insertBefore(headerContainer, conversationWrapper.firstChild);
       }
     }
+
 
 
     
