@@ -2575,7 +2575,7 @@ figcaption {
   transform: translate(0, -3px);
 }
 
-.chat_multi-choice-option.is-chosen {
+.chat_multi-choice-option.is-chosen, .chat_multi-choice-send.is-chosen {
   background-color: #6ec0e0;
   border-color: #534c7a;
 }
