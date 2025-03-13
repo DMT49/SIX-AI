@@ -1085,8 +1085,7 @@
         optionContainer.className = "chat_multi-choice-container";
         optionContainer.style.display = "flex";
         optionContainer.style.alignItems = "center";
-        optionContainer.style.justifyContent = "flex-start"; // Aligns items to the left
-
+        optionContainer.style.justifyContent = "flex-start";
     
         // Create the main clickable option button (Left side)
         const optionDiv = document.createElement("div");
@@ -1098,7 +1097,7 @@
         optionHeading.textContent = optionText;
         optionDiv.appendChild(optionHeading);
     
-        // Event listener for main button: append text to textarea and mark as chosen
+        // Event listener for the main button: append text to textarea and mark as chosen
         optionDiv.addEventListener("click", () => {
           const userInput = document.getElementById("chat-user-input");
           userInput.value += `${optionText}\n`;
@@ -1106,22 +1105,24 @@
           optionDiv.classList.add("is-chosen");
         });
     
-        // Create the new send button (Right side)
+        // Create the send button (Right side)
         const sendBtn = document.createElement("div");
         sendBtn.className = "chat_multi-choice-send";
-        // Optionally, use fixed size (or a percentage) for a square button
         sendBtn.style.width = "47px";
         sendBtn.style.height = "47px";
         sendBtn.style.display = "flex";
         sendBtn.style.alignItems = "center";
         sendBtn.style.justifyContent = "center";
     
-        // Set inner HTML with the provided SVG icon and rotate it -53°
-        sendBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--heroicons" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 12L3.269 3.125A59.8 59.8 0 0 1 21.486 12a59.8 59.8 0 0 1-18.217 8.875zm0 0h7.5"></path></svg>`;
+        // Set inner HTML with the provided SVG icon
+        sendBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--heroicons" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24">
+          <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 12L3.269 3.125A59.8 59.8 0 0 1 21.486 12a59.8 59.8 0 0 1-18.217 8.875zm0 0h7.5"></path>
+        </svg>`;
     
-        // Event listener for the send button: send the message directly to the AI
+        // Event listener for the send button: add is-chosen class and send the message
         sendBtn.addEventListener("click", (event) => {
           event.stopPropagation(); // Prevent the left button's event from firing
+          sendBtn.classList.add("is-chosen"); // Add the 'is-chosen' combo class
           // Render the option as a user message and send it directly
           createChatBlock(true, optionText);
           (async () => {
@@ -1140,12 +1141,11 @@
         // Append both buttons to the container
         optionContainer.appendChild(optionDiv);
         optionContainer.appendChild(sendBtn);
-    
         // Append the container to the chat block
         chatBlock.appendChild(optionContainer);
       });
     
-      // Append chat block to wrapper, then add it to the conversation container
+      // Append the chat block to the wrapper and add it to the conversation container
       chatBlockWrapper.appendChild(chatBlock);
       conversationWrapper.appendChild(chatBlockWrapper);
     }
