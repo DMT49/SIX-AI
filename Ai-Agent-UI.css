@@ -3451,7 +3451,7 @@ MOBILE STYLES BELOW
   justify-content: center;
   /* Fixed square dimensions */
   width: 50px;
-  height: 50px;
+  height: 100%;
 }
 
 .chat_multi-choice-send:hover {
@@ -3464,5 +3464,3 @@ MOBILE STYLES BELOW
   transform: rotate(-53deg) scale(0.6);
   margin-left:3px;
 }
-
-
