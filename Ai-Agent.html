@@ -112,19 +112,31 @@
     let isBusy = false; // NEW: Blocks user while AI is responding
     let conversationUserAvatar = null;
 
-    // Helper function to extract an alternate user ID from the "agent-info" query parameter
+    // Helper function to extract an alternate firm ID from the "agent-info" query parameter
     function getAlternateUserIdFromUrl() {
       const urlParams = new URLSearchParams(window.location.search);
-      const agentInfo = urlParams.get("agent-info");
+      let agentInfo = urlParams.get("agent-info");
       if (!agentInfo) return null;
       
-      // URLSearchParams decodes the value, so the expected prefix becomes "firmID%253D%"
-      const prefix = "firmID%253D%";
-      if (agentInfo.startsWith(prefix)) {
-        return agentInfo.substring(prefix.length);
+      // Expected prefix after one decoding
+      const expectedPrefix = "firmID%253D%";
+      
+      // If the current value does not start with the expected prefix,
+      // try to decode it again
+      if (!agentInfo.startsWith(expectedPrefix)) {
+        try {
+          agentInfo = decodeURIComponent(agentInfo);
+        } catch (e) {
+          console.error("Error decoding agent-info:", e);
+        }
+      }
+      
+      if (agentInfo.startsWith(expectedPrefix)) {
+        return agentInfo.substring(expectedPrefix.length);
       }
       return null;
     }
+
 
 
     
@@ -777,7 +789,9 @@
               'Conversation-ID': metadata.conversationID,
               'Time-Stamp': metadata.timeStamp,
               'User-ID': metadata.userId,
-              'Email': metadata.email,  // NEW: Save the user's email
+              'Email': metadata.email,
+              // Include the new field if it exists in metadata
+              ...(metadata["Design-Brief-Firm-ID"] ? { "Design-Brief-Firm-ID": metadata["Design-Brief-Firm-ID"] } : {})
             },
           }),
         });
