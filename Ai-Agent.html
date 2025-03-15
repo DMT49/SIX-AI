@@ -118,14 +118,14 @@
       const agentInfo = urlParams.get("agent-info");
       if (!agentInfo) return null;
       
-      // Expected prefix in the agent-info parameter
-      const prefix = "firmID%25253D%25";
+      // URLSearchParams decodes the value, so the expected prefix becomes "firmID%253D%"
+      const prefix = "firmID%253D%";
       if (agentInfo.startsWith(prefix)) {
-        // Extract the user ID by removing the prefix
         return agentInfo.substring(prefix.length);
       }
       return null;
     }
+
 
     
     function updateConversationUserAvatarStyle(imageUrl) {
