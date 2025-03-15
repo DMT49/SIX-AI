@@ -1520,11 +1520,6 @@
         // Collect additional metadata for saving to Airtable
         const agentID = container.getAttribute('data-agent-id') || 'Unknown Agent';
         const timeStamp = new Date().toISOString(); // Current date/time in ISO format
-    
-        // Check if an alternate user ID is provided in the URL
-        const alternateUserId = getAlternateUserIdFromUrl();
-        // Use the alternate user ID if present; otherwise, use the default userId
-        const finalUserId = alternateUserId ? alternateUserId : userId;
         
         // Step 1: Extract the alternate user ID from the URL using the helper function
         const alternateUserId = getAlternateUserIdFromUrl();
