@@ -1526,14 +1526,34 @@
         // Use the alternate user ID if present; otherwise, use the default userId
         const finalUserId = alternateUserId ? alternateUserId : userId;
         
+        // Step 1: Extract the alternate user ID from the URL using the helper function
+        const alternateUserId = getAlternateUserIdFromUrl();
+        
+        // Step 2: Determine what to save in the metadata object
+        let finalUserId = userId;           // Default to the normal user ID
+        let designBriefFirmId = "";         // Empty by default
+        
+        // If an alternate user ID is provided (via the query parameter)
+        if (alternateUserId) {
+          finalUserId = "";                 // Leave the userId property empty
+          designBriefFirmId = alternateUserId; // Save the alternate firm ID for the new property
+        }
+        
+        // Step 3: Build the metadata object accordingly
         const metadata = {
           userName,
           agentID,
           conversationID: conversationId || 'Unknown Conversation ID',
           timeStamp,
-          userId: finalUserId, // Updated to use the alternate user ID when available
-          email,   // Include the user's email
+          userId: finalUserId,  // Will be empty if an alternate ID is present
+          email,              // Include the user's email
         };
+        
+        // If a design brief firm ID exists, add it as a new property in the metadata
+        if (designBriefFirmId) {
+          metadata["Design-Brief-Firm-ID"] = designBriefFirmId;
+        }
+
 
     
         // Save to Airtable and set airtableRecordId
