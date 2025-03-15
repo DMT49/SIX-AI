@@ -112,6 +112,33 @@
     let isBusy = false; // NEW: Blocks user while AI is responding
     let conversationUserAvatar = null;
 
+    // Helper function to extract an alternate firm ID from the "agent-info" query parameter
+    function getAlternateUserIdFromUrl() {
+      const urlParams = new URLSearchParams(window.location.search);
+      let agentInfo = urlParams.get("agent-info");
+      if (!agentInfo) return null;
+      
+      // Expected prefix after one decoding
+      const expectedPrefix = "firmID%253D%";
+      
+      // If the current value does not start with the expected prefix,
+      // try to decode it again
+      if (!agentInfo.startsWith(expectedPrefix)) {
+        try {
+          agentInfo = decodeURIComponent(agentInfo);
+        } catch (e) {
+          console.error("Error decoding agent-info:", e);
+        }
+      }
+      
+      if (agentInfo.startsWith(expectedPrefix)) {
+        return agentInfo.substring(expectedPrefix.length);
+      }
+      return null;
+    }
+
+
+
     
     function updateConversationUserAvatarStyle(imageUrl) {
       let styleEl = document.getElementById("conversation-user-avatar-style");
@@ -762,7 +789,9 @@
               'Conversation-ID': metadata.conversationID,
               'Time-Stamp': metadata.timeStamp,
               'User-ID': metadata.userId,
-              'Email': metadata.email,  // NEW: Save the user's email
+              'Email': metadata.email,
+              // Include the new field if it exists in metadata
+              ...(metadata["Design-Brief-Firm-ID"] ? { "Design-Brief-Firm-ID": metadata["Design-Brief-Firm-ID"] } : {})
             },
           }),
         });
@@ -1505,15 +1534,36 @@
         // Collect additional metadata for saving to Airtable
         const agentID = container.getAttribute('data-agent-id') || 'Unknown Agent';
         const timeStamp = new Date().toISOString(); // Current date/time in ISO format
-    
+        
+        // Step 1: Extract the alternate user ID from the URL using the helper function
+        const alternateUserId = getAlternateUserIdFromUrl();
+        
+        // Step 2: Determine what to save in the metadata object
+        let finalUserId = userId;           // Default to the normal user ID
+        let designBriefFirmId = "";         // Empty by default
+        
+        // If an alternate user ID is provided (via the query parameter)
+        if (alternateUserId) {
+          finalUserId = "";                 // Leave the userId property empty
+          designBriefFirmId = alternateUserId; // Save the alternate firm ID for the new property
+        }
+        
+        // Step 3: Build the metadata object accordingly
         const metadata = {
           userName,
           agentID,
           conversationID: conversationId || 'Unknown Conversation ID',
           timeStamp,
-          userId, // Include globally accessible User-ID
-          email,   // NEW: Include the user's email
+          userId: finalUserId,  // Will be empty if an alternate ID is present
+          email,              // Include the user's email
         };
+        
+        // If a design brief firm ID exists, add it as a new property in the metadata
+        if (designBriefFirmId) {
+          metadata["Design-Brief-Firm-ID"] = designBriefFirmId;
+        }
+
+
     
         // Save to Airtable and set airtableRecordId
         if (userId) {
