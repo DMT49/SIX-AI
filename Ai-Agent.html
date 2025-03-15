@@ -112,6 +112,21 @@
     let isBusy = false; // NEW: Blocks user while AI is responding
     let conversationUserAvatar = null;
 
+    // Helper function to extract an alternate user ID from the "agent-info" query parameter
+    function getAlternateUserIdFromUrl() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const agentInfo = urlParams.get("agent-info");
+      if (!agentInfo) return null;
+      
+      // Expected prefix in the agent-info parameter
+      const prefix = "firmID%25253D%25";
+      if (agentInfo.startsWith(prefix)) {
+        // Extract the user ID by removing the prefix
+        return agentInfo.substring(prefix.length);
+      }
+      return null;
+    }
+
     
     function updateConversationUserAvatarStyle(imageUrl) {
       let styleEl = document.getElementById("conversation-user-avatar-style");
@@ -1506,14 +1521,20 @@
         const agentID = container.getAttribute('data-agent-id') || 'Unknown Agent';
         const timeStamp = new Date().toISOString(); // Current date/time in ISO format
     
+        // Check if an alternate user ID is provided in the URL
+        const alternateUserId = getAlternateUserIdFromUrl();
+        // Use the alternate user ID if present; otherwise, use the default userId
+        const finalUserId = alternateUserId ? alternateUserId : userId;
+        
         const metadata = {
           userName,
           agentID,
           conversationID: conversationId || 'Unknown Conversation ID',
           timeStamp,
-          userId, // Include globally accessible User-ID
-          email,   // NEW: Include the user's email
+          userId: finalUserId, // Updated to use the alternate user ID when available
+          email,   // Include the user's email
         };
+
     
         // Save to Airtable and set airtableRecordId
         if (userId) {
