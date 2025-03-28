@@ -99,9 +99,20 @@
     
     // DOM elements
     const textarea = document.getElementById("chat-user-input");
+    const BASE_TEXTAREA_HEIGHT = 38; // Base height in pixels for the textarea
+    
     const micButton = document.getElementById("chat-user-input-mic");
     const userSubmit = document.getElementById("chat-user-submit");
     const conversationWrapper = document.getElementById("chat_conversation-wrapper");
+    let chatSpacer = document.getElementById("chat-spacer");
+    if (!chatSpacer) {
+      chatSpacer = document.createElement("div");
+      chatSpacer.id = "chat-spacer";
+      chatSpacer.style.height = "0px"; // Start with zero height
+      // Append the spacer at the end of the conversation container
+      conversationWrapper.appendChild(chatSpacer);
+    }
+
     const chatInputWrapper = document.querySelector(".chat_input-wrapper");
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -926,31 +937,42 @@
 
     
     function adjustHeight() {
-      const MAX_HEIGHT = 400; // Maximum height in pixels
-      // Reset height first
+      const MAX_HEIGHT = 400; // Maximum height for the textarea in pixels
+      
+      // Reset the textarea height so we can recalculate the correct scrollHeight
       textarea.style.height = 'auto';
       
-      // Calculate the new height based on content
+      // Get the new height based on the current content
       const newHeight = textarea.scrollHeight;
       
-      // If content height exceeds the maximum, cap it and enable vertical scrolling
+      // Apply the maximum height limit and enable internal scrolling if necessary
       if (newHeight > MAX_HEIGHT) {
         textarea.style.height = MAX_HEIGHT + "px";
-        textarea.style.overflowY = "auto"; // Allow scrolling inside the textarea
+        textarea.style.overflowY = "auto"; // Allow vertical scroll within the textarea
       } else {
-        // Otherwise, set the height based on content and hide overflow
         textarea.style.height = newHeight + "px";
-        textarea.style.overflowY = "hidden"; // Hide scrollbar when not needed
+        textarea.style.overflowY = "hidden"; // Hide the scrollbar when not needed
       }
+      
+      // Calculate how many pixels the textarea has expanded beyond its base height
+      const currentHeight = parseInt(textarea.style.height, 10);
+      const extraHeight = Math.max(0, currentHeight - BASE_TEXTAREA_HEIGHT);
+      
+      // Update the spacer's height so that the conversation messages are pushed upward accordingly
+      chatSpacer.style.height = extraHeight + "px";
     }
 
 
-        // Function to reset the textarea height and content
+
     function resetHeight() {
       textarea.value = "";
-      textarea.style.height = "38px";  // Reset to initial height
-      textarea.style.overflowY = "hidden"; // Ensure scrollbar is hidden initially
+      // Reset the textarea to its base height
+      textarea.style.height = BASE_TEXTAREA_HEIGHT + "px";
+      textarea.style.overflowY = "hidden"; // Ensure the scrollbar is hidden initially
+      // Reset the spacer height to 0 so it no longer pushes the conversation upward
+      chatSpacer.style.height = "0px";
     }
+
 
     
     // Function to stop voice transcription
