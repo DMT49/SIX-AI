@@ -1128,13 +1128,6 @@
     
         // Event listener for the main button: append text to textarea and mark as chosen
         optionDiv.addEventListener("click", () => {
-          // Check if this multi-choice block is the latest one
-          const currentBlock = optionDiv.closest('.chat_block-wrapper.is-multi-choice-options');
-          const allBlocks = conversationWrapper.querySelectorAll('.chat_block-wrapper.is-multi-choice-options');
-          if (currentBlock !== allBlocks[allBlocks.length - 1]) {
-            // Not the latest multi-choice block; do nothing
-            return;
-          }
           const userInput = document.getElementById("chat-user-input");
           userInput.value += `${optionText}\n`;
           adjustHeight();
@@ -1158,14 +1151,6 @@
         // Event listener for the send button: add is-chosen class and send the message
         sendBtn.addEventListener("click", (event) => {
           event.stopPropagation(); // Prevent the left button's event from firing
-          
-          // Check if this multi-choice block is the latest one
-          const currentBlock = sendBtn.closest('.chat_block-wrapper.is-multi-choice-options');
-          const allBlocks = conversationWrapper.querySelectorAll('.chat_block-wrapper.is-multi-choice-options');
-          if (currentBlock !== allBlocks[allBlocks.length - 1]) {
-            // Not the latest multi-choice block; do nothing
-            return;
-          }
           sendBtn.classList.add("is-chosen"); // Add the 'is-chosen' combo class
           // Render the option as a user message and send it directly
           createChatBlock(true, optionText);
@@ -1193,7 +1178,6 @@
       chatBlockWrapper.appendChild(chatBlock);
       conversationWrapper.appendChild(chatBlockWrapper);
     }
-
 
     
     // Function to clean option text
