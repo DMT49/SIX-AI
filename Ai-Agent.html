@@ -926,16 +926,32 @@
 
     
     function adjustHeight() {
-      textarea.style.height = 'auto'; // Reset height
-      textarea.style.height = `${textarea.scrollHeight}px`; // Set height based on scrollHeight
+      const MAX_HEIGHT = 650; // Maximum height in pixels
+      // Reset height first
+      textarea.style.height = 'auto';
+      
+      // Calculate the new height based on content
+      const newHeight = textarea.scrollHeight;
+      
+      // If content height exceeds the maximum, cap it and enable vertical scrolling
+      if (newHeight > MAX_HEIGHT) {
+        textarea.style.height = MAX_HEIGHT + "px";
+        textarea.style.overflowY = "auto"; // Allow scrolling inside the textarea
+      } else {
+        // Otherwise, set the height based on content and hide overflow
+        textarea.style.height = newHeight + "px";
+        textarea.style.overflowY = "hidden"; // Hide scrollbar when not needed
+      }
     }
+
 
         // Function to reset the textarea height and content
     function resetHeight() {
       textarea.value = "";
-      textarea.style.height = "38px";
+      textarea.style.height = "38px";  // Reset to initial height
+      textarea.style.overflowY = "hidden"; // Ensure scrollbar is hidden initially
     }
-    
+
     
     // Function to stop voice transcription
     function stopVoiceTranscription() {
