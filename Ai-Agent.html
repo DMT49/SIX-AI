@@ -1064,7 +1064,10 @@
         lastCreatedBlock.__myFirstBlock = firstCreatedBlock;
       }
     
-      // Return the LAST block as before (so you don’t break any existing code)
+      // *** NEW: Re-append the spacer element so it is always the very last child ***
+      conversationWrapper.appendChild(chatSpacer);
+    
+      // Return the LAST block as before (to avoid breaking any existing code)
       return lastCreatedBlock;
     }
 
