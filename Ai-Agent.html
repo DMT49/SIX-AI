@@ -1021,7 +1021,7 @@
           if (textContent) {
             if (optionGroup.length > 0) {
               const isOptionsAtEnd = !hasNonEmptyTextAfterIndex(segments, lastOptionIndex);
-              renderOptions(optionGroup, isOptionsAtEnd);
+              (optionGroup, isOptionsAtEnd);
               optionGroup = [];
             }
     
@@ -1044,9 +1044,9 @@
     
       if (optionGroup.length > 0) {
         const isOptionsAtEnd = !hasNonEmptyTextAfterIndex(segments, lastOptionIndex);
-        const newlyRenderedBlock = renderOptions(optionGroup, isOptionsAtEnd);
+        const newlyRenderedBlock = (optionGroup, isOptionsAtEnd);
     
-        // If renderOptions returns a wrapper, track it as well
+        // If  returns a wrapper, track it as well
         if (newlyRenderedBlock) {
           if (!firstCreatedBlock) {
             firstCreatedBlock = newlyRenderedBlock;
@@ -1189,12 +1189,16 @@
           <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 12L3.269 3.125A59.8 59.8 0 0 1 21.486 12a59.8 59.8 0 0 1-18.217 8.875zm0 0h7.5"></path>
         </svg>`;
     
-        // Event listener for the send button: add is-chosen class and send the message
         sendBtn.addEventListener("click", (event) => {
           event.stopPropagation(); // Prevent the left button's event from firing
           sendBtn.classList.add("is-chosen"); // Add the 'is-chosen' combo class
+          
           // Render the option as a user message and send it directly
           createChatBlock(true, optionText);
+          
+          // Clear the text input area (same as the main send button behavior)
+          resetHeight();
+          
           (async () => {
             const { chatInnerWrapper, chatBlockWrapper } = createLoadingBlock();
             try {
@@ -1207,6 +1211,7 @@
             }
           })();
         });
+
     
         // Append both buttons to the container
         optionContainer.appendChild(optionDiv);
