@@ -123,127 +123,6 @@
     let isBusy = false; // NEW: Blocks user while AI is responding
     let conversationUserAvatar = null;
 
-    let deepgramSocket = null;
-    let audioContext = null;
-    let audioProcessor = null;
-    let isDeepgramActive = false;
-    let keepAliveInterval = null;
-
-    function startDeepgramVoiceInput() {
-      navigator.mediaDevices.getUserMedia({ audio: true })
-        .then((stream) => {
-          // Initialize AudioContext and create a source node from the microphone stream
-          audioContext = new (window.AudioContext || window.webkitAudioContext)();
-          const source = audioContext.createMediaStreamSource(stream);
-          
-          // Create a ScriptProcessorNode to capture raw audio data (buffer size 4096)
-          audioProcessor = audioContext.createScriptProcessor(4096, 1, 1);
-          audioProcessor.onaudioprocess = (e) => {
-            const inputBuffer = e.inputBuffer.getChannelData(0);
-            // Convert Float32Array to Int16Array (linear16 PCM)
-            let l16Buffer = new Int16Array(inputBuffer.length);
-            for (let i = 0; i < inputBuffer.length; i++) {
-              // Clamp and scale the audio sample to 16-bit PCM range
-              l16Buffer[i] = Math.max(-1, Math.min(1, inputBuffer[i])) * 0x7FFF;
-            }
-            // If WebSocket is open, send the binary PCM data
-            if (deepgramSocket && deepgramSocket.readyState === WebSocket.OPEN) {
-              deepgramSocket.send(l16Buffer.buffer);
-            }
-          };
-          
-          // Connect the audio nodes
-          source.connect(audioProcessor);
-          audioProcessor.connect(audioContext.destination);
-          
-          // Build the Deepgram WebSocket URL with query parameters and the API key
-          const deepgramUrl = "wss://api.deepgram.com/v1/listen" +
-            "?model=nova-3" +
-            "&smart_format=true" +
-            "&interim_results=true" +
-            "&utterance_end_ms=1000" +
-            "&language=en-US" +
-            "&token=9dcf3c4e022285b7ea553a57c663cb66bbd5c68e";
-          
-          // Open Deepgram WebSocket connection (no custom headers in browser)
-          deepgramSocket = new WebSocket(deepgramUrl);
-          
-          deepgramSocket.onopen = () => {
-            console.log("Deepgram WebSocket opened.");
-            // Start sending KeepAlive messages every 3 seconds
-            keepAliveInterval = setInterval(() => {
-              if (deepgramSocket && deepgramSocket.readyState === WebSocket.OPEN) {
-                deepgramSocket.send(JSON.stringify({ type: "KeepAlive" }));
-                console.log("KeepAlive sent.");
-              }
-            }, 3000);
-          };
-          
-          deepgramSocket.onmessage = (event) => {
-            try {
-              const data = JSON.parse(event.data);
-              // Update the text input live using Deepgram's transcript
-              if (data.channel && data.channel.alternatives && data.channel.alternatives[0]) {
-                const transcript = data.channel.alternatives[0].transcript;
-                updateTextInputLive(transcript, data.is_final);
-              }
-            } catch (err) {
-              console.error("Error parsing Deepgram message:", err);
-            }
-          };
-          
-          deepgramSocket.onerror = (err) => {
-            console.error("Deepgram WebSocket error:", err);
-          };
-          
-          deepgramSocket.onclose = () => {
-            console.log("Deepgram WebSocket closed.");
-            clearInterval(keepAliveInterval);
-            keepAliveInterval = null;
-          };
-        })
-        .catch((err) => {
-          console.error("Error accessing microphone:", err);
-        });
-    }
-
-    
-    function stopDeepgramVoiceInput() {
-      // Disconnect audio processing
-      if (audioProcessor) {
-        audioProcessor.disconnect();
-        audioProcessor = null;
-      }
-      if (audioContext) {
-        audioContext.close();
-        audioContext = null;
-      }
-      
-      // Send a Finalize message to process remaining audio, then CloseStream
-      if (deepgramSocket && deepgramSocket.readyState === WebSocket.OPEN) {
-        deepgramSocket.send(JSON.stringify({ type: "Finalize" }));
-        setTimeout(() => {
-          deepgramSocket.send(JSON.stringify({ type: "CloseStream" }));
-          deepgramSocket.close();
-        }, 500);
-      }
-      
-      // Clear the KeepAlive interval
-      if (keepAliveInterval) {
-        clearInterval(keepAliveInterval);
-        keepAliveInterval = null;
-      }
-    }
-    
-    function updateTextInputLive(newTranscript, isFinal) {
-      // For simplicity, we simply update the textarea with the new transcript.
-      // Depending on your preference, you might merge it with existing text.
-      textarea.value = newTranscript;
-      adjustHeight();
-    }
-
-
-
     // Helper function to extract an alternate firm ID from the "agent-info" query parameter
     function getAlternateUserIdFromUrl() {
       const urlParams = new URLSearchParams(window.location.search);
@@ -1616,25 +1495,24 @@
       isListening = false;
     };
     
-    // Attach event listener to micButton using Deepgram
+    // Attach event listener to micButton
     if (micButton) {
       micButton.addEventListener("click", () => {
-        if (isDeepgramActive) {
-          stopDeepgramVoiceInput();
+        console.log("Mic button clicked.");
+        if (isListening) {
+          recognition.stop();
           micButton.classList.remove("is-active");
-          console.log("Stopped Deepgram voice input.");
+          console.log("Stopped listening.");
         } else {
-          startDeepgramVoiceInput();
+          recognition.start();
           micButton.classList.add("is-active");
-          console.log("Started Deepgram voice input.");
+          console.log("Started listening.");
         }
-        isDeepgramActive = !isDeepgramActive;
+        isListening = !isListening;
       });
     } else {
       console.error("Cannot find #chat-user-input-mic element.");
     }
-
-
     
     // -----------------------------
     // Automatically Start Conversation
