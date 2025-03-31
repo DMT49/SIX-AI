@@ -156,11 +156,17 @@
           source.connect(audioProcessor);
           audioProcessor.connect(audioContext.destination);
           
-          // Open Deepgram WebSocket connection with desired parameters
-          const deepgramUrl = "wss://api.deepgram.com/v1/listen?model=nova-3&smart_format=true&interim_results=true&utterance_end_ms=1000&language=en-US";
-          deepgramSocket = new WebSocket(deepgramUrl, null, {
-            headers: { Authorization: `Token 9dcf3c4e022285b7ea553a57c663cb66bbd5c68e` }
-          });
+          // Build the Deepgram WebSocket URL with query parameters and the API key
+          const deepgramUrl = "wss://api.deepgram.com/v1/listen" +
+            "?model=nova-3" +
+            "&smart_format=true" +
+            "&interim_results=true" +
+            "&utterance_end_ms=1000" +
+            "&language=en-US" +
+            "&token=9dcf3c4e022285b7ea553a57c663cb66bbd5c68e";
+          
+          // Open Deepgram WebSocket connection (no custom headers in browser)
+          deepgramSocket = new WebSocket(deepgramUrl);
           
           deepgramSocket.onopen = () => {
             console.log("Deepgram WebSocket opened.");
@@ -200,6 +206,7 @@
           console.error("Error accessing microphone:", err);
         });
     }
+
     
     function stopDeepgramVoiceInput() {
       // Disconnect audio processing
