@@ -1193,12 +1193,15 @@
           event.stopPropagation(); // Prevent the left button's event from firing
           sendBtn.classList.add("is-chosen"); // Add the 'is-chosen' combo class
           
-          // Render the option as a user message and send it directly
+          // Render the option as a user message
           createChatBlock(true, optionText);
           
-          // Clear the text input area (same as the main send button behavior)
-          resetHeight();
+          // Clear the text input area (just like the main send button)
+          setTimeout(() => {
+            resetHeight();
+          }, 0);
           
+          // Immediately send the option as a message to the AI
           (async () => {
             const { chatInnerWrapper, chatBlockWrapper } = createLoadingBlock();
             try {
@@ -1211,6 +1214,7 @@
             }
           })();
         });
+
 
     
         // Append both buttons to the container
