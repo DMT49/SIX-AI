@@ -1011,7 +1011,7 @@
       let lastOptionIndex = -1;
       let hasRenderedBotAvatar = false;
     
-      // --- ADDED: We'll track both the first and last block
+      // Track both the first and last created blocks for scrolling
       let firstCreatedBlock = null;
       let lastCreatedBlock = null;
     
@@ -1019,16 +1019,17 @@
         if (segment.type === "text") {
           const textContent = segment.content.trim();
           if (textContent) {
+            // If there are pending options, render them before this text
             if (optionGroup.length > 0) {
               const isOptionsAtEnd = !hasNonEmptyTextAfterIndex(segments, lastOptionIndex);
-              renderOptions(optionGroup, isOptionsAtEnd);
+              renderOptions(optionGroup, isOptionsAtEnd);  // <-- FIXED: call renderOptions here
               optionGroup = [];
             }
     
             const hideAvatar = !isUser && hasRenderedBotAvatar;
             const newlyRenderedBlock = renderTextSegment(textContent, isUser, hideAvatar);
     
-            // Keep track of the first and last blocks
+            // Keep track of the first and last blocks for scrolling behavior
             if (!firstCreatedBlock) {
               firstCreatedBlock = newlyRenderedBlock;
             }
@@ -1042,11 +1043,10 @@
         }
       });
     
+      // If there are options remaining after the loop, render them
       if (optionGroup.length > 0) {
         const isOptionsAtEnd = !hasNonEmptyTextAfterIndex(segments, lastOptionIndex);
         const newlyRenderedBlock = renderOptions(optionGroup, isOptionsAtEnd);
-    
-        // If renderOptions returns a wrapper, track it as well
         if (newlyRenderedBlock) {
           if (!firstCreatedBlock) {
             firstCreatedBlock = newlyRenderedBlock;
@@ -1056,20 +1056,21 @@
         optionGroup = [];
       }
     
-      // Scroll the conversation wrapper to the bottom (existing behavior)
+      // Scroll the conversation wrapper to the bottom
       conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
     
-      // Attach a pointer on the LAST block to reference the FIRST one
+      // Attach a pointer on the last block to reference the first block
       if (lastCreatedBlock) {
         lastCreatedBlock.__myFirstBlock = firstCreatedBlock;
       }
     
-      // *** NEW: Re-append the spacer element so it is always the very last child ***
+      // Re-append the spacer element so it is always the very last child
       conversationWrapper.appendChild(chatSpacer);
     
-      // Return the LAST block as before (to avoid breaking any existing code)
+      // Return the last block as before
       return lastCreatedBlock;
     }
+
 
 
     
@@ -1189,12 +1190,19 @@
           <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 12L3.269 3.125A59.8 59.8 0 0 1 21.486 12a59.8 59.8 0 0 1-18.217 8.875zm0 0h7.5"></path>
         </svg>`;
     
-        // Event listener for the send button: add is-chosen class and send the message
         sendBtn.addEventListener("click", (event) => {
           event.stopPropagation(); // Prevent the left button's event from firing
           sendBtn.classList.add("is-chosen"); // Add the 'is-chosen' combo class
-          // Render the option as a user message and send it directly
+          
+          // Render the option as a user message
           createChatBlock(true, optionText);
+          
+          // Clear the text input area (just like the main send button)
+          setTimeout(() => {
+            resetHeight();
+          }, 0);
+          
+          // Immediately send the option as a message to the AI
           (async () => {
             const { chatInnerWrapper, chatBlockWrapper } = createLoadingBlock();
             try {
@@ -1207,6 +1215,8 @@
             }
           })();
         });
+
+
     
         // Append both buttons to the container
         optionContainer.appendChild(optionDiv);
