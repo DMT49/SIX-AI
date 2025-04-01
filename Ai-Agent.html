@@ -194,45 +194,40 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
           const isFinal = data.is_final;
         
           // 1) Start with whatever is currently in the textarea
-          let textSoFar = textarea.value;
+          let textSoFar = textarea.value; // or: document.getElementById("chat-user-input").value
         
-          // 2) If we previously appended 'lastInterim' at the end, remove it 
+          // 2) If we previously appended `lastInterim` at the end, remove it
           //    only if it matches exactly.
           if (lastInterim && textSoFar.endsWith(lastInterim)) {
             textSoFar = textSoFar.slice(0, -lastInterim.length);
           }
         
-          // 3) Append final vs. partial transcripts differently
+          // 3) If the new transcript is final, add it permanently.
+          //    Otherwise, treat it as partial.
           if (isFinal) {
-            // Append this final transcript text
-            textSoFar += transcript;
-            finalTranscript += transcript;
-        
-            // Optionally add a single space after final text, 
-            // then trim to avoid multiple trailing spaces.
-            textSoFar += " ";
-            finalTranscript += " ";
-        
-            textSoFar = textSoFar.trimEnd();
-            finalTranscript = finalTranscript.trimEnd();
-        
-            // Clear any partial
+            // Append final transcript
+            textSoFar += transcript + " ";
+            // Accumulate in finalTranscript if you'd like to track everything
+            finalTranscript += transcript + " ";
+            // Clear out partial
             lastInterim = "";
           } else {
-            // This is partial
+            // This is partial—just store it in lastInterim
             lastInterim = transcript;
-            // Append the partial to the end
+            // Append partial transcript
             textSoFar += transcript;
           }
         
-          // 4) Put the updated text back into the textarea
+          // 4) Put the new text back in the textarea
           textarea.value = textSoFar;
         
-          // 5) Dynamically resize the textarea
+          // 5) Adjust height so the box grows
           adjustHeight();
         
+          // Debug log
           console.log("Transcript updated:", textSoFar);
         });
+
 
 
 
