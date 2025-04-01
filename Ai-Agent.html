@@ -190,38 +190,40 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
         });
         
         dgConnection.on(LiveTranscriptionEvents.Transcript, (data) => {
-          const transcript = data.channel?.alternatives?.[0]?.transcript || "";
+          // 1) Grab the actual transcript and check if it's final or partial
+          let transcript = data.channel?.alternatives?.[0]?.transcript || "";
           const isFinal = data.is_final;
         
-          // 1) Start with whatever is currently in the textarea
-          let textSoFar = textarea.value; // or: document.getElementById("chat-user-input").value
+          // 2) If the chunk is empty or just whitespace, skip it
+          if (transcript.trim().length === 0) {
+            console.log("Blank chunk detected. Not appending anything.");
+            return;
+          }
         
-          // 2) If we previously appended `lastInterim` at the end, remove it
-          //    only if it matches exactly.
+          // 3) Start with whatever is currently in the textarea
+          let textSoFar = textarea.value;
+        
+          // 4) If we previously appended `lastInterim` at the end, remove it
           if (lastInterim && textSoFar.endsWith(lastInterim)) {
             textSoFar = textSoFar.slice(0, -lastInterim.length);
           }
         
-          // 3) If the new transcript is final, add it permanently.
-          //    Otherwise, treat it as partial.
+          // 5) Append differently based on final vs. partial transcript
           if (isFinal) {
-            // Append final transcript
+            // If final, permanently add it to the text + finalTranscript
             textSoFar += transcript + " ";
-            // Accumulate in finalTranscript if you'd like to track everything
             finalTranscript += transcript + " ";
-            // Clear out partial
             lastInterim = "";
           } else {
-            // This is partial—just store it in lastInterim
+            // If partial, store in lastInterim + append it at the end
             lastInterim = transcript;
-            // Append partial transcript
             textSoFar += transcript;
           }
         
-          // 4) Put the new text back in the textarea
+          // 6) Update the textarea with the new text
           textarea.value = textSoFar;
         
-          // 5) Adjust height so the box grows
+          // 7) Dynamically resize now that we’ve changed the value
           adjustHeight();
         
           // Debug log
@@ -229,10 +231,6 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
         });
 
 
-
-
-
-        
         dgConnection.on(LiveTranscriptionEvents.Error, (err) => {
           console.error("Deepgram error:", err);
         });
