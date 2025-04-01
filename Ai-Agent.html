@@ -70,6 +70,11 @@
 <!-- Existing HTML structure remains unchanged -->
 
 <script type="module">
+import { createClient, LiveTranscriptionEvents } from "https://cdn.jsdelivr.net/npm/@deepgram/sdk/+esm";
+const API_KEY = "9dcf3c4e022285b7ea553a57c663cb66bbd5c68e";
+const deepgram = createClient(API_KEY);
+window.deepgram = deepgram;
+window.LiveTranscriptionEvents = LiveTranscriptionEvents;
   
   (function() {
     console.log("Chatbot initialized.");
