@@ -136,7 +136,10 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
     let isDeepgramListening = false;
     let finalTranscript = "";
     let lastInterim = "";
-    
+
+    let isMicOn = false;     // For controlling Deepgram mic usage (STT)
+    let isVoiceOn = false;   // For controlling ElevenLabs voice output (TTS)
+
     // Helper: Convert Float32Array to 16-bit PCM ArrayBuffer
     function floatTo16BitPCM(input) {
       const output = new Int16Array(input.length);
@@ -247,15 +250,13 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       isDeepgramListening = false;
       console.log("Deepgram transcription stopped");
     }
-
-    const micButton = document.getElementById("chat-user-input-mic");
-    let isVoiceOn = false; // New flag for Deepgram voice input
     
+    const micButton = document.getElementById("chat-user-input-mic");
     if (micButton) {
       micButton.addEventListener("click", () => {
         console.log("Mic button clicked.");
-        if (!isVoiceOn) {
-          // Start Deepgram transcription instead of SpeechRecognition.start()
+        if (!isMicOn) {
+          // Start Deepgram transcription
           startDeepgramTranscription();
           micButton.classList.add("is-active");
           console.log("Started Deepgram transcription.");
@@ -265,11 +266,12 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
           micButton.classList.remove("is-active");
           console.log("Stopped Deepgram transcription.");
         }
-        isVoiceOn = !isVoiceOn;
+        isMicOn = !isMicOn;
       });
     } else {
       console.error("Cannot find mic button with id 'chat-user-input-mic'.");
     }
+
 
 
 
@@ -1328,18 +1330,36 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
           <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 12L3.269 3.125A59.8 59.8 0 0 1 21.486 12a59.8 59.8 0 0 1-18.217 8.875zm0 0h7.5"></path>
         </svg>`;
     
+        // STEP 4: Replace the multi-choice sendBtn logic:
+        
         sendBtn.addEventListener("click", (event) => {
           event.stopPropagation(); // Prevent the left button's event from firing
           sendBtn.classList.add("is-chosen"); // Add the 'is-chosen' combo class
-          
+        
+          // Stop STT if it's on
+          if (isMicOn) {
+            stopDeepgramTranscription();
+            isMicOn = false;
+            const micBtn = document.getElementById("chat-user-input-mic");
+            if (micBtn) micBtn.classList.remove("is-active");
+            console.log("Stopped mic via multi-choice send.");
+          }
+        
+          // Stop TTS (optional)
+          stopCurrentVoiceOutput();
+        
           // Render the option as a user message
           createChatBlock(true, optionText);
-          
-          // Clear the text input area (just like the main send button)
+        
+          // Reset transcripts so we start fresh next time
+          finalTranscript = "";
+          lastInterim = "";
+        
+          // Clear the text input area (like the main send button)
           setTimeout(() => {
             resetHeight();
           }, 0);
-          
+        
           // Immediately send the option as a message to the AI
           (async () => {
             const { chatInnerWrapper, chatBlockWrapper } = createLoadingBlock();
@@ -1353,6 +1373,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
             }
           })();
         });
+
 
 
     
@@ -1493,6 +1514,8 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
     }
 
 
+    // STEP 3A: Replace your entire handleSubmit() with this:
+
     async function handleSubmit() {
       // 1) If the AI is already processing, do nothing
       if (isBusy) return;
@@ -1500,12 +1523,23 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       // 2) Mark the system as busy
       isBusy = true;
     
-      // (Optional) Disable the user input fields (visual feedback)
+      // 3) Stop STT (Deepgram) if the mic is on
+      if (isMicOn) {
+        stopDeepgramTranscription();
+        isMicOn = false;
+        const micBtn = document.getElementById("chat-user-input-mic");
+        if (micBtn) micBtn.classList.remove("is-active");
+        console.log("Stopped mic on submit.");
+      }
+    
+      // 4) Stop TTS if it’s currently playing (optional, if you want the old code approach)
+      stopCurrentVoiceOutput();
+    
+      // 5) Disable the user input fields (visual feedback)
       textarea.disabled = true;
       userSubmit.disabled = true;
-  
     
-      // 4) Grab the user's message
+      // 6) Grab the user's message
       const message = textarea.value.trim();
       if (!message) {
         // If empty, unlock so user can try again
@@ -1515,35 +1549,38 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
         return;
       }
     
-      // 5) Render user’s message immediately
+      // 7) Render user’s message immediately
       createChatBlock(true, message);
+    
+      // (New) Reset transcripts so we start fresh next time
+      finalTranscript = "";
+      lastInterim = "";
+    
+      // 8) Reset the textarea
       resetHeight(); // Clears + resets textarea
     
-      // 6) Show the loading block
+      // 9) Show the loading block
       const { chatInnerWrapper, chatBlockWrapper } = createLoadingBlock();
     
       try {
-        // 7) Send to AI + wait for response
+        // 10) Send to AI + wait for response
         const agentResponse = await startConversation(message);
     
-        // 8) Remove loading block + show AI response
+        // 11) Remove loading block + show AI response
         conversationWrapper.removeChild(chatBlockWrapper);
         createChatBlock(false, agentResponse);
       } catch (error) {
         console.error("Error while waiting for AI response:", error);
-        // You could show an error message in the UI
         conversationWrapper.removeChild(chatBlockWrapper);
         createChatBlock(false, "Sorry, something went wrong.");
       } finally {
-        // 9) Unlock the system so user can send next message
+        // 12) Unlock so user can send next message
         isBusy = false;
-    
-        // (Optional) Re-enable user input
         textarea.disabled = false;
         userSubmit.disabled = false;
-
       }
     }
+
 
 
     
