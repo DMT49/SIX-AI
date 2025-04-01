@@ -190,28 +190,44 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
         });
         
         dgConnection.on(LiveTranscriptionEvents.Transcript, (data) => {
-          // 1) Extract the transcript text
           const transcript = data.channel?.alternatives?.[0]?.transcript || "";
           const isFinal = data.is_final;
         
+          // 1) Start with whatever is currently in the textarea
+          let textSoFar = textarea.value; // or: document.getElementById("chat-user-input").value
+        
+          // 2) If we previously appended `lastInterim` at the end, remove it
+          //    only if it matches exactly.
+          if (lastInterim && textSoFar.endsWith(lastInterim)) {
+            textSoFar = textSoFar.slice(0, -lastInterim.length);
+          }
+        
+          // 3) If the new transcript is final, add it permanently.
+          //    Otherwise, treat it as partial.
           if (isFinal) {
+            // Append final transcript
+            textSoFar += transcript + " ";
+            // Accumulate in finalTranscript if you'd like to track everything
             finalTranscript += transcript + " ";
+            // Clear out partial
             lastInterim = "";
           } else {
+            // This is partial—just store it in lastInterim
             lastInterim = transcript;
+            // Append partial transcript
+            textSoFar += transcript;
           }
         
-          // 2) Update the <textarea> with combined text
-          const chatInput = document.getElementById("chat-user-input");
-          if (chatInput) {
-            chatInput.value = finalTranscript + lastInterim;
+          // 4) Put the new text back in the textarea
+          textarea.value = textSoFar;
         
-            // 3) Dynamically resize now that we’ve changed the value
-            adjustHeight();
-          }
+          // 5) Adjust height so the box grows
+          adjustHeight();
         
-          console.log("Transcript updated:", finalTranscript + lastInterim);
+          // Debug log
+          console.log("Transcript updated:", textSoFar);
         });
+
 
         
         dgConnection.on(LiveTranscriptionEvents.Error, (err) => {
