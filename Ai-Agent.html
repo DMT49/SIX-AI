@@ -69,8 +69,13 @@
 
 <!-- Existing HTML structure remains unchanged -->
 
-<script>
-  // Immediately execute the chatbot initialization code
+<script type="module">
+import { createClient, LiveTranscriptionEvents } from "https://cdn.jsdelivr.net/npm/@deepgram/sdk/+esm";
+const API_KEY = "9dcf3c4e022285b7ea553a57c663cb66bbd5c68e";
+const deepgram = createClient(API_KEY);
+window.deepgram = deepgram;
+window.LiveTranscriptionEvents = LiveTranscriptionEvents;
+  
   (function() {
     console.log("Chatbot initialized.");
 
@@ -101,7 +106,6 @@
     const textarea = document.getElementById("chat-user-input");
     const BASE_TEXTAREA_HEIGHT = 38; // Base height in pixels for the textarea
     
-    const micButton = document.getElementById("chat-user-input-mic");
     const userSubmit = document.getElementById("chat-user-submit");
     const conversationWrapper = document.getElementById("chat_conversation-wrapper");
     let chatSpacer = document.getElementById("chat-spacer");
@@ -122,6 +126,178 @@
 
     let isBusy = false; // NEW: Blocks user while AI is responding
     let conversationUserAvatar = null;
+
+    // --- Begin Deepgram Transcription Integration ---
+    let dgConnection;
+    let mediaStream;
+    let audioContext;
+    let processor;
+    let keepAliveInterval;
+    let isDeepgramListening = false;
+    let finalTranscript = "";
+    let lastInterim = "";
+
+    let isMicOn = false;     // For controlling Deepgram mic usage (STT)
+    let isVoiceOn = false;   // For controlling ElevenLabs voice output (TTS)
+
+    // Helper: Convert Float32Array to 16-bit PCM ArrayBuffer
+    function floatTo16BitPCM(input) {
+      const output = new Int16Array(input.length);
+      for (let i = 0; i < input.length; i++) {
+        let s = Math.max(-1, Math.min(1, input[i]));
+        output[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+      }
+      return output.buffer;
+    }
+    
+    // Function to start Deepgram transcription
+    async function startDeepgramTranscription() {
+      try {
+        // Request microphone access (HTTPS required)
+        mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        console.log("Microphone access granted");
+        
+        // Create an AudioContext with a sample rate of 16000 Hz
+        audioContext = new AudioContext({ sampleRate: 16000 });
+        console.log("AudioContext sampleRate:", audioContext.sampleRate);
+        const source = audioContext.createMediaStreamSource(mediaStream);
+        
+        // Use a ScriptProcessorNode with a buffer size of 2048 for broad device compatibility
+        processor = audioContext.createScriptProcessor(2048, 1, 1);
+        source.connect(processor);
+        processor.connect(audioContext.destination);
+        
+        // Initialize Deepgram live transcription connection with explicit audio format and interim results enabled
+        dgConnection = deepgram.listen.live({
+          model: "nova-3",
+          language: "en-US",
+          smart_format: true,
+          encoding: "linear16",
+          channels: 1,
+          sample_rate: 16000,
+          interim_results: true,
+        });
+        
+        dgConnection.on(LiveTranscriptionEvents.Open, () => {
+          console.log("Deepgram connection opened");
+          // Start keep-alive messages every 3 seconds
+          keepAliveInterval = setInterval(() => {
+            if (dgConnection.getReadyState() === WebSocket.OPEN) {
+              dgConnection.keepAlive();
+              console.log("KeepAlive sent");
+            }
+          }, 3000);
+        });
+        
+        dgConnection.on(LiveTranscriptionEvents.Transcript, (data) => {
+          // 1) Grab the actual transcript and check if it's final or partial
+          let transcript = data.channel?.alternatives?.[0]?.transcript || "";
+          const isFinal = data.is_final;
+        
+          // 2) If the chunk is empty or just whitespace, skip it
+          if (transcript.trim().length === 0) {
+            console.log("Blank chunk detected. Not appending anything.");
+            return;
+          }
+        
+          // 3) Start with whatever is currently in the textarea
+          let textSoFar = textarea.value;
+        
+          // 4) If we previously appended `lastInterim` at the end, remove it
+          if (lastInterim && textSoFar.endsWith(lastInterim)) {
+            textSoFar = textSoFar.slice(0, -lastInterim.length);
+          }
+        
+          // 5) Append differently based on final vs. partial transcript
+          if (isFinal) {
+            // If final, permanently add it to the text + finalTranscript
+            textSoFar += transcript + " ";
+            finalTranscript += transcript + " ";
+            lastInterim = "";
+          } else {
+            // If partial, store in lastInterim + append it at the end
+            lastInterim = transcript;
+            textSoFar += transcript;
+          }
+        
+          // 6) Update the textarea with the new text
+          textarea.value = textSoFar;
+        
+          // 7) Dynamically resize now that we’ve changed the value
+          adjustHeight();
+        
+          // Debug log
+          console.log("Transcript updated:", textSoFar);
+        });
+
+
+        dgConnection.on(LiveTranscriptionEvents.Error, (err) => {
+          console.error("Deepgram error:", err);
+        });
+        
+        dgConnection.on(LiveTranscriptionEvents.Close, () => {
+          console.log("Deepgram connection closed");
+        });
+        
+        // Process audio frames and send them to Deepgram as 16-bit PCM
+        processor.onaudioprocess = (event) => {
+          const inputData = event.inputBuffer.getChannelData(0);
+          const pcmData = floatTo16BitPCM(inputData);
+          if (dgConnection.getReadyState() === WebSocket.OPEN) {
+            dgConnection.send(pcmData);
+          }
+        };
+        
+        isDeepgramListening = true;
+        console.log("Deepgram transcription started");
+      } catch (error) {
+        console.error("Error starting Deepgram transcription:", error);
+      }
+    }
+    
+    // Function to stop Deepgram transcription and clean up resources
+    function stopDeepgramTranscription() {
+      if (keepAliveInterval) clearInterval(keepAliveInterval);
+      if (processor) {
+        processor.disconnect();
+        processor.onaudioprocess = null;
+      }
+      if (audioContext) {
+        audioContext.close();
+      }
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
+      }
+      if (dgConnection && dgConnection.getReadyState() === WebSocket.OPEN) {
+        dgConnection.requestClose();
+      }
+      isDeepgramListening = false;
+      console.log("Deepgram transcription stopped");
+    }
+    
+    const micButton = document.getElementById("chat-user-input-mic");
+    if (micButton) {
+      micButton.addEventListener("click", () => {
+        console.log("Mic button clicked.");
+        if (!isMicOn) {
+          // Start Deepgram transcription
+          startDeepgramTranscription();
+          micButton.classList.add("is-active");
+          console.log("Started Deepgram transcription.");
+        } else {
+          // Stop Deepgram transcription
+          stopDeepgramTranscription();
+          micButton.classList.remove("is-active");
+          console.log("Stopped Deepgram transcription.");
+        }
+        isMicOn = !isMicOn;
+      });
+    } else {
+      console.error("Cannot find mic button with id 'chat-user-input-mic'.");
+    }
+
+
+
 
     // Helper function to extract an alternate firm ID from the "agent-info" query parameter
     function getAlternateUserIdFromUrl() {
@@ -931,9 +1107,6 @@
 
 
     let conversationId = null;
-    let isListening = false;
-    let finalSoFar = "";   // Will store all finalized recognized text.
-    let lastPartial = "";  // Will track the most recently appended partial text.
 
     
     function adjustHeight() {
@@ -974,16 +1147,7 @@
     }
 
 
-    
-    // Function to stop voice transcription
-    function stopVoiceTranscription() {
-      if (isListening) {
-        recognition.stop();
-        micButton.classList.remove("is-active");
-        console.log("Voice transcription stopped.");
-        isListening = false;
-      }
-    }
+  
     
     function createChatBlock(isUser, content) {
       // Preprocess content to remove bullet points before { ... }
@@ -1190,18 +1354,36 @@
           <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 12L3.269 3.125A59.8 59.8 0 0 1 21.486 12a59.8 59.8 0 0 1-18.217 8.875zm0 0h7.5"></path>
         </svg>`;
     
+        // STEP 4: Replace the multi-choice sendBtn logic:
+        
         sendBtn.addEventListener("click", (event) => {
           event.stopPropagation(); // Prevent the left button's event from firing
           sendBtn.classList.add("is-chosen"); // Add the 'is-chosen' combo class
-          
+        
+          // Stop STT if it's on
+          if (isMicOn) {
+            stopDeepgramTranscription();
+            isMicOn = false;
+            const micBtn = document.getElementById("chat-user-input-mic");
+            if (micBtn) micBtn.classList.remove("is-active");
+            console.log("Stopped mic via multi-choice send.");
+          }
+        
+          // Stop TTS (optional)
+          stopCurrentVoiceOutput();
+        
           // Render the option as a user message
           createChatBlock(true, optionText);
-          
-          // Clear the text input area (just like the main send button)
+        
+          // Reset transcripts so we start fresh next time
+          finalTranscript = "";
+          lastInterim = "";
+        
+          // Clear the text input area (like the main send button)
           setTimeout(() => {
             resetHeight();
           }, 0);
-          
+        
           // Immediately send the option as a message to the AI
           (async () => {
             const { chatInnerWrapper, chatBlockWrapper } = createLoadingBlock();
@@ -1215,6 +1397,7 @@
             }
           })();
         });
+
 
 
     
@@ -1355,6 +1538,8 @@
     }
 
 
+    // STEP 3A: Replace your entire handleSubmit() with this:
+
     async function handleSubmit() {
       // 1) If the AI is already processing, do nothing
       if (isBusy) return;
@@ -1362,15 +1547,23 @@
       // 2) Mark the system as busy
       isBusy = true;
     
-      // (Optional) Disable the user input fields (visual feedback)
+      // 3) Stop STT (Deepgram) if the mic is on
+      if (isMicOn) {
+        stopDeepgramTranscription();
+        isMicOn = false;
+        const micBtn = document.getElementById("chat-user-input-mic");
+        if (micBtn) micBtn.classList.remove("is-active");
+        console.log("Stopped mic on submit.");
+      }
+    
+      // 4) Stop TTS if it’s currently playing (optional, if you want the old code approach)
+      stopCurrentVoiceOutput();
+    
+      // 5) Disable the user input fields (visual feedback)
       textarea.disabled = true;
       userSubmit.disabled = true;
     
-      // 3) Stop any ongoing speech or TTS
-      stopVoiceTranscription();
-      stopCurrentVoiceOutput();
-    
-      // 4) Grab the user's message
+      // 6) Grab the user's message
       const message = textarea.value.trim();
       if (!message) {
         // If empty, unlock so user can try again
@@ -1380,38 +1573,38 @@
         return;
       }
     
-      // 5) Render user’s message immediately
+      // 7) Render user’s message immediately
       createChatBlock(true, message);
+    
+      // (New) Reset transcripts so we start fresh next time
+      finalTranscript = "";
+      lastInterim = "";
+    
+      // 8) Reset the textarea
       resetHeight(); // Clears + resets textarea
     
-      // 6) Show the loading block
+      // 9) Show the loading block
       const { chatInnerWrapper, chatBlockWrapper } = createLoadingBlock();
     
       try {
-        // 7) Send to AI + wait for response
+        // 10) Send to AI + wait for response
         const agentResponse = await startConversation(message);
     
-        // 8) Remove loading block + show AI response
+        // 11) Remove loading block + show AI response
         conversationWrapper.removeChild(chatBlockWrapper);
         createChatBlock(false, agentResponse);
       } catch (error) {
         console.error("Error while waiting for AI response:", error);
-        // You could show an error message in the UI
         conversationWrapper.removeChild(chatBlockWrapper);
         createChatBlock(false, "Sorry, something went wrong.");
       } finally {
-        // 9) Unlock the system so user can send next message
+        // 12) Unlock so user can send next message
         isBusy = false;
-    
-        // (Optional) Re-enable user input
         textarea.disabled = false;
         userSubmit.disabled = false;
-    
-        // 10) Reset partial transcripts
-        finalSoFar = "";
-        lastPartial = "";
       }
     }
+
 
 
     
@@ -1426,93 +1619,7 @@
       }
     });
     
-    // Initialize speech recognition
-    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = "en-US";
-    
-    recognition.onresult = (event) => {
-      // 1) Start with whatever is currently in the textarea
-      let textSoFar = textarea.value;
-    
-      // We'll figure out how much new final text vs. partial text we got
-      let newFinal = "";
-      let newPartial = "";
-    
-
-      // 2) Loop through all the results from this speech event
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        if (event.results[i].isFinal) {
-          newFinal += event.results[i][0].transcript;
-        } else {
-          newPartial += event.results[i][0].transcript;
-        }
-      }
-    
-      // 3) Remove the old partial from the end of textSoFar IF it matches exactly
-      //    (If the user edited the text in that region, we skip this removal.)
-      if (lastPartial && textSoFar.endsWith(lastPartial)) {
-        textSoFar = textSoFar.slice(0, -lastPartial.length);
-      }
-    
-      // 4) If we got new final text, append it. Then reset lastPartial.
-      if (newFinal) {
-        textSoFar += newFinal;
-        finalSoFar += newFinal;   // If you need to keep a record of all final recognized text
-        lastPartial = "";
-      }
-    
-      // 5) If we also have new partial text, append it as ephemeral
-      //    (This is the "live" text that might change on the next result.)
-      if (newPartial) {
-        textSoFar += newPartial;
-        lastPartial = newPartial; // So we know what to remove next time
-      }
-    
-      // 6) Update the textarea
-      textarea.value = textSoFar;
-    
-      // 7) Adjust for auto-height
-      adjustHeight();
-    };
-
-
-    
-    recognition.onstart = () => {
-      console.log("Speech recognition started.");
-    };
-    
-    recognition.onend = () => {
-      console.log("Speech recognition ended.");
-      micButton.classList.remove("is-active");
-      isListening = false;
-    };
-    
-    recognition.onerror = (event) => {
-      console.error("Speech recognition error:", event.error);
-      micButton.classList.remove("is-active");
-      isListening = false;
-    };
-    
-    // Attach event listener to micButton
-    if (micButton) {
-      micButton.addEventListener("click", () => {
-        console.log("Mic button clicked.");
-        if (isListening) {
-          recognition.stop();
-          micButton.classList.remove("is-active");
-          console.log("Stopped listening.");
-        } else {
-          recognition.start();
-          micButton.classList.add("is-active");
-          console.log("Started listening.");
-        }
-        isListening = !isListening;
-      });
-    } else {
-      console.error("Cannot find #chat-user-input-mic element.");
-    }
+  
     
     // -----------------------------
     // Automatically Start Conversation
@@ -1631,8 +1738,6 @@
       console.error("Button with id 'start-new-conversation' not found.");
     }
 
-
-    let isVoiceOn = false; // Declare `isVoiceOn` globally
     
     document.addEventListener("click", (event) => {
         const voiceToggle = event.target.closest("#chat-voice-toggle");
