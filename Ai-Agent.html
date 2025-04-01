@@ -190,22 +190,29 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
         });
         
         dgConnection.on(LiveTranscriptionEvents.Transcript, (data) => {
+          // 1) Extract the transcript text
           const transcript = data.channel?.alternatives?.[0]?.transcript || "";
           const isFinal = data.is_final;
-          
+        
           if (isFinal) {
             finalTranscript += transcript + " ";
             lastInterim = "";
           } else {
             lastInterim = transcript;
           }
-          // Update the text input with the accumulated final transcript plus the current interim text
+        
+          // 2) Update the <textarea> with combined text
           const chatInput = document.getElementById("chat-user-input");
           if (chatInput) {
             chatInput.value = finalTranscript + lastInterim;
+        
+            // 3) Dynamically resize now that we’ve changed the value
+            adjustHeight();
           }
+        
           console.log("Transcript updated:", finalTranscript + lastInterim);
         });
+
         
         dgConnection.on(LiveTranscriptionEvents.Error, (err) => {
           console.error("Deepgram error:", err);
