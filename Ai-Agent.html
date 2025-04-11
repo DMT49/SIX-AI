@@ -117,13 +117,6 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       conversationWrapper.appendChild(chatSpacer);
     }
 
-    // Configure DOMPurify to allow target and rel attributes on links
-    if (typeof DOMPurify !== 'undefined') {
-      DOMPurify.setConfig({
-        ADD_ATTR: ['target', 'rel']
-      });
-    }
-
     const chatInputWrapper = document.querySelector(".chat_input-wrapper");
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -146,15 +139,6 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
 
     let isMicOn = false;     // For controlling Deepgram mic usage (STT)
     let isVoiceOn = false;   // For controlling ElevenLabs voice output (TTS)
-
-    // Configure Marked.js to make all links open in new tabs
-    if (typeof marked !== 'undefined') {
-      const renderer = new marked.Renderer();
-      renderer.link = function(href, title, text) {
-        return `<a href="${href}" target="_blank" rel="noopener noreferrer">${text}</a>`;
-      };
-      marked.use({ renderer });
-    }
 
     // Helper: Convert Float32Array to 16-bit PCM ArrayBuffer
     function floatTo16BitPCM(input) {
@@ -500,9 +484,6 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
         const mdContainer = document.createElement('div');
         mdContainer.classList.add('md-block-container');
         mdContainer.innerHTML = sanitizedHtml;
-        
-        // NEW: Process links in the markdown container to open in new tabs
-        processLinksToOpenInNewTab(mdContainer);
     
         // 4) Convert rawText to plain text (if you want no markdown in the copied text)
         const plainText = markdownToPlainText(rawText);
@@ -1056,6 +1037,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
     }
     
 
+    // Function to render conversation messages in the chat UI
     function renderConversationMessages(messages) {
       if (!Array.isArray(messages) || messages.length === 0) {
         console.log("No messages to render.");
@@ -1078,7 +1060,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       
         if (role && content) {
           const isUser = role === "user";
-          // FIX: Add the function name "createChatBlock" here
+          // Render the message
           const chatBlock = createChatBlock(isUser, content);
       
           if (isUser && conversationUserAvatar) {
@@ -1090,6 +1072,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
           }
         }
       });
+
     
       // Scroll to the bottom of the conversation
       conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
@@ -1164,6 +1147,8 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
     }
 
 
+  
+    
     function createChatBlock(isUser, content) {
       // Preprocess content to remove bullet points before { ... }
       content = content.replace(/(^|\n)[\s]*[-*]\s*(?=\{)/g, '$1');
@@ -1201,12 +1186,11 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
             // If there are pending options, render them before this text
             if (optionGroup.length > 0) {
               const isOptionsAtEnd = !hasNonEmptyTextAfterIndex(segments, lastOptionIndex);
-              renderOptions(optionGroup, isOptionsAtEnd);
+              renderOptions(optionGroup, isOptionsAtEnd);  // <-- FIXED: call renderOptions here
               optionGroup = [];
             }
     
             const hideAvatar = !isUser && hasRenderedBotAvatar;
-            // FIX: Add the function name "renderTextSegment" here
             const newlyRenderedBlock = renderTextSegment(textContent, isUser, hideAvatar);
     
             // Keep track of the first and last blocks for scrolling behavior
@@ -1251,6 +1235,9 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       return lastCreatedBlock;
     }
 
+
+
+    
     // Helper function to check if there's non-empty text after a given index
     function hasNonEmptyTextAfterIndex(segments, currentIndex) {
       for (let i = currentIndex + 1; i < segments.length; i++) {
@@ -1259,23 +1246,6 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
         }
       }
       return false;
-    }
-
-    // Helper function to make all links in a container open in new tabs
-    function processLinksToOpenInNewTab(containerElement) {
-      if (!containerElement) return;
-      
-      // Find all anchor elements within the container
-      const links = containerElement.querySelectorAll('a');
-      
-      // Loop through each link and add the necessary attributes
-      links.forEach(link => {
-        // Skip links that already have target attribute set
-        if (!link.hasAttribute('target')) {
-          link.setAttribute('target', '_blank');
-          link.setAttribute('rel', 'noopener noreferrer');
-        }
-      });
     }
     
     function renderTextSegment(text, isUser, hideAvatar) {
@@ -1310,9 +1280,6 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
     
       // 4) Insert the sanitized HTML into the DOM
       chatInnerWrapper.innerHTML = sanitizedHtml;
-      
-      // NEW: Process links to open in new tabs
-      processLinksToOpenInNewTab(chatInnerWrapper);
     
       // 5) **Call replacePreCodeWithMarkdown**: 
       //    This function will look for any <pre><code> blocks 
@@ -1330,6 +1297,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       // 7) Scroll to the bottom of the chat
       conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
       return chatBlockWrapper;
+
     }
 
 
