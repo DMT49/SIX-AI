@@ -1146,9 +1146,6 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       chatSpacer.style.height = "0px";
     }
 
-
-  
-    
     function createChatBlock(isUser, content) {
       // Preprocess content to remove bullet points before { ... }
       content = content.replace(/(^|\n)[\s]*[-*]\s*(?=\{)/g, '$1');
@@ -1175,7 +1172,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       let lastOptionIndex = -1;
       let hasRenderedBotAvatar = false;
     
-      // Track both the first and last created blocks for scrolling
+      // Track both the first and last created blocks for scrolling behavior
       let firstCreatedBlock = null;
       let lastCreatedBlock = null;
     
@@ -1186,7 +1183,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
             // If there are pending options, render them before this text
             if (optionGroup.length > 0) {
               const isOptionsAtEnd = !hasNonEmptyTextAfterIndex(segments, lastOptionIndex);
-              renderOptions(optionGroup, isOptionsAtEnd);  // <-- FIXED: call renderOptions here
+              renderOptions(optionGroup, isOptionsAtEnd);  // Renders multi-choice options block
               optionGroup = [];
             }
     
@@ -1231,10 +1228,29 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       // Re-append the spacer element so it is always the very last child
       conversationWrapper.appendChild(chatSpacer);
     
-      // Return the last block as before
+      // -----------------------------
+      // NEW: Add the reveal overlay animation for agent messages.
+      // This overlay will be applied only when isUser is false (i.e. an agent message).
+      if (!isUser && lastCreatedBlock) {
+        // Add a class to ensure relative positioning for the overlay
+        lastCreatedBlock.classList.add("agent-message-container");
+        
+        // Create the overlay element with the reveal animation CSS class
+        const overlay = document.createElement("div");
+        overlay.className = "message-overlay";
+        
+        // Append the overlay to cover the entire agent message block
+        lastCreatedBlock.appendChild(overlay);
+    
+        // Once the animation completes, remove the overlay element
+        overlay.addEventListener("animationend", function() {
+          overlay.remove();
+        });
+      }
+    
+      // Return the last block created (for scrolling and reference)
       return lastCreatedBlock;
     }
-
 
 
     
