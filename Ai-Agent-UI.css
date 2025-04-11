@@ -3465,27 +3465,40 @@ MOBILE STYLES BELOW
   margin-left:3px;
 }
 
-  /* Ensure that the text container is positioned relative so that an absolutely positioned overlay is contained within it */
+  /* Ensure that the message text container is positioned relative so that an absolutely positioned overlay is contained within it */
   .chat_inner-wrapper {
     position: relative;
   }
 
-  /* Overlay for the agent’s text.
-     This overlay uses a gradient that is fully opaque white for the top 20px, then fully transparent below.
-     It animates by sliding down (translateY) to reveal the text gradually from the top. */
+  /* Overlay for agent message text: initially covers the whole text area with solid white.
+     A pseudo-element (::before) adds a 20px gradient at the top edge.
+     The whole overlay will then slide down to reveal the text gradually. */
   .agent-text-overlay {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    pointer-events: none; /* Prevent it from blocking any clicks */
-    background: linear-gradient(to bottom, #fff 0%, #fff 20px, rgba(255,255,255,0) 20px, rgba(255,255,255,0) 100%);
-    animation: revealText 2s forwards; /* Change duration (2s) as needed */
+    background: #fff; /* Fully white */
+    z-index: 999; /* Ensure it sits on top of the text */
+    pointer-events: none; /* So it doesn't block interactions */
+    transform: translateY(0);
+    animation: revealText 2s forwards; /* Adjust duration (2s) as needed */
   }
-
-  /* Keyframes for the text reveal animation:
-     The overlay slides down from its original position to move 100% down, thereby revealing the text underneath */
+  
+  /* The pseudo-element creates a gradient effect at the moving edge.
+     The top 20px is white and then quickly becomes transparent */
+  .agent-text-overlay::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 20px; /* Height of the gradient band */
+    background: linear-gradient(to bottom, rgba(255,255,255,1), rgba(255,255,255,0));
+  }
+  
+  /* Keyframes for the reveal animation: the overlay slides downward */
   @keyframes revealText {
     from {
       transform: translateY(0);
