@@ -1948,58 +1948,49 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
     // Finally, call initTooltips() once
     initTooltips();
 
-    // --- Begin link update functionality with debugging ---
+    // --- Begin link update functionality ---
     (function() {
       // Function to update all anchor tags within a given root element
       function updateLinks(root) {
         const links = root.querySelectorAll('a');
-        console.log('updateLinks called on:', root, 'found', links.length, '<a> tags');
         links.forEach(link => {
-          // Only update if target isn't already set to _blank
-          if (link.getAttribute('target') !== '_blank') {
-            link.setAttribute('target', '_blank');
-            link.setAttribute('rel', 'noopener noreferrer');
-            console.log('Updated link:', link.href);
-          }
+          link.setAttribute('target', '_blank');
+          link.setAttribute('rel', 'noopener noreferrer');
         });
       }
-    
-      function runUpdate() {
-        console.log('runUpdate called after readyState:', document.readyState);
+      
+      // Check if the DOM is already loaded; if so, run updateLinks immediately.
+      if (document.readyState === "loading") {
+        document.addEventListener('DOMContentLoaded', function() {
+          updateLinks(document);
+        });
+      } else {
         updateLinks(document);
       }
-    
-      // If the document is still loading, wait for DOMContentLoaded; otherwise, run immediately.
-      if (document.readyState === "loading") {
-        document.addEventListener('DOMContentLoaded', runUpdate);
-      } else {
-        runUpdate();
-      }
-    
-      // Set up a MutationObserver to catch any dynamically added links
+      
+      // Set up a MutationObserver to catch any dynamically added links later.
       const observer = new MutationObserver(function(mutations) {
         mutations.forEach(mutation => {
           mutation.addedNodes.forEach(node => {
-            // Only process element nodes
+            // Only process element nodes.
             if (node.nodeType === Node.ELEMENT_NODE) {
-              // If the node itself is a link, update it directly
+              // If the node itself is a link, update it.
               if (node.tagName.toLowerCase() === 'a') {
-                console.log('MutationObserver: Detected a new <a> element:', node);
                 node.setAttribute('target', '_blank');
                 node.setAttribute('rel', 'noopener noreferrer');
-                console.log('MutationObserver: Updated new link:', node.href);
               }
-              // Also update any links inside this node
+              // Update any links contained within the node.
               updateLinks(node);
             }
           });
         });
       });
-    
+      
+      // Start observing the entire document body for changes.
       observer.observe(document.body, { childList: true, subtree: true });
-      console.log('Link update functionality script executed.');
     })();
      // --- End link update functionality ---
+
 
 
 
