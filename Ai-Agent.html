@@ -1147,6 +1147,8 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
     }
 
 
+  
+    
     function createChatBlock(isUser, content) {
       // Preprocess content to remove bullet points before { ... }
       content = content.replace(/(^|\n)[\s]*[-*]\s*(?=\{)/g, '$1');
@@ -1264,6 +1266,72 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
     
       conversationWrapper.appendChild(chatSpacer);
       return lastCreatedBlock;
+    }
+
+
+
+
+    
+    // Helper function to check if there's non-empty text after a given index
+    function hasNonEmptyTextAfterIndex(segments, currentIndex) {
+      for (let i = currentIndex + 1; i < segments.length; i++) {
+        if (segments[i].type === "text" && segments[i].content.trim()) {
+          return true;
+        }
+      }
+      return false;
+    }
+    
+    function renderTextSegment(text, isUser, hideAvatar) {
+      if (!text) return;
+    
+      // 1) (Optional) Convert user line breaks to Markdown line breaks
+      if (isUser) {
+        text = text.replace(/\n/g, '  \n');
+      }
+    
+      // 2) Create the outer chat block elements
+      const chatBlockWrapper = document.createElement('div');
+      chatBlockWrapper.className = 'chat_block-wrapper';
+    
+      const chatBlock = document.createElement('div');
+      chatBlock.className = 'chat_block';
+    
+      const botAvatar = document.createElement('div');
+      botAvatar.className = 'chat_bot-avatar';
+      if (isUser || hideAvatar) botAvatar.classList.add('opacity-0');
+    
+      const userAvatar = document.createElement('div');
+      userAvatar.className = 'chat_user-avatar';
+      if (!isUser) userAvatar.classList.add('opacity-0');
+    
+      const chatInnerWrapper = document.createElement('div');
+      chatInnerWrapper.className = `chat_inner-wrapper ${isUser ? 'user-message' : ''}`;
+    
+      // 3) Parse the text as Markdown, sanitize it
+      const parsedHtml = marked.parse(text);
+      const sanitizedHtml = DOMPurify.sanitize(parsedHtml);
+    
+      // 4) Insert the sanitized HTML into the DOM
+      chatInnerWrapper.innerHTML = sanitizedHtml;
+    
+      // 5) **Call replacePreCodeWithMarkdown**: 
+      //    This function will look for any <pre><code> blocks 
+      //    in 'chatInnerWrapper' and replace them with a normal <div> 
+      //    plus a "Copy" button that copies plain text.
+      replacePreCodeWithMarkdown(chatInnerWrapper);
+    
+      // 6) Append these elements to form the final chat message
+      chatBlock.appendChild(botAvatar);
+      chatBlock.appendChild(chatInnerWrapper);
+      chatBlock.appendChild(userAvatar);
+      chatBlockWrapper.appendChild(chatBlock);
+      conversationWrapper.appendChild(chatBlockWrapper);
+    
+      // 7) Scroll to the bottom of the chat
+      conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
+      return chatBlockWrapper;
+
     }
 
 
