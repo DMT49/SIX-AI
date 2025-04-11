@@ -1172,7 +1172,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       let lastOptionIndex = -1;
       let hasRenderedBotAvatar = false;
     
-      // Track the first and last created blocks for scrolling behavior
+      // Track first and last created blocks for scrolling behavior
       let firstCreatedBlock = null;
       let lastCreatedBlock = null;
     
@@ -1185,18 +1185,17 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
               const isOptionsAtEnd = !hasNonEmptyTextAfterIndex(segments, lastOptionIndex);
               const optionBlock = renderOptions(optionGroup, isOptionsAtEnd);
               if (optionBlock && !isUser) {
-                // Append the overlay to the options block's inner container (if available)
+                // Append the overlay to the option block's text container (if it exists)
                 let optionContainer = optionBlock.querySelector('.chat_inner-wrapper');
-                if (!optionContainer) { 
-                  optionContainer = optionBlock; 
+                if (!optionContainer) {
+                  optionContainer = optionBlock;
                 }
-                optionContainer.style.position = "relative";
+                optionContainer.style.position = "relative";  // Ensure positioning context
                 const overlay = document.createElement('div');
                 overlay.className = 'agent-text-overlay';
                 optionContainer.appendChild(overlay);
-                // Instead of removing the overlay (which may trigger layout shift), let it remain with opacity 0
-                overlay.addEventListener('animationend', () => {
-                  // Optionally, you could remove it later after a delay if needed, but leaving it hidden is acceptable
+                // No removal to trigger reflow; we can let the animation finish naturally.
+                overlay.addEventListener('animationend', function() {
                   overlay.style.display = 'none';
                 });
               }
@@ -1211,16 +1210,16 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
             const hideAvatar = !isUser && hasRenderedBotAvatar;
             const newBlock = renderTextSegment(textContent, isUser, hideAvatar);
             if (!isUser) {
-              // For agent messages, add the overlay to the text container so that the avatar remains unaffected
+              // For agent messages, add the overlay to the text container so the agent avatar isn’t covered.
               let textContainer = newBlock.querySelector('.chat_inner-wrapper');
               if (!textContainer) {
                 textContainer = newBlock;
               }
-              textContainer.style.position = "relative";
+              textContainer.style.position = "relative"; // Create positioning context
               const overlay = document.createElement('div');
               overlay.className = 'agent-text-overlay';
               textContainer.appendChild(overlay);
-              overlay.addEventListener('animationend', () => {
+              overlay.addEventListener('animationend', function() {
                 overlay.style.display = 'none';
               });
             }
@@ -1236,20 +1235,20 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
         }
       });
     
-      // If there are options remaining after the loop, render them.
+      // Render remaining option group if any.
       if (optionGroup.length > 0) {
         const isOptionsAtEnd = !hasNonEmptyTextAfterIndex(segments, lastOptionIndex);
         const optionBlock = renderOptions(optionGroup, isOptionsAtEnd);
         if (optionBlock && !isUser) {
           let optionContainer = optionBlock.querySelector('.chat_inner-wrapper');
-          if (!optionContainer) { 
-            optionContainer = optionBlock; 
+          if (!optionContainer) {
+            optionContainer = optionBlock;
           }
           optionContainer.style.position = "relative";
           const overlay = document.createElement('div');
           overlay.className = 'agent-text-overlay';
           optionContainer.appendChild(overlay);
-          overlay.addEventListener('animationend', () => {
+          overlay.addEventListener('animationend', function() {
             overlay.style.display = 'none';
           });
         }
@@ -1265,17 +1264,17 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       // Scroll the conversation wrapper to the bottom
       conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
     
-      // Attach a pointer on the last block to reference the first block (for scrolling behavior)
+      // Store a pointer for scrolling behavior.
       if (lastCreatedBlock) {
         lastCreatedBlock.__myFirstBlock = firstCreatedBlock;
       }
     
-      // Re-append the spacer element so it remains the very last child
+      // Re-append the spacer element so it remains the very last child.
       conversationWrapper.appendChild(chatSpacer);
     
-      // Return the last created block for further reference
       return lastCreatedBlock;
     }
+
 
     
     // Helper function to check if there's non-empty text after a given index
