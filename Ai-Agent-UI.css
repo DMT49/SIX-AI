@@ -3465,41 +3465,41 @@ MOBILE STYLES BELOW
   margin-left:3px;
 }
 
-  /* Ensure the container for the agent's text is positioned relative */
+  /* Ensure the text container (which hosts the overlay) is positioned relative */
   .chat_inner-wrapper {
     position: relative;
   }
 
-  /* The overlay covers the agent’s text below the first line.
-     It has a solid white background but includes a gradient band at its top edge.
-     The gradient band is created via a background image that is 15px high.
-     The overlay is then animated to slide downward so that the text is revealed
-     gradually from the top to the bottom. */
+  /* The overlay covers the agent’s text entirely at first. Its background uses a gradient:
+     - The top 10px are solid white.
+     - Then a 15px high gradient transitions smoothly from white to transparent.
+     - The remainder is transparent.
+     We animate the overlay’s top property from 0 to 100% and fade its opacity to 0,
+     so that the text is gradually revealed from top to bottom without a sudden layout shift. */
   .agent-text-overlay {
     position: absolute;
-    top: 20px; /* Leave first 20px (approximately the height of the first line) uncovered */
+    top: 0;
     left: 0;
     width: 100%;
-    height: calc(100% - 20px);
-    background-color: white;  /* Solid white covers the text */
+    height: 100%;
     pointer-events: none;
-    /* Create a gradient band (15px high) at the top edge of the overlay:
-       The gradient goes from transparent (at the top) to white (at the bottom of the band). */
-    background-image: linear-gradient(to bottom, rgba(255,255,255,0) 0%, white 100%);
-    background-repeat: no-repeat;
-    background-size: 100% 15px;
-    background-position: top;
+    background: linear-gradient(to bottom, 
+                  white,               /* 0px–10px: white */
+                  white 10px,          
+                  transparent 25px,    /* 10px–25px: gradient transition over 15px */
+                  transparent 100%);
+    /* Animate the overlay moving down and fading out */
     animation: slideOverlay 2s forwards;
   }
 
-  /* Slide the overlay downward so that it reveals the text from top to bottom.
-     Since the overlay is absolutely positioned over the text container and does not affect layout,
-     its removal after the animation should not cause layout shift. */
+  /* Keyframes: slide the overlay's top down from 0 to 100% while fading out */
   @keyframes slideOverlay {
     from {
-      transform: translateY(0);
+      top: 0;
+      opacity: 1;
     }
     to {
-      transform: translateY(100%);
+      top: 100%;
+      opacity: 0;
     }
   }
