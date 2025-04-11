@@ -1172,7 +1172,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       let lastOptionIndex = -1;
       let hasRenderedBotAvatar = false;
     
-      // Track first and last created blocks for scrolling.
+      // Track first and last created blocks for scrolling behavior.
       let firstCreatedBlock = null;
       let lastCreatedBlock = null;
     
@@ -1180,26 +1180,34 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
         if (segment.type === "text") {
           const textContent = segment.content.trim();
           if (textContent) {
-            // If there are pending options, render them before this text.
+            // Render pending options (if any) before this text segment.
             if (optionGroup.length > 0) {
               const isOptionsAtEnd = !hasNonEmptyTextAfterIndex(segments, lastOptionIndex);
               const optionBlock = renderOptions(optionGroup, isOptionsAtEnd);
               if (optionBlock && !isUser) {
-                // For agent options, append the overlay to the text container.
                 let optionContainer = optionBlock.querySelector('.chat_inner-wrapper');
                 if (!optionContainer) {
                   optionContainer = optionBlock;
                 }
                 optionContainer.style.position = "relative";
-                const overlay = document.createElement('div');
-                overlay.className = 'agent-overlay';
-                optionContainer.appendChild(overlay);
-                overlay.addEventListener('animationend', function() {
-                  overlay.style.display = 'none';
+                // Create overlay container and add both overlays.
+                const overlayContainer = document.createElement('div');
+                overlayContainer.className = 'agent-overlay-container';
+                const solidOverlay = document.createElement('div');
+                solidOverlay.className = 'solid-overlay';
+                const gradientOverlay = document.createElement('div');
+                gradientOverlay.className = 'gradient-overlay';
+                overlayContainer.appendChild(solidOverlay);
+                overlayContainer.appendChild(gradientOverlay);
+                optionContainer.appendChild(overlayContainer);
+                solidOverlay.addEventListener('animationend', function() {
+                  overlayContainer.style.display = 'none';
                 });
               }
               if (optionBlock) {
-                if (!firstCreatedBlock) firstCreatedBlock = optionBlock;
+                if (!firstCreatedBlock) {
+                  firstCreatedBlock = optionBlock;
+                }
                 lastCreatedBlock = optionBlock;
               }
               optionGroup = [];
@@ -1207,20 +1215,27 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
             const hideAvatar = !isUser && hasRenderedBotAvatar;
             const newBlock = renderTextSegment(textContent, isUser, hideAvatar);
             if (!isUser) {
-              // For agent messages, add the overlay to the text container.
               let textContainer = newBlock.querySelector('.chat_inner-wrapper');
               if (!textContainer) {
                 textContainer = newBlock;
               }
               textContainer.style.position = "relative";
-              const overlay = document.createElement('div');
-              overlay.className = 'agent-overlay';
-              textContainer.appendChild(overlay);
-              overlay.addEventListener('animationend', function() {
-                overlay.style.display = 'none';
+              const overlayContainer = document.createElement('div');
+              overlayContainer.className = 'agent-overlay-container';
+              const solidOverlay = document.createElement('div');
+              solidOverlay.className = 'solid-overlay';
+              const gradientOverlay = document.createElement('div');
+              gradientOverlay.className = 'gradient-overlay';
+              overlayContainer.appendChild(solidOverlay);
+              overlayContainer.appendChild(gradientOverlay);
+              textContainer.appendChild(overlayContainer);
+              solidOverlay.addEventListener('animationend', function() {
+                overlayContainer.style.display = 'none';
               });
             }
-            if (!firstCreatedBlock) firstCreatedBlock = newBlock;
+            if (!firstCreatedBlock) {
+              firstCreatedBlock = newBlock;
+            }
             lastCreatedBlock = newBlock;
             hasRenderedBotAvatar = true;
           }
@@ -1230,7 +1245,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
         }
       });
     
-      // Process any remaining option group.
+      // Render remaining option group if any.
       if (optionGroup.length > 0) {
         const isOptionsAtEnd = !hasNonEmptyTextAfterIndex(segments, lastOptionIndex);
         const optionBlock = renderOptions(optionGroup, isOptionsAtEnd);
@@ -1240,15 +1255,23 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
             optionContainer = optionBlock;
           }
           optionContainer.style.position = "relative";
-          const overlay = document.createElement('div');
-          overlay.className = 'agent-overlay';
-          optionContainer.appendChild(overlay);
-          overlay.addEventListener('animationend', function() {
-            overlay.style.display = 'none';
+          const overlayContainer = document.createElement('div');
+          overlayContainer.className = 'agent-overlay-container';
+          const solidOverlay = document.createElement('div');
+          solidOverlay.className = 'solid-overlay';
+          const gradientOverlay = document.createElement('div');
+          gradientOverlay.className = 'gradient-overlay';
+          overlayContainer.appendChild(solidOverlay);
+          overlayContainer.appendChild(gradientOverlay);
+          optionContainer.appendChild(overlayContainer);
+          solidOverlay.addEventListener('animationend', function() {
+            overlayContainer.style.display = 'none';
           });
         }
         if (optionBlock) {
-          if (!firstCreatedBlock) firstCreatedBlock = optionBlock;
+          if (!firstCreatedBlock) {
+            firstCreatedBlock = optionBlock;
+          }
           lastCreatedBlock = optionBlock;
         }
         optionGroup = [];
@@ -1256,14 +1279,13 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
     
       // Scroll the conversation wrapper to the bottom.
       conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
-    
       if (lastCreatedBlock) {
         lastCreatedBlock.__myFirstBlock = firstCreatedBlock;
       }
-    
       conversationWrapper.appendChild(chatSpacer);
       return lastCreatedBlock;
     }
+
 
 
 
