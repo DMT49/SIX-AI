@@ -1172,7 +1172,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       let lastOptionIndex = -1;
       let hasRenderedBotAvatar = false;
     
-      // Track first and last created blocks for scrolling behavior
+      // Track the first and last created blocks for scrolling behavior
       let firstCreatedBlock = null;
       let lastCreatedBlock = null;
     
@@ -1180,26 +1180,29 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
         if (segment.type === "text") {
           const textContent = segment.content.trim();
           if (textContent) {
-            // If pending options exist, render them before this text segment
+            // If there are pending options, render them before this text segment.
             if (optionGroup.length > 0) {
               const isOptionsAtEnd = !hasNonEmptyTextAfterIndex(segments, lastOptionIndex);
               const optionBlock = renderOptions(optionGroup, isOptionsAtEnd);
               if (optionBlock && !isUser) {
-                // For agent options, add overlay to the text container so avatar is untouched.
                 let optionContainer = optionBlock.querySelector('.chat_inner-wrapper');
-                if (!optionContainer) {
-                  optionContainer = optionBlock;
+                if (!optionContainer) { 
+                  optionContainer = optionBlock; 
                 }
                 optionContainer.style.position = "relative";
-                const overlay = document.createElement('div');
-                overlay.className = 'agent-text-overlay';
-                // Insert the gradient child element into the overlay.
-                const gradientChild = document.createElement('div');
-                gradientChild.className = 'overlay-gradient';
-                overlay.appendChild(gradientChild);
-                optionContainer.appendChild(overlay);
-                overlay.addEventListener('animationend', function() {
-                  overlay.style.display = 'none';
+                // Create overlay container and its child elements:
+                const overlayContainer = document.createElement('div');
+                overlayContainer.className = 'agent-overlay-container';
+                const solidOverlay = document.createElement('div');
+                solidOverlay.className = 'solid-overlay';
+                const gradientOverlay = document.createElement('div');
+                gradientOverlay.className = 'gradient-overlay';
+                overlayContainer.appendChild(solidOverlay);
+                overlayContainer.appendChild(gradientOverlay);
+                optionContainer.appendChild(overlayContainer);
+                // When the solid overlay animation ends, hide the container to avoid interference.
+                solidOverlay.addEventListener('animationend', function() {
+                  overlayContainer.style.display = 'none';
                 });
               }
               if (optionBlock) {
@@ -1213,21 +1216,22 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
             const hideAvatar = !isUser && hasRenderedBotAvatar;
             const newBlock = renderTextSegment(textContent, isUser, hideAvatar);
             if (!isUser) {
-              // For agent messages, add the overlay to the text container.
               let textContainer = newBlock.querySelector('.chat_inner-wrapper');
               if (!textContainer) {
                 textContainer = newBlock;
               }
               textContainer.style.position = "relative";
-              const overlay = document.createElement('div');
-              overlay.className = 'agent-text-overlay';
-              // Create and append the gradient strip as a child.
-              const gradientChild = document.createElement('div');
-              gradientChild.className = 'overlay-gradient';
-              overlay.appendChild(gradientChild);
-              textContainer.appendChild(overlay);
-              overlay.addEventListener('animationend', function() {
-                overlay.style.display = 'none';
+              const overlayContainer = document.createElement('div');
+              overlayContainer.className = 'agent-overlay-container';
+              const solidOverlay = document.createElement('div');
+              solidOverlay.className = 'solid-overlay';
+              const gradientOverlay = document.createElement('div');
+              gradientOverlay.className = 'gradient-overlay';
+              overlayContainer.appendChild(solidOverlay);
+              overlayContainer.appendChild(gradientOverlay);
+              textContainer.appendChild(overlayContainer);
+              solidOverlay.addEventListener('animationend', function() {
+                overlayContainer.style.display = 'none';
               });
             }
             if (!firstCreatedBlock) {
@@ -1242,24 +1246,27 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
         }
       });
     
-      // Process any leftover option group.
+      // Render any remaining option group.
       if (optionGroup.length > 0) {
         const isOptionsAtEnd = !hasNonEmptyTextAfterIndex(segments, lastOptionIndex);
         const optionBlock = renderOptions(optionGroup, isOptionsAtEnd);
         if (optionBlock && !isUser) {
           let optionContainer = optionBlock.querySelector('.chat_inner-wrapper');
-          if (!optionContainer) {
-            optionContainer = optionBlock;
+          if (!optionContainer) { 
+            optionContainer = optionBlock; 
           }
           optionContainer.style.position = "relative";
-          const overlay = document.createElement('div');
-          overlay.className = 'agent-text-overlay';
-          const gradientChild = document.createElement('div');
-          gradientChild.className = 'overlay-gradient';
-          overlay.appendChild(gradientChild);
-          optionContainer.appendChild(overlay);
-          overlay.addEventListener('animationend', function() {
-            overlay.style.display = 'none';
+          const overlayContainer = document.createElement('div');
+          overlayContainer.className = 'agent-overlay-container';
+          const solidOverlay = document.createElement('div');
+          solidOverlay.className = 'solid-overlay';
+          const gradientOverlay = document.createElement('div');
+          gradientOverlay.className = 'gradient-overlay';
+          overlayContainer.appendChild(solidOverlay);
+          overlayContainer.appendChild(gradientOverlay);
+          optionContainer.appendChild(overlayContainer);
+          solidOverlay.addEventListener('animationend', function() {
+            overlayContainer.style.display = 'none';
           });
         }
         if (optionBlock) {
@@ -1274,14 +1281,11 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       // Scroll the conversation wrapper to the bottom
       conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
     
-      // Save pointer on last block for scrolling behavior.
       if (lastCreatedBlock) {
         lastCreatedBlock.__myFirstBlock = firstCreatedBlock;
       }
     
-      // Re-append the spacer element to keep it as the last child.
       conversationWrapper.appendChild(chatSpacer);
-    
       return lastCreatedBlock;
     }
 
