@@ -3465,46 +3465,45 @@ MOBILE STYLES BELOW
   margin-left:3px;
 }
 
-  /* Ensure the text container (which will host the overlay) is positioned relative */
+  /* Ensure the text container (which hosts the overlay) is positioned relative */
   .chat_inner-wrapper {
     position: relative;
   }
 
-  /* This overlay covers the entire agent message text initially with solid white.
-     It will shrink vertically using a transform with its origin set to the bottom,
-     so that the top of the text is revealed first.
-     A pseudo–element adds a 15px gradient on its top edge for a smooth reveal. */
+  /* This overlay covers the agent’s text except for the very top.
+     It starts at 20px from the top (revealing the first line) and covers the rest.
+     It will slide downward to gradually reveal the underlying text. */
   .agent-text-overlay {
     position: absolute;
-    top: 0;
+    top: 20px; /* Leave first 20px (first line) uncovered */
     left: 0;
     width: 100%;
-    height: 100%;
+    height: calc(100% - 20px);
     background-color: white;
     pointer-events: none;
-    transform-origin: bottom; /* Anchor at bottom so the overlay shrinks upward */
-    animation: shrinkOverlay 2s forwards; /* Adjust duration as desired */
+    animation: slideOverlay 2s forwards; /* Duration adjustable; 2s is an example */
   }
 
-  /* The pseudo–element creates a 15px gradient at the top edge of the overlay */
+  /* Create a 15px gradient at the top edge of the overlay for a smooth transition.
+     The gradient goes from white to transparent. */
   .agent-text-overlay::before {
     content: "";
     position: absolute;
-    top: -15px; /* Position so that the gradient is exactly at the moving top edge */
+    top: 0;  /* At the top edge of the overlay */
     left: 0;
     width: 100%;
-    height: 15px;
-    background: linear-gradient(to bottom, transparent, white);
+    height: 15px; /* Height of the gradient band */
+    background: linear-gradient(to bottom, white, transparent);
     pointer-events: none;
   }
 
-  /* Keyframes: Animate scaleY from 1 to 0 so that the overlay shrinks upward,
-     revealing the text from the top downward. */
-  @keyframes shrinkOverlay {
+  /* Keyframes to slide the overlay downward: from its original position to completely off the container */
+  @keyframes slideOverlay {
     from {
-      transform: scaleY(1);
+      transform: translateY(0);
     }
     to {
-      transform: scaleY(0);
+      transform: translateY(100%);
     }
+  }
   }
