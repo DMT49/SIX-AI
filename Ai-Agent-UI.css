@@ -3465,41 +3465,45 @@ MOBILE STYLES BELOW
   margin-left:3px;
 }
 
-  /* Ensure the text container (which hosts the overlay) is positioned relative */
+ /* Ensure the text container is the positioning reference */
   .chat_inner-wrapper {
     position: relative;
   }
 
-  /* The overlay covers the agent’s text entirely at first. Its background uses a gradient:
-     - The top 10px are solid white.
-     - Then a 15px high gradient transitions smoothly from white to transparent.
-     - The remainder is transparent.
-     We animate the overlay’s top property from 0 to 100% and fade its opacity to 0,
-     so that the text is gradually revealed from top to bottom without a sudden layout shift. */
+  /* The overlay that covers the agent’s text completely at first.
+     It is anchored at the bottom and its height will animate from 100% to 0.
+     This makes the top edge move downward, revealing the text from top to bottom. */
   .agent-text-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 100%;            /* Initially covers the whole container */
+    background-color: white; /* Solid white cover */
+    pointer-events: none;
+    overflow: hidden;        /* Hide contents as it shrinks */
+    animation: shrinkOverlay 2s forwards;  /* Adjust the 2s as desired */
+  }
+
+  /* Pseudo-element for a 15px high gradient at the top edge of the overlay */
+  .agent-text-overlay::after {
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
+    height: 15px;  /* Height of the gradient band */
+    background: linear-gradient(to bottom, white, transparent);
     pointer-events: none;
-    background: linear-gradient(to bottom, 
-                  white,               /* 0px–10px: white */
-                  white 10px,          
-                  transparent 25px,    /* 10px–25px: gradient transition over 15px */
-                  transparent 100%);
-    /* Animate the overlay moving down and fading out */
-    animation: slideOverlay 2s forwards;
   }
 
-  /* Keyframes: slide the overlay's top down from 0 to 100% while fading out */
-  @keyframes slideOverlay {
+  /* Keyframes to animate the overlay’s height from 100% to 0.
+     Since the bottom is fixed, the top edge moves downward as the height decreases. */
+  @keyframes shrinkOverlay {
     from {
-      top: 0;
-      opacity: 1;
+      height: 100%;
     }
     to {
-      top: 100%;
-      opacity: 0;
+      height: 0;
     }
   }
