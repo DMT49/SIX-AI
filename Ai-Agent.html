@@ -1180,21 +1180,24 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
         if (segment.type === "text") {
           const textContent = segment.content.trim();
           if (textContent) {
-            // If there are pending options, render them before this text segment
+            // If pending options exist, render them before this text segment
             if (optionGroup.length > 0) {
               const isOptionsAtEnd = !hasNonEmptyTextAfterIndex(segments, lastOptionIndex);
               const optionBlock = renderOptions(optionGroup, isOptionsAtEnd);
               if (optionBlock && !isUser) {
-                // Append the overlay to the option block's text container (if it exists)
+                // For agent options, add overlay to the text container so avatar is untouched.
                 let optionContainer = optionBlock.querySelector('.chat_inner-wrapper');
                 if (!optionContainer) {
                   optionContainer = optionBlock;
                 }
-                optionContainer.style.position = "relative";  // Ensure positioning context
+                optionContainer.style.position = "relative";
                 const overlay = document.createElement('div');
                 overlay.className = 'agent-text-overlay';
+                // Insert the gradient child element into the overlay.
+                const gradientChild = document.createElement('div');
+                gradientChild.className = 'overlay-gradient';
+                overlay.appendChild(gradientChild);
                 optionContainer.appendChild(overlay);
-                // No removal to trigger reflow; we can let the animation finish naturally.
                 overlay.addEventListener('animationend', function() {
                   overlay.style.display = 'none';
                 });
@@ -1210,14 +1213,18 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
             const hideAvatar = !isUser && hasRenderedBotAvatar;
             const newBlock = renderTextSegment(textContent, isUser, hideAvatar);
             if (!isUser) {
-              // For agent messages, add the overlay to the text container so the agent avatar isn’t covered.
+              // For agent messages, add the overlay to the text container.
               let textContainer = newBlock.querySelector('.chat_inner-wrapper');
               if (!textContainer) {
                 textContainer = newBlock;
               }
-              textContainer.style.position = "relative"; // Create positioning context
+              textContainer.style.position = "relative";
               const overlay = document.createElement('div');
               overlay.className = 'agent-text-overlay';
+              // Create and append the gradient strip as a child.
+              const gradientChild = document.createElement('div');
+              gradientChild.className = 'overlay-gradient';
+              overlay.appendChild(gradientChild);
               textContainer.appendChild(overlay);
               overlay.addEventListener('animationend', function() {
                 overlay.style.display = 'none';
@@ -1235,7 +1242,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
         }
       });
     
-      // Render remaining option group if any.
+      // Process any leftover option group.
       if (optionGroup.length > 0) {
         const isOptionsAtEnd = !hasNonEmptyTextAfterIndex(segments, lastOptionIndex);
         const optionBlock = renderOptions(optionGroup, isOptionsAtEnd);
@@ -1247,6 +1254,9 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
           optionContainer.style.position = "relative";
           const overlay = document.createElement('div');
           overlay.className = 'agent-text-overlay';
+          const gradientChild = document.createElement('div');
+          gradientChild.className = 'overlay-gradient';
+          overlay.appendChild(gradientChild);
           optionContainer.appendChild(overlay);
           overlay.addEventListener('animationend', function() {
             overlay.style.display = 'none';
@@ -1264,16 +1274,17 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       // Scroll the conversation wrapper to the bottom
       conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
     
-      // Store a pointer for scrolling behavior.
+      // Save pointer on last block for scrolling behavior.
       if (lastCreatedBlock) {
         lastCreatedBlock.__myFirstBlock = firstCreatedBlock;
       }
     
-      // Re-append the spacer element so it remains the very last child.
+      // Re-append the spacer element to keep it as the last child.
       conversationWrapper.appendChild(chatSpacer);
     
       return lastCreatedBlock;
     }
+
 
 
     
