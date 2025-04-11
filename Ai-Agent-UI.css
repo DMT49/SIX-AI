@@ -3465,39 +3465,36 @@ MOBILE STYLES BELOW
   margin-left:3px;
 }
 
-  /* Ensure the text container (which hosts the overlay) is positioned relative */
+  /* Ensure the container for the agent's text is positioned relative */
   .chat_inner-wrapper {
     position: relative;
   }
 
-  /* This overlay covers the agent’s text except for the very top.
-     It starts at 20px from the top (revealing the first line) and covers the rest.
-     It will slide downward to gradually reveal the underlying text. */
+  /* The overlay covers the agent’s text below the first line.
+     It has a solid white background but includes a gradient band at its top edge.
+     The gradient band is created via a background image that is 15px high.
+     The overlay is then animated to slide downward so that the text is revealed
+     gradually from the top to the bottom. */
   .agent-text-overlay {
     position: absolute;
-    top: 20px; /* Leave first 20px (first line) uncovered */
+    top: 20px; /* Leave first 20px (approximately the height of the first line) uncovered */
     left: 0;
     width: 100%;
     height: calc(100% - 20px);
-    background-color: white;
+    background-color: white;  /* Solid white covers the text */
     pointer-events: none;
-    animation: slideOverlay 2s forwards; /* Duration adjustable; 2s is an example */
+    /* Create a gradient band (15px high) at the top edge of the overlay:
+       The gradient goes from transparent (at the top) to white (at the bottom of the band). */
+    background-image: linear-gradient(to bottom, rgba(255,255,255,0) 0%, white 100%);
+    background-repeat: no-repeat;
+    background-size: 100% 15px;
+    background-position: top;
+    animation: slideOverlay 2s forwards;
   }
 
-  /* Create a 15px gradient at the top edge of the overlay for a smooth transition.
-     The gradient goes from white to transparent. */
-  .agent-text-overlay::before {
-    content: "";
-    position: absolute;
-    top: 0;  /* At the top edge of the overlay */
-    left: 0;
-    width: 100%;
-    height: 15px; /* Height of the gradient band */
-    background: linear-gradient(to bottom, white, transparent);
-    pointer-events: none;
-  }
-
-  /* Keyframes to slide the overlay downward: from its original position to completely off the container */
+  /* Slide the overlay downward so that it reveals the text from top to bottom.
+     Since the overlay is absolutely positioned over the text container and does not affect layout,
+     its removal after the animation should not cause layout shift. */
   @keyframes slideOverlay {
     from {
       transform: translateY(0);
@@ -3505,5 +3502,4 @@ MOBILE STYLES BELOW
     to {
       transform: translateY(100%);
     }
-  }
   }
