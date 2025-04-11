@@ -3465,40 +3465,41 @@ MOBILE STYLES BELOW
   margin-left:3px;
 }
 
- /* Ensure the text container is the positioning reference */
+  /* Ensure the text container (which hosts our overlay) is positioned relative */
   .chat_inner-wrapper {
     position: relative;
   }
 
-  /* The overlay that covers the agent’s text completely at first.
-     It is anchored at the bottom and its height will animate from 100% to 0.
-     This makes the top edge move downward, revealing the text from top to bottom. */
+  /* The overlay element: it covers the entire text area initially (full white), and
+     it will have its height animated from 100% to 0. We set overflow to visible so the 
+     child gradient is not clipped. */
   .agent-text-overlay {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    height: 100%;            /* Initially covers the whole container */
-    background-color: white; /* Solid white cover */
+    height: 100%;            
+    background-color: white;
     pointer-events: none;
-    overflow: hidden;        /* Hide contents as it shrinks */
-    animation: shrinkOverlay 2s forwards;  /* Adjust the 2s as desired */
+    overflow: visible;  /* Allow child elements to be visible */
+    animation: shrinkOverlay 2s forwards;  /* Adjust 2s as desired */
   }
 
-  /* Pseudo-element for a 15px high gradient at the top edge of the overlay */
-  .agent-text-overlay::after {
-    content: "";
+  /* The gradient child element positioned at the top edge of the overlay.
+     It is 15px tall and goes from white at the top to transparent at the bottom. */
+  .overlay-gradient {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    height: 15px;  /* Height of the gradient band */
+    height: 15px;  /* Fixed gradient height */
     background: linear-gradient(to bottom, white, transparent);
     pointer-events: none;
+    z-index: 1;
   }
 
-  /* Keyframes to animate the overlay’s height from 100% to 0.
-     Since the bottom is fixed, the top edge moves downward as the height decreases. */
+  /* Keyframes to animate the overlay’s height from full (100%) to 0.
+     Since bottom is fixed, the top edge moves downward, revealing the text. */
   @keyframes shrinkOverlay {
     from {
       height: 100%;
