@@ -1948,6 +1948,44 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
     // Finally, call initTooltips() once
     initTooltips();
 
+    // --- Begin link update functionality ---
+    (function() {
+      // Function to update all anchor tags within a given root element
+      function updateLinks(root) {
+        const links = root.querySelectorAll('a');
+        links.forEach(link => {
+          link.setAttribute('target', '_blank');
+          link.setAttribute('rel', 'noopener noreferrer');
+        });
+      }
+    
+      // Update all links present at initial page load
+      document.addEventListener('DOMContentLoaded', function() {
+        updateLinks(document);
+      });
+    
+      // Set up a MutationObserver to capture any new nodes that are added to the DOM
+      const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(mutation => {
+          mutation.addedNodes.forEach(node => {
+            // Only process element nodes
+            if (node.nodeType === Node.ELEMENT_NODE) {
+              // If the node itself is a link, update it directly
+              if (node.tagName.toLowerCase() === 'a') {
+                node.setAttribute('target', '_blank');
+                node.setAttribute('rel', 'noopener noreferrer');
+              }
+              // Otherwise, update any links contained within the node
+              updateLinks(node);
+            }
+          });
+        });
+      });
+    
+      // Start observing the entire document body for dynamic changes
+      observer.observe(document.body, { childList: true, subtree: true });
+    })();
+     // --- End link update functionality ---
 
   })();
 </script>
