@@ -1187,14 +1187,14 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
               if (optionBlock && !isUser) {
                 // For agent options, append the overlay to the inner container so the avatar remains unaffected.
                 let optionContainer = optionBlock.querySelector('.chat_inner-wrapper');
-                if (!optionContainer) {
-                  optionContainer = optionBlock;
+                if (!optionContainer) { 
+                  optionContainer = optionBlock; 
                 }
-                optionContainer.style.position = "relative"; // Ensure the overlay positions relative to this container
+                optionContainer.style.position = "relative";  // Create positioning context
                 const overlay = document.createElement('div');
                 overlay.className = 'agent-text-overlay';
                 optionContainer.appendChild(overlay);
-                overlay.addEventListener('animationend', () => {
+                overlay.addEventListener('animationend', function() {
                   overlay.remove();
                 });
               }
@@ -1214,11 +1214,11 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
               if (!textContainer) {
                 textContainer = newBlock;
               }
-              textContainer.style.position = "relative"; // Set positioning context
+              textContainer.style.position = "relative";  // Ensure overlay is correctly positioned
               const overlay = document.createElement('div');
               overlay.className = 'agent-text-overlay';
               textContainer.appendChild(overlay);
-              overlay.addEventListener('animationend', () => {
+              overlay.addEventListener('animationend', function() {
                 overlay.remove();
               });
             }
@@ -1240,14 +1240,14 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
         const optionBlock = renderOptions(optionGroup, isOptionsAtEnd);
         if (optionBlock && !isUser) {
           let optionContainer = optionBlock.querySelector('.chat_inner-wrapper');
-          if (!optionContainer) {
-            optionContainer = optionBlock;
+          if (!optionContainer) { 
+            optionContainer = optionBlock; 
           }
           optionContainer.style.position = "relative";
           const overlay = document.createElement('div');
           overlay.className = 'agent-text-overlay';
           optionContainer.appendChild(overlay);
-          overlay.addEventListener('animationend', () => {
+          overlay.addEventListener('animationend', function() {
             overlay.remove();
           });
         }
@@ -1274,6 +1274,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       // Return the last created block
       return lastCreatedBlock;
     }
+
 
 
 
