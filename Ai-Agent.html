@@ -1190,7 +1190,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
                 if (!optionContainer) { 
                   optionContainer = optionBlock; 
                 }
-                optionContainer.style.position = "relative";  // Create positioning context
+                optionContainer.style.position = "relative";
                 const overlay = document.createElement('div');
                 overlay.className = 'agent-text-overlay';
                 optionContainer.appendChild(overlay);
@@ -1214,7 +1214,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
               if (!textContainer) {
                 textContainer = newBlock;
               }
-              textContainer.style.position = "relative";  // Ensure overlay is correctly positioned
+              textContainer.style.position = "relative";
               const overlay = document.createElement('div');
               overlay.className = 'agent-text-overlay';
               textContainer.appendChild(overlay);
@@ -1268,15 +1268,12 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
         lastCreatedBlock.__myFirstBlock = firstCreatedBlock;
       }
     
-      // Re-append the spacer element so it remains the very last child
+      // Re-append the spacer element so that it remains the very last child
       conversationWrapper.appendChild(chatSpacer);
     
-      // Return the last created block
+      // Return the last created block for further reference
       return lastCreatedBlock;
     }
-
-
-
 
     
     // Helper function to check if there's non-empty text after a given index
