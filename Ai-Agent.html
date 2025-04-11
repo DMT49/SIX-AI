@@ -1146,6 +1146,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       chatSpacer.style.height = "0px";
     }
 
+
     function createChatBlock(isUser, content) {
       // Preprocess content to remove bullet points before { ... }
       content = content.replace(/(^|\n)[\s]*[-*]\s*(?=\{)/g, '$1');
@@ -1154,7 +1155,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       let lastIndex = 0;
       let match;
     
-      // Split content into text and option segments.
+      // Split content into text and option segments
       while ((match = regex.exec(content)) !== null) {
         if (match.index > lastIndex) {
           const textSegment = content.substring(lastIndex, match.index);
@@ -1172,7 +1173,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       let lastOptionIndex = -1;
       let hasRenderedBotAvatar = false;
     
-      // Track first and last created blocks for scrolling behavior.
+      // Track the first and last created blocks for scrolling behavior
       let firstCreatedBlock = null;
       let lastCreatedBlock = null;
     
@@ -1180,29 +1181,18 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
         if (segment.type === "text") {
           const textContent = segment.content.trim();
           if (textContent) {
-            // Render pending options (if any) before this text segment.
+            // Render any pending options before this text segment
             if (optionGroup.length > 0) {
               const isOptionsAtEnd = !hasNonEmptyTextAfterIndex(segments, lastOptionIndex);
               const optionBlock = renderOptions(optionGroup, isOptionsAtEnd);
               if (optionBlock && !isUser) {
                 let optionContainer = optionBlock.querySelector('.chat_inner-wrapper');
-                if (!optionContainer) {
-                  optionContainer = optionBlock;
+                if (!optionContainer) { 
+                  optionContainer = optionBlock; 
                 }
-                optionContainer.style.position = "relative";
-                // Create overlay container and add both overlays.
-                const overlayContainer = document.createElement('div');
-                overlayContainer.className = 'agent-overlay-container';
-                const solidOverlay = document.createElement('div');
-                solidOverlay.className = 'solid-overlay';
-                const gradientOverlay = document.createElement('div');
-                gradientOverlay.className = 'gradient-overlay';
-                overlayContainer.appendChild(solidOverlay);
-                overlayContainer.appendChild(gradientOverlay);
-                optionContainer.appendChild(overlayContainer);
-                solidOverlay.addEventListener('animationend', function() {
-                  overlayContainer.style.display = 'none';
-                });
+                optionContainer.style.position = "relative";  // Ensure positioning context
+                // Add the CSS mask class so the agent message is fully hidden and then revealed by mask animation
+                optionContainer.classList.add('agent-message-mask');
               }
               if (optionBlock) {
                 if (!firstCreatedBlock) {
@@ -1215,23 +1205,13 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
             const hideAvatar = !isUser && hasRenderedBotAvatar;
             const newBlock = renderTextSegment(textContent, isUser, hideAvatar);
             if (!isUser) {
+              // For agent messages, add the mask class to the text container so that the CSS mask animation applies.
               let textContainer = newBlock.querySelector('.chat_inner-wrapper');
               if (!textContainer) {
                 textContainer = newBlock;
               }
-              textContainer.style.position = "relative";
-              const overlayContainer = document.createElement('div');
-              overlayContainer.className = 'agent-overlay-container';
-              const solidOverlay = document.createElement('div');
-              solidOverlay.className = 'solid-overlay';
-              const gradientOverlay = document.createElement('div');
-              gradientOverlay.className = 'gradient-overlay';
-              overlayContainer.appendChild(solidOverlay);
-              overlayContainer.appendChild(gradientOverlay);
-              textContainer.appendChild(overlayContainer);
-              solidOverlay.addEventListener('animationend', function() {
-                overlayContainer.style.display = 'none';
-              });
+              textContainer.style.position = "relative"; // Create positioning context for the mask
+              textContainer.classList.add('agent-message-mask');
             }
             if (!firstCreatedBlock) {
               firstCreatedBlock = newBlock;
@@ -1245,28 +1225,17 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
         }
       });
     
-      // Render remaining option group if any.
+      // Render any remaining option group if any.
       if (optionGroup.length > 0) {
         const isOptionsAtEnd = !hasNonEmptyTextAfterIndex(segments, lastOptionIndex);
         const optionBlock = renderOptions(optionGroup, isOptionsAtEnd);
         if (optionBlock && !isUser) {
           let optionContainer = optionBlock.querySelector('.chat_inner-wrapper');
-          if (!optionContainer) {
-            optionContainer = optionBlock;
+          if (!optionContainer) { 
+            optionContainer = optionBlock; 
           }
           optionContainer.style.position = "relative";
-          const overlayContainer = document.createElement('div');
-          overlayContainer.className = 'agent-overlay-container';
-          const solidOverlay = document.createElement('div');
-          solidOverlay.className = 'solid-overlay';
-          const gradientOverlay = document.createElement('div');
-          gradientOverlay.className = 'gradient-overlay';
-          overlayContainer.appendChild(solidOverlay);
-          overlayContainer.appendChild(gradientOverlay);
-          optionContainer.appendChild(overlayContainer);
-          solidOverlay.addEventListener('animationend', function() {
-            overlayContainer.style.display = 'none';
-          });
+          optionContainer.classList.add('agent-message-mask');
         }
         if (optionBlock) {
           if (!firstCreatedBlock) {
@@ -1277,17 +1246,15 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
         optionGroup = [];
       }
     
-      // Scroll the conversation wrapper to the bottom.
+      // Scroll the conversation wrapper to the bottom
       conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
+    
       if (lastCreatedBlock) {
         lastCreatedBlock.__myFirstBlock = firstCreatedBlock;
       }
       conversationWrapper.appendChild(chatSpacer);
       return lastCreatedBlock;
     }
-
-
-
 
 
     
