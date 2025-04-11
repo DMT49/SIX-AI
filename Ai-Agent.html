@@ -117,6 +117,13 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       conversationWrapper.appendChild(chatSpacer);
     }
 
+    // Configure DOMPurify to allow target and rel attributes on links
+    if (typeof DOMPurify !== 'undefined') {
+      DOMPurify.setConfig({
+        ADD_ATTR: ['target', 'rel']
+      });
+    }
+
     const chatInputWrapper = document.querySelector(".chat_input-wrapper");
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -484,6 +491,9 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
         const mdContainer = document.createElement('div');
         mdContainer.classList.add('md-block-container');
         mdContainer.innerHTML = sanitizedHtml;
+        
+        // NEW: Process links in the markdown container to open in new tabs
+        processLinksToOpenInNewTab(mdContainer);
     
         // 4) Convert rawText to plain text (if you want no markdown in the copied text)
         const plainText = markdownToPlainText(rawText);
@@ -1191,7 +1201,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
             }
     
             const hideAvatar = !isUser && hasRenderedBotAvatar;
-            const newlyRenderedBlock = renderTextSegment(textContent, isUser, hideAvatar);
+            const newlyRenderedBlock = (textContent, isUser, hideAvatar);
     
             // Keep track of the first and last blocks for scrolling behavior
             if (!firstCreatedBlock) {
@@ -1235,9 +1245,6 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       return lastCreatedBlock;
     }
 
-
-
-    
     // Helper function to check if there's non-empty text after a given index
     function hasNonEmptyTextAfterIndex(segments, currentIndex) {
       for (let i = currentIndex + 1; i < segments.length; i++) {
@@ -1246,6 +1253,23 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
         }
       }
       return false;
+    }
+
+    // Helper function to make all links in a container open in new tabs
+    function processLinksToOpenInNewTab(containerElement) {
+      if (!containerElement) return;
+      
+      // Find all anchor elements within the container
+      const links = containerElement.querySelectorAll('a');
+      
+      // Loop through each link and add the necessary attributes
+      links.forEach(link => {
+        // Skip links that already have target attribute set
+        if (!link.hasAttribute('target')) {
+          link.setAttribute('target', '_blank');
+          link.setAttribute('rel', 'noopener noreferrer');
+        }
+      });
     }
     
     function renderTextSegment(text, isUser, hideAvatar) {
@@ -1280,6 +1304,9 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
     
       // 4) Insert the sanitized HTML into the DOM
       chatInnerWrapper.innerHTML = sanitizedHtml;
+      
+      // NEW: Process links to open in new tabs
+      processLinksToOpenInNewTab(chatInnerWrapper);
     
       // 5) **Call replacePreCodeWithMarkdown**: 
       //    This function will look for any <pre><code> blocks 
@@ -1297,7 +1324,6 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       // 7) Scroll to the bottom of the chat
       conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
       return chatBlockWrapper;
-
     }
 
 
