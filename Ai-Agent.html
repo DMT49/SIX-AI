@@ -1949,27 +1949,29 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
 
 
   })();
+</script>
 
-  // This script ensures all links (existing and dynamically added) open in a new tab.
-  document.addEventListener("DOMContentLoaded", function() {
-    // Update all existing <a> elements
-    function updateExistingLinks() {
-      document.querySelectorAll("a").forEach(function(anchor) {
-        anchor.setAttribute("target", "_blank");
-      });
-    }
-    updateExistingLinks();
-  
-    // Set up a MutationObserver to update new links dynamically added to the DOM
+<script>
+(function() {
+  // Function to update all <a> elements to open in a new tab.
+  function updateExistingLinks() {
+    document.querySelectorAll("a").forEach(function(anchor) {
+      anchor.setAttribute("target", "_blank");
+    });
+  }
+
+  // Function to set up a MutationObserver to catch dynamically added links.
+  function setupMutationObserver() {
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         mutation.addedNodes.forEach((node) => {
-          // Only process element nodes
+          // Process only element nodes.
           if (node.nodeType === Node.ELEMENT_NODE) {
+            // If the node itself is an anchor element, update it.
             if (node.matches("a")) {
               node.setAttribute("target", "_blank");
             }
-            // Also update any descendant <a> elements
+            // Also update any descendant anchor elements.
             node.querySelectorAll("a").forEach((anchor) => {
               anchor.setAttribute("target", "_blank");
             });
@@ -1977,9 +1979,23 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
         });
       });
     });
-  
-    // Observe changes to the document body for added nodes
+    // Observe the entire document body for added child nodes in all subtrees.
     observer.observe(document.body, { childList: true, subtree: true });
-  });
+  }
+
+  // Initialize our link update and observer setup.
+  function init() {
+    updateExistingLinks();
+    setupMutationObserver();
+  }
+
+  // Run init() immediately if the DOM is already loaded; otherwise, wait for DOMContentLoaded.
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
 </script>
+
 
