@@ -3464,3 +3464,31 @@ MOBILE STYLES BELOW
   transform: rotate(-53deg) scale(0.6);
   margin-left:3px;
 }
+
+  /* Ensure the agent message container is positioned relative so the overlay can position itself absolutely */
+  .agent-message-container {
+    position: relative;
+  }
+
+  /* The overlay covers the agent message with a gradient that reveals content gradually */
+  .message-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* The gradient is white at the top and transparent at the bottom */
+    background: linear-gradient(to bottom, #fff, rgba(255, 255, 255, 0));
+    pointer-events: none; /* Prevent the overlay from blocking clicks */
+    animation: revealOverlay 2s forwards; /* Adjust the duration (2s) as needed */
+  }
+
+  /* Keyframes for the overlay: animate its height from covering everything (100%) to nothing (0%) */
+  @keyframes revealOverlay {
+    from {
+      height: 100%;
+    }
+    to {
+      height: 0%;
+    }
+  }
