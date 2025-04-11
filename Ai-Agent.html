@@ -1185,7 +1185,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
               const isOptionsAtEnd = !hasNonEmptyTextAfterIndex(segments, lastOptionIndex);
               const optionBlock = renderOptions(optionGroup, isOptionsAtEnd);
               if (optionBlock && !isUser) {
-                // For agent options, append the overlay to the inner container so the avatar remains unaffected.
+                // Append the overlay to the options block's inner container (if available)
                 let optionContainer = optionBlock.querySelector('.chat_inner-wrapper');
                 if (!optionContainer) { 
                   optionContainer = optionBlock; 
@@ -1194,8 +1194,10 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
                 const overlay = document.createElement('div');
                 overlay.className = 'agent-text-overlay';
                 optionContainer.appendChild(overlay);
-                overlay.addEventListener('animationend', function() {
-                  overlay.remove();
+                // Instead of removing the overlay (which may trigger layout shift), let it remain with opacity 0
+                overlay.addEventListener('animationend', () => {
+                  // Optionally, you could remove it later after a delay if needed, but leaving it hidden is acceptable
+                  overlay.style.display = 'none';
                 });
               }
               if (optionBlock) {
@@ -1209,7 +1211,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
             const hideAvatar = !isUser && hasRenderedBotAvatar;
             const newBlock = renderTextSegment(textContent, isUser, hideAvatar);
             if (!isUser) {
-              // For agent messages, add the overlay only to the text container (so the avatar is not covered)
+              // For agent messages, add the overlay to the text container so that the avatar remains unaffected
               let textContainer = newBlock.querySelector('.chat_inner-wrapper');
               if (!textContainer) {
                 textContainer = newBlock;
@@ -1218,8 +1220,8 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
               const overlay = document.createElement('div');
               overlay.className = 'agent-text-overlay';
               textContainer.appendChild(overlay);
-              overlay.addEventListener('animationend', function() {
-                overlay.remove();
+              overlay.addEventListener('animationend', () => {
+                overlay.style.display = 'none';
               });
             }
             if (!firstCreatedBlock) {
@@ -1247,8 +1249,8 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
           const overlay = document.createElement('div');
           overlay.className = 'agent-text-overlay';
           optionContainer.appendChild(overlay);
-          overlay.addEventListener('animationend', function() {
-            overlay.remove();
+          overlay.addEventListener('animationend', () => {
+            overlay.style.display = 'none';
           });
         }
         if (optionBlock) {
@@ -1268,7 +1270,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
         lastCreatedBlock.__myFirstBlock = firstCreatedBlock;
       }
     
-      // Re-append the spacer element so that it remains the very last child
+      // Re-append the spacer element so it remains the very last child
       conversationWrapper.appendChild(chatSpacer);
     
       // Return the last created block for further reference
