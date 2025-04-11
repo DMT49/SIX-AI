@@ -147,6 +147,15 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
     let isMicOn = false;     // For controlling Deepgram mic usage (STT)
     let isVoiceOn = false;   // For controlling ElevenLabs voice output (TTS)
 
+    // Configure Marked.js to make all links open in new tabs
+    if (typeof marked !== 'undefined') {
+      const renderer = new marked.Renderer();
+      renderer.link = function(href, title, text) {
+        return `<a href="${href}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+      };
+      marked.use({ renderer });
+    }
+
     // Helper: Convert Float32Array to 16-bit PCM ArrayBuffer
     function floatTo16BitPCM(input) {
       const output = new Int16Array(input.length);
@@ -1047,7 +1056,6 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
     }
     
 
-    // Function to render conversation messages in the chat UI
     function renderConversationMessages(messages) {
       if (!Array.isArray(messages) || messages.length === 0) {
         console.log("No messages to render.");
@@ -1070,8 +1078,8 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       
         if (role && content) {
           const isUser = role === "user";
-          // Render the message
-          const chatBlock = (isUser, content);
+          // FIX: Add the function name "createChatBlock" here
+          const chatBlock = createChatBlock(isUser, content);
       
           if (isUser && conversationUserAvatar) {
             const userAvatarElement = chatBlock.querySelector('.chat_user-avatar');
@@ -1082,7 +1090,6 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
           }
         }
       });
-
     
       // Scroll to the bottom of the conversation
       conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
