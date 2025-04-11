@@ -1172,7 +1172,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       let lastOptionIndex = -1;
       let hasRenderedBotAvatar = false;
     
-      // Track the first and last created blocks for scrolling behavior
+      // Track first and last created blocks for scrolling
       let firstCreatedBlock = null;
       let lastCreatedBlock = null;
     
@@ -1185,16 +1185,18 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
               const isOptionsAtEnd = !hasNonEmptyTextAfterIndex(segments, lastOptionIndex);
               const optionBlock = renderOptions(optionGroup, isOptionsAtEnd);
               if (optionBlock && !isUser) {
-                // Target the inner container (if exists) so the agent avatar isn’t covered
+                // For agent options, append overlay to the inner container so the avatar is not covered.
                 let optionContainer = optionBlock.querySelector('.chat_inner-wrapper');
                 if (!optionContainer) { 
                   optionContainer = optionBlock; 
                 }
-                optionContainer.style.position = "relative";  // Ensure relative positioning for overlay
+                optionContainer.style.position = "relative";  // Ensure positioning context
                 const overlay = document.createElement('div');
                 overlay.className = 'agent-text-overlay';
                 optionContainer.appendChild(overlay);
-                overlay.addEventListener('animationend', () => { overlay.remove(); });
+                overlay.addEventListener('animationend', function() {
+                  overlay.remove();
+                });
               }
               if (optionBlock) {
                 if (!firstCreatedBlock) {
@@ -1207,16 +1209,18 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
             const hideAvatar = !isUser && hasRenderedBotAvatar;
             const newBlock = renderTextSegment(textContent, isUser, hideAvatar);
             if (!isUser) {
-              // Add the overlay only on the text portion (chat_inner-wrapper) of agent messages
+              // For agent messages, add the overlay to the text container
               let textContainer = newBlock.querySelector('.chat_inner-wrapper');
               if (!textContainer) {
                 textContainer = newBlock;
               }
-              textContainer.style.position = "relative";
+              textContainer.style.position = "relative";  // Ensure relative positioning for overlay
               const overlay = document.createElement('div');
               overlay.className = 'agent-text-overlay';
               textContainer.appendChild(overlay);
-              overlay.addEventListener('animationend', () => { overlay.remove(); });
+              overlay.addEventListener('animationend', function() {
+                overlay.remove();
+              });
             }
             if (!firstCreatedBlock) {
               firstCreatedBlock = newBlock;
@@ -1243,7 +1247,9 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
           const overlay = document.createElement('div');
           overlay.className = 'agent-text-overlay';
           optionContainer.appendChild(overlay);
-          overlay.addEventListener('animationend', () => { overlay.remove(); });
+          overlay.addEventListener('animationend', function() {
+            overlay.remove();
+          });
         }
         if (optionBlock) {
           if (!firstCreatedBlock) {
@@ -1257,15 +1263,15 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       // Scroll the conversation wrapper to the bottom
       conversationWrapper.scrollTop = conversationWrapper.scrollHeight;
     
-      // Attach a pointer on the last block to reference the first block
+      // Attach a pointer on the last block to reference the first block (for scrolling behavior)
       if (lastCreatedBlock) {
         lastCreatedBlock.__myFirstBlock = firstCreatedBlock;
       }
     
-      // Re-append the spacer element so it is always the very last child
+      // Re-append the spacer element so it remains the very last child
       conversationWrapper.appendChild(chatSpacer);
     
-      // Return the last block as before
+      // Return the last created block
       return lastCreatedBlock;
     }
 
