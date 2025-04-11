@@ -3465,45 +3465,46 @@ MOBILE STYLES BELOW
   margin-left:3px;
 }
 
-  /* Ensure that the message text container is positioned relative so that an absolutely positioned overlay is contained within it */
+ /* Ensure that the inner text container is positioned relative so the overlay can be positioned absolutely inside it */
   .chat_inner-wrapper {
     position: relative;
   }
 
-  /* Overlay for agent message text: initially covers the whole text area with solid white.
-     A pseudo-element (::before) adds a 20px gradient at the top edge.
-     The whole overlay will then slide down to reveal the text gradually. */
+  /* The overlay that fully covers the agent's text initially.
+     It has a solid white background and a pseudo-element that creates a 20px high gradient band at its bottom edge.
+     The animation shrinks its height (anchored at the top), revealing the text beneath gradually. */
   .agent-text-overlay {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: #fff; /* Fully white */
-    z-index: 999; /* Ensure it sits on top of the text */
-    pointer-events: none; /* So it doesn't block interactions */
-    transform: translateY(0);
-    animation: revealText 2s forwards; /* Adjust duration (2s) as needed */
+    background-color: white;
+    pointer-events: none;
+    overflow: hidden;
+    transform-origin: top;
+    animation: revealText 2s forwards; /* Adjust duration (2s) as desired */
   }
-  
-  /* The pseudo-element creates a gradient effect at the moving edge.
-     The top 20px is white and then quickly becomes transparent */
-  .agent-text-overlay::before {
+
+  /* Pseudo-element for the gradient band at the bottom edge of the overlay:
+     This creates a gradient going from transparent at the top (the revealed part) to white at the bottom (still covered). */
+  .agent-text-overlay:after {
     content: "";
     position: absolute;
-    top: 0;
     left: 0;
+    bottom: 0;
     width: 100%;
     height: 20px; /* Height of the gradient band */
-    background: linear-gradient(to bottom, rgba(255,255,255,1), rgba(255,255,255,0));
+    background: linear-gradient(to bottom, transparent, white);
   }
-  
-  /* Keyframes for the reveal animation: the overlay slides downward */
+
+  /* Keyframes for the overlay height animation:
+     It starts at height: 100% (fully covering the text) and animates to height: 0 (fully revealed) */
   @keyframes revealText {
     from {
-      transform: translateY(0);
+      height: 100%;
     }
     to {
-      transform: translateY(100%);
+      height: 0;
     }
   }
