@@ -1071,7 +1071,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
         if (role && content) {
           const isUser = role === "user";
           // Render the message
-          const chatBlock = createChatBlock(isUser, content);
+          const chatBlock = (isUser, content);
       
           if (isUser && conversationUserAvatar) {
             const userAvatarElement = chatBlock.querySelector('.chat_user-avatar');
@@ -1157,8 +1157,6 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
     }
 
 
-  
-    
     function createChatBlock(isUser, content) {
       // Preprocess content to remove bullet points before { ... }
       content = content.replace(/(^|\n)[\s]*[-*]\s*(?=\{)/g, '$1');
@@ -1196,12 +1194,13 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
             // If there are pending options, render them before this text
             if (optionGroup.length > 0) {
               const isOptionsAtEnd = !hasNonEmptyTextAfterIndex(segments, lastOptionIndex);
-              renderOptions(optionGroup, isOptionsAtEnd);  // <-- FIXED: call renderOptions here
+              renderOptions(optionGroup, isOptionsAtEnd);
               optionGroup = [];
             }
     
             const hideAvatar = !isUser && hasRenderedBotAvatar;
-            const newlyRenderedBlock = (textContent, isUser, hideAvatar);
+            // FIX: Add the function name "renderTextSegment" here
+            const newlyRenderedBlock = renderTextSegment(textContent, isUser, hideAvatar);
     
             // Keep track of the first and last blocks for scrolling behavior
             if (!firstCreatedBlock) {
