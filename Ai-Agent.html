@@ -123,8 +123,6 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
     const conversationID = urlParams.get('conversationID');
 
     let airtableRecordId = null;
-    window.airtableRecordId = null;
-    let conversationSaved = false;   // NEW – set after the first successful write
 
     let isBusy = false; // NEW: Blocks user while AI is responding
     let conversationUserAvatar = null;
@@ -141,94 +139,6 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
 
     let isMicOn = false;     // For controlling Deepgram mic usage (STT)
     let isVoiceOn = false;   // For controlling ElevenLabs voice output (TTS)
-
-
-    /* ======================================================
-       UNIVERSAL Airtable writer   (POST ➜ creates, PATCH ➜ updates)
-       ====================================================== */
-    async function ensureAirtableConversation(meta) {
-      const base = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/Conversations';
-      const hdr  = {
-        Authorization: 'Bearer patTeuxUuzgG0ZU8Q.2eb9ff7f31afe3e06f3c128c5b5b832bcc4e4e85bd58a5007a8368f218d28b83',
-        'Content-Type': 'application/json'
-      };
-    
-      /* 1️⃣  do we already know the record id? */
-      let recId = airtableRecordId;
-      if (!recId) {
-        try {
-          const r = await fetch(
-            `${base}?filterByFormula=${encodeURIComponent(`{Conversation-ID}="${meta.conversationID}"`)}`,
-            { headers: hdr }
-          ).then(x => x.json());
-          recId = r.records?.[0]?.id ?? null;
-        } catch (e) {
-          console.error('Airtable lookup failed:', e);
-        }
-      }
-    
-      /* 2️⃣  choose method + endpoint */
-      const method = recId ? 'PATCH' : 'POST';
-      const url    = recId ? `${base}/${recId}` : base;
-    
-      /* 3️⃣  build payload */
-      const body = {
-        fields: {
-          'Conversation-ID'      : meta.conversationID,
-          'Agent-ID'             : meta.agentID,
-          'Client-Name'          : meta.userName,
-          'Email'                : meta.email,
-          'User-ID'              : meta.userId || '',
-          'Design-Brief-Firm-ID' : meta['Design-Brief-Firm-ID'] || '',
-          'Time-Stamp'           : meta.timeStamp,
-          'Time-Last-Edited'     : new Date().toISOString()
-        }
-      };
-    
-      /* 4️⃣  send */
-      const saved = await fetch(url, {
-        method,
-        headers: hdr,
-        body: JSON.stringify(body)
-      }).then(x => x.json()).catch(e => {
-        console.error('Airtable write error:', e);
-        return null;
-      });
-    
-      /* 5️⃣  store ID globally so ConversationHandler.js can patch later */
-      if (saved?.id) {
-        airtableRecordId           = saved.id;
-        window.airtableRecordId    = saved.id;   // ← THIS was missing
-        conversationSaved          = true;
-        console.log(`Airtable ${method} OK – record id:`, airtableRecordId);
-      }
-      return saved?.id ?? null;
-    }
-    
-    /* Tiny helper – later patch the missing User-ID */
-    async function patchAirtableUserId(recordId, userId) {
-      if (!recordId || !userId) return;
-      const url = `https://api.airtable.com/v0/app2N6x5jeRnIzSpL/Conversations/${recordId}`;
-      const hdr = {
-        Authorization: 'Bearer patTeuxUuzgG0ZU8Q.2eb9ff7f31afe3e06f3c128c5b5b832bcc4e4e85bd58a5007a8368f218d28b83',
-        'Content-Type': 'application/json'
-      };
-      try {
-        await fetch(url, {
-          method : 'PATCH',
-          headers: hdr,
-          body   : JSON.stringify({ fields: { 'User-ID': userId } })
-        });
-        console.log('User-ID patched into Airtable');
-      } catch (e) {
-        console.error('Failed to patch User-ID:', e);
-      }
-    }
-    
-    /* expose for ConversationHandler.js */
-    window.ensureAirtableConversation = ensureAirtableConversation;
-    window.patchAirtableUserId       = patchAirtableUserId;
-
 
     // Helper: Convert Float32Array to 16-bit PCM ArrayBuffer
     function floatTo16BitPCM(input) {
@@ -1759,59 +1669,74 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
     }
 
 
-    /* ───────── NEW start-new-conversation handler ───────── */
     const startConversationButton = document.getElementById('start-new-conversation');
     if (startConversationButton) {
       startConversationButton.addEventListener('click', async (event) => {
         event.preventDefault();
-        console.log('Starting a new conversation…');
+        console.log('Starting a new conversation...');
     
-        /* 1 — start a fresh chat with the AI */
-        await startInitialConversation();   // existing helper
+        // Start a new conversation
+        await startInitialConversation(); // Existing function to start the conversation
     
-        /* 2 — build the header that sits above the messages */
+        // Collect metadata for new conversation
         const container = document.getElementById('ai-agent-container');
-        const userName  = container.getAttribute('data-user-name') || 'Guest';
+        const userName = container.getAttribute('data-user-name') || 'Guest';
+        
+        // Render header for new conversation (Summary not available)
         renderConversationHeader({
-          clientName     : userName,
-          timeLastEdited : new Date().toLocaleString(),
-          summary        : null
+          clientName: userName,
+          timeLastEdited: new Date().toLocaleString(),
+          summary: null // No summary yet for a new conversation
         });
     
-        /* 3 — put together metadata (might be saved later) */
-        const agentID   = container.getAttribute('data-agent-id') || 'Unknown Agent';
-        const timeStamp = new Date().toISOString();
-        const altUserId = getAlternateUserIdFromUrl();      // may be null
-    
-        let finalUserId = userId;   // value from ConversationHandler.js
-        let firmId      = '';
-    
-        if (altUserId) {
-          finalUserId = '';         // leave normal user-id blank
-          firmId      = altUserId;  // use alternate id instead
+        // Collect additional metadata for saving to Airtable
+        const agentID = container.getAttribute('data-agent-id') || 'Unknown Agent';
+        const timeStamp = new Date().toISOString(); // Current date/time in ISO format
+        
+        // Step 1: Extract the alternate user ID from the URL using the helper function
+        const alternateUserId = getAlternateUserIdFromUrl();
+        
+        // Step 2: Determine what to save in the metadata object
+        let finalUserId = userId;           // Default to the normal user ID
+        let designBriefFirmId = "";         // Empty by default
+        
+        // If an alternate user ID is provided (via the query parameter)
+        if (alternateUserId) {
+          finalUserId = "";                 // Leave the userId property empty
+          designBriefFirmId = alternateUserId; // Save the alternate firm ID for the new property
         }
-    
+        
+        // Step 3: Build the metadata object accordingly
         const metadata = {
           userName,
           agentID,
-          conversationID : conversationId || 'Unknown Conversation ID',
+          conversationID: conversationId || 'Unknown Conversation ID',
           timeStamp,
-          userId         : finalUserId,
-          email
+          userId: finalUserId,  // Will be empty if an alternate ID is present
+          email,              // Include the user's email
         };
-        if (firmId) metadata['Design-Brief-Firm-ID'] = firmId;
+        
+        // If a design brief firm ID exists, add it as a new property in the metadata
+        if (designBriefFirmId) {
+          metadata["Design-Brief-Firm-ID"] = designBriefFirmId;
+        }
+
+
     
-        /* 4 — ONLY write to Airtable when this is truly a NEW chat
-               (i.e. page URL had no ?conversationID=…)            */
-        if (!conversationID) {
-          await ensureAirtableConversation(metadata);
+        // Save to Airtable and set airtableRecordId
+        if (userId) {
+          const recordId = await saveConversationToAirtable(metadata);
+          if (recordId) {
+            airtableRecordId = recordId;
+            console.log("New Airtable Record ID set after starting a new conversation:", airtableRecordId);
+          }
+        } else {
+          console.log('User-ID is null. Skipping metadata save to Airtable.');
         }
       });
     } else {
       console.error("Button with id 'start-new-conversation' not found.");
     }
-    /* ───────── END of new handler ───────── */
-
 
     
     document.addEventListener("click", (event) => {
