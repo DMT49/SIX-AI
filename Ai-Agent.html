@@ -1002,6 +1002,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       console.log(`ensureAirtableConversation - ${method} OK, id:`, saved.id);
       return saved.id;
     }
+    window.ensureAirtableConversation = ensureAirtableConversation;
 
 
     async function saveConversationToAirtable(metadata) {
@@ -1152,7 +1153,9 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
     }
 
 
-    window.conversationId = null;
+    let conversationId = null;      // local variable used in this file
+    window.conversationId = null;   // copy on window for other scripts
+
 
     
     function adjustHeight() {
