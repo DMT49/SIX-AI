@@ -123,6 +123,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
     const conversationID = urlParams.get('conversationID');
 
     let airtableRecordId = null;
+    window.airtableRecordId = null;
     let conversationSaved = false;   // NEW – set after the first successful write
 
     let isBusy = false; // NEW: Blocks user while AI is responding
@@ -155,7 +156,6 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       /* 1️⃣  do we already know the record id? */
       let recId = airtableRecordId;
       if (!recId) {
-        /* look it up by Conversation-ID (at most once) */
         try {
           const r = await fetch(
             `${base}?filterByFormula=${encodeURIComponent(`{Conversation-ID}="${meta.conversationID}"`)}`,
@@ -178,7 +178,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
           'Agent-ID'             : meta.agentID,
           'Client-Name'          : meta.userName,
           'Email'                : meta.email,
-          'User-ID'              : meta.userId || '',                // may be empty for now
+          'User-ID'              : meta.userId || '',
           'Design-Brief-Firm-ID' : meta['Design-Brief-Firm-ID'] || '',
           'Time-Stamp'           : meta.timeStamp,
           'Time-Last-Edited'     : new Date().toISOString()
@@ -195,9 +195,11 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
         return null;
       });
     
+      /* 5️⃣  store ID globally so ConversationHandler.js can patch later */
       if (saved?.id) {
-        airtableRecordId  = saved.id;
-        conversationSaved = true;
+        airtableRecordId           = saved.id;
+        window.airtableRecordId    = saved.id;   // ← THIS was missing
+        conversationSaved          = true;
         console.log(`Airtable ${method} OK – record id:`, airtableRecordId);
       }
       return saved?.id ?? null;
