@@ -49,6 +49,11 @@ let userId = null; // Declare userId globally
     if (clientsData.records && clientsData.records.length > 0) {
       userId = clientsData.records[0].fields['User-ID'];
       console.log('Retrieved User-ID:', userId);
+      /* NEW: patch the missing User-ID into the conversation row */
+      if (window.airtableRecordId && userId && typeof window.patchAirtableUserId === 'function') {
+        window.patchAirtableUserId(window.airtableRecordId, userId);
+      }
+
 
       const conversationsResponse = await fetch(
         `${conversationsTableUrl}?filterByFormula=AND({user-ID}='${userId}', {Agent-ID}='${agentID}')`,
