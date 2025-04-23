@@ -1759,63 +1759,59 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
     }
 
 
+    /* ───────── NEW start-new-conversation handler ───────── */
     const startConversationButton = document.getElementById('start-new-conversation');
     if (startConversationButton) {
       startConversationButton.addEventListener('click', async (event) => {
         event.preventDefault();
-        console.log('Starting a new conversation...');
+        console.log('Starting a new conversation…');
     
-        // Start a new conversation
-        await startInitialConversation(); // Existing function to start the conversation
+        /* 1 — start a fresh chat with the AI */
+        await startInitialConversation();   // existing helper
     
-        // Collect metadata for new conversation
+        /* 2 — build the header that sits above the messages */
         const container = document.getElementById('ai-agent-container');
-        const userName = container.getAttribute('data-user-name') || 'Guest';
-        
-        // Render header for new conversation (Summary not available)
+        const userName  = container.getAttribute('data-user-name') || 'Guest';
         renderConversationHeader({
-          clientName: userName,
-          timeLastEdited: new Date().toLocaleString(),
-          summary: null // No summary yet for a new conversation
+          clientName     : userName,
+          timeLastEdited : new Date().toLocaleString(),
+          summary        : null
         });
     
-        // Collect additional metadata for saving to Airtable
-        const agentID = container.getAttribute('data-agent-id') || 'Unknown Agent';
-        const timeStamp = new Date().toISOString(); // Current date/time in ISO format
-        
-        // Step 1: Extract the alternate user ID from the URL using the helper function
-        const alternateUserId = getAlternateUserIdFromUrl();
-        
-        // Step 2: Determine what to save in the metadata object
-        let finalUserId = userId;           // Default to the normal user ID
-        let designBriefFirmId = "";         // Empty by default
-        
-        // If an alternate user ID is provided (via the query parameter)
-        if (alternateUserId) {
-          finalUserId = "";                 // Leave the userId property empty
-          designBriefFirmId = alternateUserId; // Save the alternate firm ID for the new property
+        /* 3 — put together metadata (might be saved later) */
+        const agentID   = container.getAttribute('data-agent-id') || 'Unknown Agent';
+        const timeStamp = new Date().toISOString();
+        const altUserId = getAlternateUserIdFromUrl();      // may be null
+    
+        let finalUserId = userId;   // value from ConversationHandler.js
+        let firmId      = '';
+    
+        if (altUserId) {
+          finalUserId = '';         // leave normal user-id blank
+          firmId      = altUserId;  // use alternate id instead
         }
-        
-        // Step 3: Build the metadata object accordingly
+    
         const metadata = {
           userName,
           agentID,
-          conversationID: conversationId || 'Unknown Conversation ID',
+          conversationID : conversationId || 'Unknown Conversation ID',
           timeStamp,
-          userId: finalUserId,  // Will be empty if an alternate ID is present
-          email,              // Include the user's email
+          userId         : finalUserId,
+          email
         };
-        
-        // If a design brief firm ID exists, add it as a new property in the metadata
-        if (designBriefFirmId) {
-          metadata["Design-Brief-Firm-ID"] = designBriefFirmId;
-        }
+        if (firmId) metadata['Design-Brief-Firm-ID'] = firmId;
     
-        await ensureAirtableConversation(metadata);   // ← always writes (creates or updates)
+        /* 4 — ONLY write to Airtable when this is truly a NEW chat
+               (i.e. page URL had no ?conversationID=…)            */
+        if (!conversationID) {
+          await ensureAirtableConversation(metadata);
+        }
       });
     } else {
       console.error("Button with id 'start-new-conversation' not found.");
     }
+    /* ───────── END of new handler ───────── */
+
 
     
     document.addEventListener("click", (event) => {
