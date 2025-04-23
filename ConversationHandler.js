@@ -7,7 +7,7 @@ let userId = null; // Declare userId globally
   const agentID = container.getAttribute('data-agent-id');
 
   const clientsTableUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/clients';
-  const conversationsTableUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/conversations';
+  const conversationsTableUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/Conversations';
   const headers = {
     Authorization: 'Bearer patTeuxUuzgG0ZU8Q.2eb9ff7f31afe3e06f3c128c5b5b832bcc4e4e85bd58a5007a8368f218d28b83',
     'Content-Type': 'application/json',
