@@ -48,6 +48,17 @@ let userId = null; // Declare userId globally
 
     if (clientsData.records && clientsData.records.length > 0) {
       userId = clientsData.records[0].fields['User-ID'];
+      if (userId && window.conversationId) {
+        await window.ensureAirtableConversation({
+          userName : userName,
+          agentID  : agentID,
+          conversationID : window.conversationId,
+          timeStamp : new Date().toISOString(),
+          userId   : userId,
+          email    : userEmail
+        });
+      }
+
       console.log('Retrieved User-ID:', userId);
 
       const conversationsResponse = await fetch(
