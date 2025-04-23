@@ -140,6 +140,8 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
     let isMicOn = false;     // For controlling Deepgram mic usage (STT)
     let isVoiceOn = false;   // For controlling ElevenLabs voice output (TTS)
 
+    window.airtableRecordId = null;
+
     // Helper: Convert Float32Array to 16-bit PCM ArrayBuffer
     function floatTo16BitPCM(input) {
       const output = new Int16Array(input.length);
@@ -958,46 +960,49 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       updateChatUserAvatarStyle(userProfileImage);
     })();
 
-    async function saveConversationToAirtable(metadata) {
-      const conversationsTableUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/Conversations';
-      const airtableHeaders = {
-        Authorization: 'Bearer patTeuxUuzgG0ZU8Q.2eb9ff7f31afe3e06f3c128c5b5b832bcc4e4e85bd58a5007a8368f218d28b83',
-        'Content-Type': 'application/json',
+    /* ──────────────────────────────────────────────────────────────
+     * GUARANTEED Airtable upsert  →  creates OR patches one row
+     * Call this every time you have/receive conversationID.
+     * ────────────────────────────────────────────────────────────*/
+    async function ensureAirtableConversation(meta) {
+      const tableURL = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/Conversations';
+      const headers  = {
+        Authorization : 'Bearer patTeuxUuzgG0ZU8Q.2eb9ff7f31afe3e06f3c128c5b5b832bcc4e4e85bd58a5007a8368f218d28b83',
+        'Content-Type': 'application/json'
       };
     
-      try {
-        const response = await fetch(conversationsTableUrl, {
-          method: 'POST',
-          headers: airtableHeaders,
-          body: JSON.stringify({
-            fields: {
-              'Client-Name': metadata.userName,
-              'Agent-ID': metadata.agentID,
-              'Conversation-ID': metadata.conversationID,
-              'Time-Stamp': metadata.timeStamp,
-              'User-ID': metadata.userId,
-              'Email': metadata.email,
-              // Include the new field if it exists in metadata
-              ...(metadata["Design-Brief-Firm-ID"] ? { "Design-Brief-Firm-ID": metadata["Design-Brief-Firm-ID"] } : {})
-            },
-          }),
-        });
+      /* 1️⃣ look for an existing row */
+      const lookup   = await fetch(
+        `${tableURL}?filterByFormula={Conversation-ID}="${meta.conversationID}"`,
+        { headers }
+      ).then(r => r.json());
     
-        if (response.ok) {
-          const data = await response.json();
-          console.log('Conversation metadata saved successfully:', data);
-          return data.id; // Return the record ID
-        } else {
-          console.error('Failed to save conversation metadata:', await response.text());
-          return null;
-        }
-      } catch (error) {
-        console.error('Error saving conversation metadata to Airtable:', error);
-        return null;
-      }
+      const recordId = lookup.records?.[0]?.id ?? null;
+      const method   = recordId ? 'PATCH' : 'POST';
+      const endpoint = recordId ? `${tableURL}/${recordId}` : tableURL;
+    
+      /* 2️⃣ build/merge fields */
+      const fields = {
+        'Conversation-ID'      : meta.conversationID,
+        'Agent-ID'             : meta.agentID,
+        'Client-Name'          : meta.userName,
+        'Email'                : meta.email,
+        'User-ID'              : meta.userId || '',         // may be empty first time
+        'Design-Brief-Firm-ID' : meta['Design-Brief-Firm-ID'] || '',
+        'Time-Stamp'           : meta.timeStamp,
+        'Time-Last-Edited'     : new Date().toISOString()
+      };
+    
+      /* 3️⃣ save it */
+      const saved = await fetch(endpoint, {
+        method, headers, body: JSON.stringify({ fields })
+      }).then(r => r.json());
+    
+      window.airtableRecordId = saved.id;   // keep global for later PATCH
+      console.log(`ensureAirtableConversation - ${method} OK, id:`, saved.id);
+      return saved.id;
     }
-
-
+    window.ensureAirtableConversation = ensureAirtableConversation;
 
 
     // Function to fetch and log conversation messages
@@ -1106,7 +1111,9 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
     }
 
 
-    let conversationId = null;
+    let conversationId = null;      // local variable used in this file
+    window.conversationId = null;   // copy on window for other scripts
+
 
     
     function adjustHeight() {
@@ -1445,6 +1452,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
           // Set conversationId only if it's a new conversation
           if (!conversationId) {
             conversationId = data.conversation_id;
+            window.conversationId = conversationId;
             console.log(`New conversation started with ID: ${conversationId}`);
           }
     
@@ -1721,18 +1729,8 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
           metadata["Design-Brief-Firm-ID"] = designBriefFirmId;
         }
 
+        await ensureAirtableConversation(metadata);
 
-    
-        // Save to Airtable and set airtableRecordId
-        if (userId) {
-          const recordId = await saveConversationToAirtable(metadata);
-          if (recordId) {
-            airtableRecordId = recordId;
-            console.log("New Airtable Record ID set after starting a new conversation:", airtableRecordId);
-          }
-        } else {
-          console.log('User-ID is null. Skipping metadata save to Airtable.');
-        }
       });
     } else {
       console.error("Button with id 'start-new-conversation' not found.");
