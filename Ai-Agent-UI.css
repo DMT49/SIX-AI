@@ -3473,3 +3473,8 @@ MOBILE STYLES BELOW
   transform: rotate(-53deg) scale(0.6);
   margin-left:3px;
 }
+
+.wrp.cnt{
+  max-width: unset !important;   /* or `none` – both remove the cap           */
+  width: 100% !important;        /* be explicit so it stretches the viewport  */
+}
