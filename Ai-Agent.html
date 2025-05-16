@@ -2057,17 +2057,16 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
     /* Insert immediately after the main content column */
     main.insertAdjacentElement('afterend', canvas);
 
-    /* ░░░ EasyMDE loader / initialiser  ░░░ */
+
+    /*  ░░░  EasyMDE loader / initialiser  ░░░ */
     function initCanvasEditor(){
-      if(window.__canvasMDE){ return; }   // already initialised
+      if(window.__canvasMDE){ return; }
     
-      /* --- load EasyMDE’s CSS --- */
       const css = document.createElement('link');
       css.rel  = 'stylesheet';
       css.href = 'https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css';
       document.head.appendChild(css);
     
-      /* --- load EasyMDE JS --- */
       const js  = document.createElement('script');
       js.src    = 'https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js';
       js.onload = () => {
@@ -2077,19 +2076,19 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
           status: false,
           autofocus: true,
           autoDownloadFontAwesome: false,
-    
-          /* toolbar **minus** code-block, preview, side-by-side, full-screen */
           toolbar: [
             'bold','italic','strikethrough','heading','|',
-            'quote','unordered-list','ordered-list','horizontal-rule','|',
-            'link','image','table'
+            'quote','unordered-list','ordered-list','code','horizontal-rule','|',
+            'preview','side-by-side','fullscreen'
           ]
         });
       };
       document.head.appendChild(js);
     }
     
-    initCanvasEditor();   // (leave this call where it already is)
+    initTooltips();      // (re-hook tool-tips for the new buttons, already in your code)
+    initCanvasEditor();  // <-- add this call right here
+
 
 
     
