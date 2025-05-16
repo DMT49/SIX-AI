@@ -3562,3 +3562,58 @@ MOBILE STYLES BELOW
 body{
 	background: #ffffff !important;
 }
+
+/* ─────────────────────────────────────────────
+   CANVAS PANEL – visual & layout tweaks
+   ───────────────────────────────────────────── */
+#working-canvas.canvas-panel{
+  /* look & feel */
+  background:#f3f3f3;
+  
+  /* border only on top + left, + rounded TL corner  */
+  border-top:1px solid #b0b0b0;
+  border-left:1px solid #b0b0b0;
+  border-radius:12px 0 0 0;
+
+  /* stick under the global nav and stay in view */
+  position:sticky;
+  top:71px;                                /* nav height */
+  height:calc(100vh - 71px);               /* full viewport minus nav */
+
+  /* basic flex column so header stays at top */
+  display:flex;
+  flex-direction:column;
+}
+
+/* header inherits same light bg colour */
+#working-canvas .canvas-header{
+  background:#f3f3f3;                      /* same as panel */
+  padding:8px 12px;
+  display:flex;
+  justify-content:flex-end;                /* shove X to right */
+  align-items:center;
+}
+
+/* make the × close button ~50 % larger + nice hit area */
+#canvas-close-btn{
+  background:none;
+  border:none;
+  font-size:24px;                          /* was ~16 → now 1.5× */
+  line-height:1;
+  width:42px; height:42px;                 /* bigger click target */
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+}
+
+#canvas-close-btn:hover{
+  background:#e0e0e0;
+  border-radius:50%;
+}
+
+/* the scrollable working-document area */
+#working-canvas .canvas-body{
+  flex:1;                                  /* fills remaining height */
+  overflow:auto;                           /* its own scroll bar */
+  padding:16px;
+}
+
