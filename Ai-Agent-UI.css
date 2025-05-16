@@ -3529,19 +3529,87 @@ body{
 }
 
 /* ─────────────────────────────────────────────
-   CANVAS PANEL – visual & layout tweaks
+   WORKING-CANVAS  (full replacement stylesheet)
    ───────────────────────────────────────────── */
 
-
-/* simple header with “×” */
+/* ---------- 1) Header basics ---------- */
 .canvas-header{
-  flex:0 0 auto;
-}
-.canvas-header button{
-  background:none;border:none;font-size:24px;cursor:pointer;
+  flex:0 0 auto;                 /* keeps header height fixed */
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:4px 8px;
+  background:#f3f3f3;            /* same colour as panel */
 }
 
-/* when <div class="wrp cnt"> gets .canvas-open … */
+/* left cluster =  ×  +  “The Canvas” */
+.canvas-header-left{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.canvas-title{
+  font-size:18px;
+  font-weight:600;
+  color:#666;
+}
+
+/* right cluster =  Undo • Redo • Send */
+.canvas-header-right{
+  display:flex;
+  align-items:center;
+  gap:4px;
+}
+
+/* shared icon-button look */
+.canvas-icon-btn{
+  background:none;
+  border:none;
+  width:42px; height:42px;        /* roomy click target  */
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  font-size:45px;                 /* ×, ↶, ↻ glyph size   */
+  line-height:1;
+  color:#999;
+}
+.canvas-icon-btn:hover{
+  background:#e0e0e0;
+  border-radius:12px;
+}
+
+/* SVG in the send button */
+.canvas-send-btn svg{width:26px;height:26px;}
+
+/* ---------- 2) Panel sizing / position ---------- */
+
+/* default = closed: zero width + invisible */
+.canvas-panel{
+  flex:0 0 0;
+  max-width:0;
+  overflow:hidden;
+  background:#f3f3f3;             /* panel colour          */
+  transition:
+    flex-basis .25s ease,
+    max-width   .25s ease,
+    opacity     .15s ease;
+  display:flex; flex-direction:column;
+
+  /* border (only top + left) & rounded TL corner */
+  border-top:1px solid #b0b0b0;
+  border-left:1px solid #b0b0b0;
+  border-radius:12px 0 0 0;
+
+  /* sticky under nav bar */
+  position:sticky;
+  top:71px;                       /* nav height            */
+  height:calc(100vh - 71px);      /* full viewport minus nav */
+
+  /* closed state visibility */
+  opacity:0;
+  pointer-events:none;
+}
+
+/* ---------- 3) Panel open state widths ---------- */
 .wrp.cnt.canvas-open .bSeCont{
   flex:0 0 calc((100vw - 300px)/2);
   max-width:calc((100vw - 300px)/2);
@@ -3549,72 +3617,20 @@ body{
 .wrp.cnt.canvas-open .canvas-panel{
   flex:0 0 calc((100vw - 300px)/2);
   max-width:calc((100vw - 300px)/2);
+
+  /* become visible + clickable */
+  opacity:1;
+  pointer-events:auto;
 }
 
-/* totally hide the panel (and the toggle button you already hid)
-   on tablet + mobile */
-@media(max-width:939px){
-  .canvas-panel{display:none !important;}
-}
-
-/* brand-new canvas panel (hidden by default) */
-.canvas-panel{
-  flex:0 0 0;                    /* 0 width when hidden */
-  max-width:0;
-  overflow:hidden;
-  background:#e5e5e5;            /* light grey placeholder */
-  transition:flex-basis .25s ease,max-width .25s ease;
-  display:flex;flex-direction:column;
-}
-
-#working-canvas.canvas-panel{
-  /* look & feel */
-  background:#f3f3f3;
-  
-  /* border only on top + left, + rounded TL corner  */
-  border-top:1px solid #b0b0b0;
-  border-left:1px solid #b0b0b0;
-  border-radius:12px 0 0 0;
-
-  /* stick under the global nav and stay in view */
-  position:sticky;
-  top:71px;                                /* nav height */
-  height:calc(100vh - 71px);               /* full viewport minus nav */
-
-  /* basic flex column so header stays at top */
-  display:flex;
-  flex-direction:column;
-}
-
-/* header inherits same light bg colour */
-#working-canvas .canvas-header{
-  background:#f3f3f3;                      /* same as panel */
-  display:flex;
-  align-items:center;
-}
-
-/* make the × close button ~50 % larger + nice hit area */
-#canvas-close-btn{
-  background:none;
-  border:none;
-  padding-bottom: 6px;
-  color: #999999;
-  font-size:45px;                          /* was ~16 → now 1.5× */
-  line-height:1;
-  width:42px; height:42px;                 /* bigger click target */
-  cursor:pointer;
-  display:flex; align-items:center; justify-content:center;
-}
-
-#canvas-close-btn:hover{
-  background:#e0e0e0;
-  border-radius:12px;
-}
-
-/* the scrollable working-document area */
+/* ---------- 4) Scrollable body inside panel ---------- */
 #working-canvas .canvas-body{
-  flex:1;                                  /* fills remaining height */
-  overflow:auto;                           /* its own scroll bar */
+  flex:1;
+  overflow:auto;
   padding:16px;
 }
 
+/* ---------- 5) Mobile / tablet – hide entirely ---------- */
+@media (max-width:939px){
+  .canvas-panel{display:none!important;}
+}
