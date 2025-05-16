@@ -2294,7 +2294,7 @@ figcaption {
   border: 1px solid #949494;
   border-radius: 35px;
   grid-template-rows: auto;
-  grid-template-columns: 77px 70px 70px 1fr auto;
+  grid-template-columns: 77px 70px 70px 70px 1fr auto;
   grid-auto-columns: 1fr;
   display: grid;
   position: fixed;
@@ -2338,6 +2338,15 @@ figcaption {
     max-width: none; /* Remove max-width constraint */
   }
 }
+
+/* Working-Doc button alignment (desktop) */
+#chat-canvas-toggle{
+  place-self: end start;   /* matches the mic + voice buttons */
+}
+@media (max-width: 939px){
+  #chat-canvas-toggle{display:none !important;}
+}
+
 
 .chat_block-wrapper {
   justify-content: center;
