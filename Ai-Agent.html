@@ -1984,9 +1984,43 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
     canvas.className = 'canvas-panel';                // for CSS
     canvas.innerHTML = `
       <div class="canvas-header">
-        <button id="canvas-close-btn" aria-label="Close">×</button>
+        <div class="canvas-header-left">
+          <button id="canvas-close-btn"
+                  class="canvas-icon-btn"
+                  aria-label="Close">×</button>
+          <span class="canvas-title">The Canvas</span>
+        </div>
+    
+        <div class="canvas-header-right">
+          <button id="canvas-undo-btn"
+                  class="canvas-icon-btn"
+                  aria-label="Undo">↶</button>
+    
+          <button id="canvas-redo-btn"
+                  class="canvas-icon-btn"
+                  aria-label="Redo">↻</button>
+    
+          <button id="canvas-send-btn"
+                  class="canvas-icon-btn canvas-send-btn"
+                  aria-label="Send">
+            <!-- upload-square-with-arrow-up icon -->
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
+                 xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 14v5a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-5"
+                    stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+              <polyline points="7 10 12 5 17 10"
+                        stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="12" y1="5" x2="12" y2="14"
+                    stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
       </div>
-      <div class="canvas-body"><!-- working-document goes here --></div>
+    
+      <div class="canvas-body"><!-- working doc goes here --></div>
     `;
     /* Insert immediately after the main content column */
     main.insertAdjacentElement('afterend', canvas);
