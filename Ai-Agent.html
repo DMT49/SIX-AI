@@ -1967,169 +1967,134 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
     /*************  Canvas sidebar infrastructure  *************/
 (function addCanvasInfrastructure () {
 
-  /* ==========================================================
-     CANVAS  –  full replacement of `ensureCanvasPanel()`
-     ========================================================== */
+  /* 1 – Create the grey panel (runs only once) */
   function ensureCanvasPanel () {
-    /* --- do nothing if we already injected it once --- */
-    if (document.getElementById('working-canvas')) return;
-  
-    /* parent columns */
-    const wrp  = document.querySelector('.wrp.cnt');   // 3-col wrapper
-    const main = wrp?.querySelector('.bSeCont');       // chat column
+    if (document.getElementById('working-canvas')) return;   // already injected
+
+    const wrp  = document.querySelector('.wrp.cnt');  // outer wrapper
+    const main = wrp?.querySelector('.bSeCont');      // main chat column
     if (!wrp || !main) {
       console.warn('[Canvas] .wrp.cnt or .bSeCont not found');
       return;
     }
-  
-    /* ────────────────────────────────────────────────
-       1.  Build the side-panel markup (HTML BELOW!)
-       ──────────────────────────────────────────────── */
+
+    /* Build the panel */
     const canvas = document.createElement('div');
     canvas.id        = 'working-canvas';
-    canvas.className = 'canvas-panel';
+    canvas.className = 'canvas-panel';                // for CSS
     canvas.innerHTML = `
       <div class="canvas-header">
-        <!-- left: ×  +  title -->
         <div class="canvas-header-left">
           <button id="canvas-close-btn"
-                  class="canvas-icon-btn canvas-close-btn my-btn"
-                  data-tooltip="Close"
+                  class="canvas-icon-btn"
                   aria-label="Close">×</button>
           <span class="canvas-title">The Canvas</span>
         </div>
-  
-        <!-- right: Undo • Redo • Copy • Send -->
+    
         <div class="canvas-header-right">
-  
           <button id="canvas-undo-btn"
-                  class="canvas-icon-btn my-btn"
+                  class="canvas-icon-btn"
                   data-tooltip="Undo"
                   aria-label="Undo">
+            <!-- Undo SVG -->
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                  xmlns="http://www.w3.org/2000/svg">
-              <path d="M21 13.6647C21 14.9442 20.7333 16.0559 20.1996 17
-              C19.666 17.9503 18.8997 18.6863 17.9008 19.208C16.908 19.736
-              15.7198 20 14.3361 20H12.0372C11.696 20 11.414 19.885 11.19
-              19.655C10.967 19.432 10.855 19.158 10.855 18.835C10.855
-              18.512 10.967 18.239 11.19 18.016C11.414 17.792 11.696
-              17.68 12.037 17.68H14.224C15.18 17.68 15.99 17.503 16.654
-              17.149C17.324 16.795 17.832 16.314 18.18 15.705C18.534
-              15.09 18.711 14.385 18.711 13.59C18.711 12.807 18.534
-              12.112 18.18 11.503C17.832 10.894 17.324 10.419 16.654
-              10.078C15.99 9.736 15.18 9.565 14.224 9.565H8.64" 
-              fill="currentColor"/>
+              <path d="M21 13.6647C21 14.9442 20.7333 16.0559 20.1996 17C19.666 17.9503 18.8997 18.6863 17.9008 19.208C16.908 19.736 15.7198 20 14.3361 20H12.0372..."
+                    fill="currentColor"/>
             </svg>
           </button>
-  
+    
           <button id="canvas-redo-btn"
-                  class="canvas-icon-btn my-btn"
+                  class="canvas-icon-btn"
                   data-tooltip="Redo"
                   aria-label="Redo">
+            <!-- Redo SVG -->
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                  xmlns="http://www.w3.org/2000/svg">
-              <path d="M3 13.6647C3 12.3976 3.270 11.283 3.810 10.32C4.356
-              9.351 5.134 8.596 6.146 8.056C7.163 7.515 8.373 7.245
-              9.776 7.245H15.351L18.673 7.394L18.292 8.009L15.937
-              6.053L13.768 3.929" fill="currentColor"/>
+              <path d="M3 13.6647C3 12.3976 3.26992 11.2826 3.80973 10.3199C4.35574..."
+                    fill="currentColor"/>
             </svg>
           </button>
-  
+    
           <button id="canvas-copy-btn"
-                  class="canvas-icon-btn my-btn"
+                  class="canvas-icon-btn"
                   data-tooltip="Copy"
                   aria-label="Copy">
-            <svg width="24" height="24" viewBox="0 0 24 24"
-                 xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+            <!-- Copy SVG -->
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                 xmlns="http://www.w3.org/2000/svg">
               <path fill-rule="evenodd" clip-rule="evenodd"
-                    d="M7 5C7 3.343 8.343 2 10 2H19C20.657 2 22 3.343 22
-                    5V14C22 15.657 20.657 17 19 17H17V19C17 20.657 15.657
-                    22 14 22H5C3.343 22 2 20.657 2 19V10C2 8.343 3.343 7 5
-                    7H7V5ZM9 7H14C15.657 7 17 8.343 17 10V15H19C19.552
-                    15 20 14.552 20 14V5C20 4.448 19.552 4 19 4H10C9.448 4
-                    9 4.448 9 5V7Z"/>
+                    d="M7 5C7 3.34315 8.34315 2 10 2H19..."
+                    fill="currentColor"/>
             </svg>
           </button>
-  
+    
           <button id="canvas-send-btn"
-                  class="canvas-icon-btn canvas-send-btn my-btn"
+                  class="canvas-icon-btn canvas-send-btn"
                   data-tooltip="Send via email"
                   aria-label="Send via email">
-            <svg width="26" height="26" viewBox="0 0 20 20" fill="none"
+            <!-- Upload-square-arrow-up SVG (no interior fill) -->
+            <svg width="24" height="24" viewBox="0 0 20 20" fill="none"
                  xmlns="http://www.w3.org/2000/svg">
-              <path d="M6.667 6.667 10 3.333l3.333 3.334M10 3.75V12.5"
+              <path d="M6.667 6.667 10 3.333l3.333 3.334M10 3.75v8.75"
                     stroke="currentColor" stroke-width="1.5"
-                    stroke-linecap="round" stroke-linejoin="round" />
-              <path d="M3.333 11.667v.2c0 1.68 0 2.52.327 3.162.288.564.747
-                       1.023 1.312 1.31C5.613 16.667 6.453 16.667 8.133
-                       16.667h3.734c1.68 0 2.52 0 3.162-.328.564-.287
-                       1.023-.746 1.311-1.31.327-.642.327-1.482.327-3.162v-.2"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M3.333 11.667v.2c0 1.68 0 2.52.327 3.162.288.565.747
+                       1.024 1.312 1.312.642.327 1.482.327 3.162.327h3.734
+                       c1.68 0 2.52 0 3.162-.327.565-.288 1.024-.747
+                       1.312-1.312.327-.642.327-1.482.327-3.162v-.2"
                     stroke="currentColor" stroke-width="1.5"
                     stroke-linecap="round"/>
             </svg>
           </button>
-        </div><!-- /.canvas-header-right -->
-      </div><!-- /.canvas-header -->
-  
-      <!-- Editable document -->
+        </div>
+      </div>
+    
       <div class="canvas-body">
-        <div id="canvas-editor"></div>
+        <textarea id="canvas-editor"></textarea>
       </div>
     `;
-  
-    /* insert panel after the chat column */
+    /* Insert immediately after the main content column */
     main.insertAdjacentElement('afterend', canvas);
-  
-    /* ────────────────────────────────────────────────
-       2.  Load Toast-UI Editor (WYSIWYG) once
-       ──────────────────────────────────────────────── */
-    function loadToastEditor () {
-      if (window.__canvasEditor) return;   // already done
-  
-      /* CSS */
+
+
+    /*  ░░░  EasyMDE loader / initialiser  ░░░ */
+    function initCanvasEditor(){
+      if(window.__canvasMDE){ return; }
+    
       const css = document.createElement('link');
       css.rel  = 'stylesheet';
-      css.href = 'https://uicdn.toast.com/editor/latest/toastui-editor.min.css';
+      css.href = 'https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css';
       document.head.appendChild(css);
-  
-      /* JS */
+    
       const js  = document.createElement('script');
-      js.src    = 'https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js';
+      js.src    = 'https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js';
       js.onload = () => {
-        const { Editor } = toastui;
-        window.__canvasEditor = new Editor({
-          el: document.getElementById('canvas-editor'),
-          height: '100%',
+        window.__canvasMDE = new EasyMDE({
+          element: document.getElementById('canvas-editor'),
+          spellChecker: false,
+          status: false,
           autofocus: true,
-          initialEditType: 'wysiwyg',   // live formatting – no raw Markdown shown
-          previewStyle: 'vertical',
-          placeholder: 'Start writing…',
-          toolbarItems: [
-            ['heading', 'bold', 'italic', 'strike'],
-            ['quote', 'ul', 'ol', 'hr', 'code'],
-            ['table', 'link', 'image'],
-            ['undo', 'redo', 'fullscreen']
+          autoDownloadFontAwesome: false,
+          toolbar: [
+            'bold','italic','strikethrough','heading','|',
+            'quote','unordered-list','ordered-list','code','horizontal-rule','|',
+            'preview','side-by-side','fullscreen'
           ]
         });
-  
-        /* wire up the three custom buttons */
-        document.getElementById('canvas-undo-btn')
-          ?.addEventListener('click', () => __canvasEditor.exec('undo'));
-        document.getElementById('canvas-redo-btn')
-          ?.addEventListener('click', () => __canvasEditor.exec('redo'));
-        document.getElementById('canvas-copy-btn')
-          ?.addEventListener('click', () => {
-            navigator.clipboard.writeText(__canvasEditor.getMarkdown());
-          });
       };
       document.head.appendChild(js);
     }
-    loadToastEditor();
-  
-    /* make new buttons get global tool-tips */
+    
+    initTooltips();      // (re-hook tool-tips for the new buttons, already in your code)
+    initCanvasEditor();  // <-- add this call right here
+
+
+
+    
+    /* NEW — re-initialise tool-tips so the fresh buttons get listeners */
     if (typeof initTooltips === 'function') initTooltips();
   }
-
 
   /* 2 – Wire the open / close behaviour */
   function wireToggleBehaviour () {
@@ -2201,6 +2166,9 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       observer.observe(document.body, { childList: true, subtree: true });
     })();
      // --- End link update functionality ---
+
+
+
 
   })();
 </script>
