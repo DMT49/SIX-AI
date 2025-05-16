@@ -3534,12 +3534,12 @@ body{
 
 /* ---------- 1) Header basics ---------- */
 .canvas-header{
-  flex:0 0 auto;
+  flex:0 0 auto;                 /* keeps header height fixed */
   display:flex;
   justify-content:space-between;
   align-items:center;
   padding:4px 8px;
-  background:#f3f3f3;
+  background:#f3f3f3;            /* same colour as panel */
 }
 
 /* left cluster =  ×  +  “The Canvas” */
@@ -3566,10 +3566,10 @@ body{
 .canvas-icon-btn{
   background:none;
   border:none;
-  width:42px; height:42px;
+  width:42px; height:42px;        /* roomy click target  */
   display:flex; align-items:center; justify-content:center;
   cursor:pointer;
-  font-size:45px;          /* glyph size for × ↶ ↻ ⧉ */
+  font-size:45px;                 /* ×, ↶, ↻ glyph size   */
   line-height:1;
   color:#999;
 }
@@ -3578,38 +3578,43 @@ body{
   border-radius:12px;
 }
 
-/* send-button SVG size */
-.canvas-send-btn svg{width:26px;height:26px;}
+/* SVG in the send / copy buttons */
+.canvas-send-btn  svg,
+.canvas-copy-btn  svg{width:26px;height:26px;}
 
 /* ---------- 2) Panel sizing / position ---------- */
 
-/* default = closed (zero width & invisible) */
+/* default = closed: zero width + invisible */
 .canvas-panel{
   flex:0 0 0;
   max-width:0;
   overflow:hidden;
-  background:#f3f3f3;
-  transition:flex-basis .25s ease,max-width .25s ease,opacity .15s ease;
+  background:#f3f3f3;             /* panel colour          */
+  transition:
+    flex-basis .25s ease,
+    max-width   .25s ease,
+    opacity     .15s ease;
   display:flex; flex-direction:column;
 
-  /* border only top + left, TL corner radius */
+  /* border (only top + left) & rounded TL corner */
   border-top:1px solid #b0b0b0;
   border-left:1px solid #b0b0b0;
   border-radius:12px 0 0 0;
 
+  /* sticky under nav bar */
   position:sticky;
-  top:71px;
-  height:calc(100vh - 71px);
+  top:71px;                       /* nav height            */
+  height:calc(100vh - 71px);      /* full viewport minus nav */
 
-  /* closed visibility */
+  /* NEW ► universal right-side padding */
+  padding-right:35px;             /* ← as requested        */
+
+  /* closed state visibility */
   opacity:0;
   pointer-events:none;
-
-  /* NEW: 35 px global right-padding */
-  padding-right:35px;
 }
 
-/* ---------- 3) Panel open widths ---------- */
+/* ---------- 3) Panel open state widths ---------- */
 .wrp.cnt.canvas-open .bSeCont{
   flex:0 0 calc((100vw - 300px)/2);
   max-width:calc((100vw - 300px)/2);
@@ -3617,19 +3622,19 @@ body{
 .wrp.cnt.canvas-open .canvas-panel{
   flex:0 0 calc((100vw - 300px)/2);
   max-width:calc((100vw - 300px)/2);
+
+  /* become visible + clickable */
   opacity:1;
   pointer-events:auto;
 }
 
-/* ---------- 4) Scrollable body & editor padding ---------- */
+/* ---------- 4) Scrollable body inside panel ---------- */
 #working-canvas .canvas-body{
   flex:1;
   overflow:auto;
-}
 
-/* EasyMDE container (adds padding inside the editor area) */
-#working-canvas .EasyMDEContainer{
-  padding:24px 12px 12px;   /* top 24px, sides/bottom 12px */
+  /* NEW ► top 24 px, sides & bottom 12 px */
+  padding:24px 12px 12px 12px;
 }
 
 /* ---------- 5) Mobile / tablet – hide entirely ---------- */
