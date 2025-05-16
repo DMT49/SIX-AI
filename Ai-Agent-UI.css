@@ -3492,3 +3492,8 @@ MOBILE STYLES BELOW
 	display:flex !important;
 	justify-content: center !important;
 }
+
+/* Force the entire page background to white */
+html{
+  background-color:#fff;     /* pure white */
+}
