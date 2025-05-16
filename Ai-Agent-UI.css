@@ -3560,7 +3560,7 @@ MOBILE STYLES BELOW
 }
 
 body{
-	background: #ffffff !!important;
+	background: #ffffff !important;
 }
 /* DEBUG — remove after we find the culprit */
 #chat_conversation-wrapper > * {
