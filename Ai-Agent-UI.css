@@ -3494,8 +3494,6 @@ MOBILE STYLES BELOW
 	justify-content: center !important;
 }
 
-/* CANVNAS CSS BELOW  */
-
 /*──────────────────────────────────────────────
   FLEX LAYOUT: sidebar (300px) | convo | canvas
 ──────────────────────────────────────────────*/
@@ -3515,21 +3513,29 @@ MOBILE STYLES BELOW
   transition:all .25s ease;
 }
 
-/* brand-new canvas panel (hidden by default) */
-.canvas-panel{
-  flex:0 0 0;                    /* 0 width when hidden */
-  max-width:0;
-  overflow:hidden;
-  background:#e5e5e5;            /* light grey placeholder */
-  transition:flex-basis .25s ease,max-width .25s ease;
-  display:flex;flex-direction:column;
+
+
+.sAs.left{
+	position: sticky !important;
+	top: 20px !important;
 }
+
+.awr-i{
+	margin-right:10px !important;
+}
+
+body{
+	background: #ffffff !important;
+}
+
+/* ─────────────────────────────────────────────
+   CANVAS PANEL – visual & layout tweaks
+   ───────────────────────────────────────────── */
+
 
 /* simple header with “×” */
 .canvas-header{
   flex:0 0 auto;
-  background:#d0d0d0;
-  padding:8px 12px;
 }
 .canvas-header button{
   background:none;border:none;font-size:24px;cursor:pointer;
@@ -3551,22 +3557,16 @@ MOBILE STYLES BELOW
   .canvas-panel{display:none !important;}
 }
 
-.sAs.left{
-	position: sticky !important;
-	top: 20px !important;
+/* brand-new canvas panel (hidden by default) */
+.canvas-panel{
+  flex:0 0 0;                    /* 0 width when hidden */
+  max-width:0;
+  overflow:hidden;
+  background:#e5e5e5;            /* light grey placeholder */
+  transition:flex-basis .25s ease,max-width .25s ease;
+  display:flex;flex-direction:column;
 }
 
-.awr-i{
-	margin-right:10px !important;
-}
-
-body{
-	background: #ffffff !important;
-}
-
-/* ─────────────────────────────────────────────
-   CANVAS PANEL – visual & layout tweaks
-   ───────────────────────────────────────────── */
 #working-canvas.canvas-panel{
   /* look & feel */
   background:#f3f3f3;
