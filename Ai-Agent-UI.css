@@ -3549,3 +3549,8 @@ MOBILE STYLES BELOW
 @media(max-width:939px){
   .canvas-panel{display:none !important;}
 }
+
+.sAs.left{
+	position: sticky !important;
+	top: 20px !important;
+}
