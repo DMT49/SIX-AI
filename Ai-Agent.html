@@ -1964,6 +1964,62 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
     // Finally, call initTooltips() once
     initTooltips();
 
+    /*************  Canvas sidebar infrastructure  *************/
+(function addCanvasInfrastructure () {
+
+  /* 1 – Create the grey panel (runs only once) */
+  function ensureCanvasPanel () {
+    if (document.getElementById('working-canvas')) return;   // already injected
+
+    const wrp  = document.querySelector('.wrp.cnt');  // outer wrapper
+    const main = wrp?.querySelector('.bSeCont');      // main chat column
+    if (!wrp || !main) {
+      console.warn('[Canvas] .wrp.cnt or .bSeCont not found');
+      return;
+    }
+
+    /* Build the panel */
+    const canvas = document.createElement('div');
+    canvas.id        = 'working-canvas';
+    canvas.className = 'canvas-panel';                // for CSS
+    canvas.innerHTML = `
+      <div class="canvas-header">
+        <button id="canvas-close-btn" aria-label="Close">×</button>
+      </div>
+      <div class="canvas-body"><!-- working-document goes here --></div>
+    `;
+    /* Insert immediately after the main content column */
+    main.insertAdjacentElement('afterend', canvas);
+  }
+
+  /* 2 – Wire the open / close behaviour */
+  function wireToggleBehaviour () {
+    const toggleBtn = document.getElementById('chat-canvas-toggle');
+    const wrp       = document.querySelector('.wrp.cnt');
+    if (!toggleBtn || !wrp) return;
+
+    const open  = () => { wrp.classList.add('canvas-open');  toggleBtn.classList.add('is-active'); };
+    const close = () => { wrp.classList.remove('canvas-open'); toggleBtn.classList.remove('is-active'); };
+
+    /* open ⇄ close when the toolbar button is clicked */
+    toggleBtn.addEventListener('click', () => {
+      wrp.classList.contains('canvas-open') ? close() : open();
+    });
+
+    /* close when the “×” inside the panel is clicked */
+    wrp.addEventListener('click', (e) => {
+      if (e.target.id === 'canvas-close-btn') close();
+    });
+  }
+
+  /* Run immediately */
+  ensureCanvasPanel();
+  wireToggleBehaviour();
+
+})();   /* ← end Canvas IIFE */
+/***********  (keep existing code below this point)  ***********/
+
+
     // --- Begin link update functionality ---
     (function() {
       // Function to update all anchor tags within a given root element
