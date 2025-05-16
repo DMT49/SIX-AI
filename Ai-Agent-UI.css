@@ -3502,6 +3502,7 @@ MOBILE STYLES BELOW
 .wrp.cnt{           /* parent wrapper – was block, now flex */
   display:flex;
   width:100%;
+  padding-bottom:0px;
 }
 
 /* left Webflow sidebar – keep fixed width */
@@ -3588,9 +3589,7 @@ body{
 /* header inherits same light bg colour */
 #working-canvas .canvas-header{
   background:#f3f3f3;                      /* same as panel */
-  padding:8px 12px;
   display:flex;
-  justify-content:flex-end;                /* shove X to right */
   align-items:center;
 }
 
@@ -3598,7 +3597,9 @@ body{
 #canvas-close-btn{
   background:none;
   border:none;
-  font-size:24px;                          /* was ~16 → now 1.5× */
+  padding-bottom: 6px;
+  color: #999999;
+  font-size:45px;                          /* was ~16 → now 1.5× */
   line-height:1;
   width:42px; height:42px;                 /* bigger click target */
   cursor:pointer;
@@ -3607,7 +3608,7 @@ body{
 
 #canvas-close-btn:hover{
   background:#e0e0e0;
-  border-radius:50%;
+  border-radius:12px;
 }
 
 /* the scrollable working-document area */
