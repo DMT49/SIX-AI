@@ -2050,6 +2050,38 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
     `;
     /* Insert immediately after the main content column */
     main.insertAdjacentElement('afterend', canvas);
+
+    /*  ░░░  EasyMDE loader / initialiser  ░░░ */
+    function initCanvasEditor(){
+      if(window.__canvasMDE){ return; }
+    
+      const css = document.createElement('link');
+      css.rel  = 'stylesheet';
+      css.href = 'https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css';
+      document.head.appendChild(css);
+    
+      const js  = document.createElement('script');
+      js.src    = 'https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js';
+      js.onload = () => {
+        window.__canvasMDE = new EasyMDE({
+          element: document.getElementById('canvas-editor'),
+          spellChecker: false,
+          status: false,
+          autofocus: true,
+          autoDownloadFontAwesome: false,
+          toolbar: [
+            'bold','italic','strikethrough','heading','|',
+            'quote','unordered-list','ordered-list','code','horizontal-rule','|',
+            'preview','side-by-side','fullscreen'
+          ]
+        });
+      };
+      document.head.appendChild(js);
+    }
+    
+    initTooltips();      // (re-hook tool-tips for the new buttons, already in your code)
+    initCanvasEditor();  // <-- add this call right here
+
     
     /* NEW — re-initialise tool-tips so the fresh buttons get listeners */
     if (typeof initTooltips === 'function') initTooltips();
