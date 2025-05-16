@@ -3486,3 +3486,8 @@ MOBILE STYLES BELOW
 .bSe.right{
         max-width:900px !important;
 }
+
+.bSeCont{
+	display:flex !important;
+	justify-content: center !important;
+}
