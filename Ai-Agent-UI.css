@@ -3478,3 +3478,7 @@ MOBILE STYLES BELOW
   max-width: unset !important;   /* or `none` – both remove the cap           */
   width: 100% !important;        /* be explicit so it stretches the viewport  */
 }
+
+.sAs.left{
+    max-width:300px !important;
+}
