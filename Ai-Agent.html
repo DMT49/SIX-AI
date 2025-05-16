@@ -40,6 +40,25 @@
               </svg>
             </div>
           </div>
+          <div id="chat-canvas-toggle"
+               class="chat_input-button my-btn"
+               data-tooltip="Open the canvas">
+            <div class="icon-embed-small w-embed">
+              <!-- BEGIN OpenAI-style pencil-plus SVG -->
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+                   xmlns="http://www.w3.org/2000/svg">
+                <path d="M2.5 5.5C4.3 5.2 5.2 4 5.5 2.5C5.8 4 6.7 5.2 8.5 5.5C6.7 5.8 5.8 7 5.5 8.5C5.2 7 4.3 5.8 2.5 5.5Z"
+                      fill="currentColor" stroke="currentColor"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M5.66282 16.5231L5.18413 19.3952C5.12203 19.7678 5.09098 19.9541 5.14876 20.0888C5.19933 20.2067 5.29328 20.3007 5.41118 20.3512C5.54589 20.409 5.73218 20.378 6.10476 20.3159L8.97693 19.8372C9.72813 19.712 10.1037 19.6494 10.4542 19.521C10.7652 19.407 11.0608 19.2549 11.3343 19.068C11.6425 18.8575 11.9118 18.5882 12.4503 18.0497L20 10.5C21.3807 9.11929 21.3807 6.88071 20 5.5C18.6193 4.11929 16.3807 4.11929 15 5.5L7.45026 13.0497C6.91175 13.5882 6.6425 13.8575 6.43197 14.1657C6.24513 14.4392 6.09299 14.7348 5.97903 15.0458C5.85062 15.3963 5.78802 15.7719 5.66282 16.5231Z"
+                      stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M14.5 7L18.5 11"
+                      stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
           <div id="w-node-_819b1fcb-bef5-c69d-b33b-f104bd5e9695-8f158f72" class="chat_input-text">
             <div id="w-node-_256faa1f-1943-6b85-6f8e-bd7a8a4af011-8f158f72" class="code-embed-2 w-embed">
               <div class="form-input is-app">
@@ -1944,6 +1963,166 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
     
     // Finally, call initTooltips() once
     initTooltips();
+
+    /*************  Canvas sidebar infrastructure  *************/
+(function addCanvasInfrastructure () {
+
+  /* 1 – Create the grey panel (runs only once) */
+  function ensureCanvasPanel () {
+    if (document.getElementById('working-canvas')) return;   // already injected
+
+    const wrp  = document.querySelector('.wrp.cnt');  // outer wrapper
+    const main = wrp?.querySelector('.bSeCont');      // main chat column
+    if (!wrp || !main) {
+      console.warn('[Canvas] .wrp.cnt or .bSeCont not found');
+      return;
+    }
+
+    /* Build the panel */
+    const canvas = document.createElement('div');
+    canvas.id        = 'working-canvas';
+    canvas.className = 'canvas-panel';                // for CSS
+    canvas.innerHTML = `
+      <div class="canvas-header">
+        <div class="canvas-header-left">
+          <button id="canvas-close-btn"
+                  class="canvas-icon-btn"
+                  aria-label="Close">×</button>
+          <span class="canvas-title">The Canvas</span>
+        </div>
+    
+        <div class="canvas-header-right">
+          <button id="canvas-undo-btn"
+                  class="canvas-icon-btn"
+                  data-tooltip="Undo"
+                  aria-label="Undo">
+            <!-- Undo SVG -->
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                 xmlns="http://www.w3.org/2000/svg">
+              <path d="M21 13.6647C21 14.9442 20.7333 16.0559 20.1996 17C19.666 17.9503 18.8997 18.6863 17.9008 19.208C16.908 19.736 15.7198 20 14.3361 20H12.0372..."
+                    fill="currentColor"/>
+            </svg>
+          </button>
+    
+          <button id="canvas-redo-btn"
+                  class="canvas-icon-btn"
+                  data-tooltip="Redo"
+                  aria-label="Redo">
+            <!-- Redo SVG -->
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                 xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 13.6647C3 12.3976 3.26992 11.2826 3.80973 10.3199C4.35574..."
+                    fill="currentColor"/>
+            </svg>
+          </button>
+    
+          <button id="canvas-copy-btn"
+                  class="canvas-icon-btn"
+                  data-tooltip="Copy"
+                  aria-label="Copy">
+            <!-- Copy SVG -->
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                 xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" clip-rule="evenodd"
+                    d="M7 5C7 3.34315 8.34315 2 10 2H19..."
+                    fill="currentColor"/>
+            </svg>
+          </button>
+    
+          <button id="canvas-send-btn"
+                  class="canvas-icon-btn canvas-send-btn"
+                  data-tooltip="Send via email"
+                  aria-label="Send via email">
+            <!-- Upload-square-arrow-up SVG (no interior fill) -->
+            <svg width="24" height="24" viewBox="0 0 20 20" fill="none"
+                 xmlns="http://www.w3.org/2000/svg">
+              <path d="M6.667 6.667 10 3.333l3.333 3.334M10 3.75v8.75"
+                    stroke="currentColor" stroke-width="1.5"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M3.333 11.667v.2c0 1.68 0 2.52.327 3.162.288.565.747
+                       1.024 1.312 1.312.642.327 1.482.327 3.162.327h3.734
+                       c1.68 0 2.52 0 3.162-.327.565-.288 1.024-.747
+                       1.312-1.312.327-.642.327-1.482.327-3.162v-.2"
+                    stroke="currentColor" stroke-width="1.5"
+                    stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    
+      <div class="canvas-body">
+        <textarea id="canvas-editor"></textarea>
+      </div>
+    `;
+    /* Insert immediately after the main content column */
+    main.insertAdjacentElement('afterend', canvas);
+
+
+    /*  ░░░  EasyMDE loader / initialiser  ░░░ */
+    function initCanvasEditor(){
+      if(window.__canvasMDE){ return; }
+    
+      const css = document.createElement('link');
+      css.rel  = 'stylesheet';
+      css.href = 'https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css';
+      document.head.appendChild(css);
+    
+      const js  = document.createElement('script');
+      js.src    = 'https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js';
+      js.onload = () => {
+        window.__canvasMDE = new EasyMDE({
+          element: document.getElementById('canvas-editor'),
+          spellChecker: false,
+          status: false,
+          autofocus: true,
+          autoDownloadFontAwesome: false,
+          toolbar: [
+            'bold','italic','strikethrough','heading','|',
+            'quote','unordered-list','ordered-list','code','horizontal-rule','|',
+            'preview','side-by-side','fullscreen'
+          ]
+        });
+      };
+      document.head.appendChild(js);
+    }
+    
+    initTooltips();      // (re-hook tool-tips for the new buttons, already in your code)
+    initCanvasEditor();  // <-- add this call right here
+
+
+
+    
+    /* NEW — re-initialise tool-tips so the fresh buttons get listeners */
+    if (typeof initTooltips === 'function') initTooltips();
+  }
+
+  /* 2 – Wire the open / close behaviour */
+  function wireToggleBehaviour () {
+    const toggleBtn = document.getElementById('chat-canvas-toggle');
+    const wrp       = document.querySelector('.wrp.cnt');
+    if (!toggleBtn || !wrp) return;
+
+    const open  = () => { wrp.classList.add('canvas-open');  toggleBtn.classList.add('is-active'); };
+    const close = () => { wrp.classList.remove('canvas-open'); toggleBtn.classList.remove('is-active'); };
+
+    /* open ⇄ close when the toolbar button is clicked */
+    toggleBtn.addEventListener('click', () => {
+      wrp.classList.contains('canvas-open') ? close() : open();
+    });
+
+    /* close when the “×” inside the panel is clicked */
+    wrp.addEventListener('click', (e) => {
+      if (e.target.id === 'canvas-close-btn') close();
+    });
+  }
+
+  /* Run immediately */
+  ensureCanvasPanel();
+  wireToggleBehaviour();
+
+})();   /* ← end Canvas IIFE */
+/***********  (keep existing code below this point)  ***********/
+
 
     // --- Begin link update functionality ---
     (function() {
