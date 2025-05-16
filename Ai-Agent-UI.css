@@ -3539,37 +3539,57 @@ body{
   justify-content:space-between;
   align-items:center;
   padding:4px 8px;
-  background:#f3f3f3;
+  background:#f3f3f3;                 /* same colour as panel */
 }
+
+/* left cluster =  ×  +  “The Canvas” */
 .canvas-header-left{display:flex;align-items:center;gap:8px;}
-.canvas-title{font-size:18px;font-weight:600;color:#999;padding-top:5px;}
+.canvas-title      {font-size:18px;font-weight:600;color:#999;padding-top:5px;}
+
+/* right cluster =  Undo • Redo • Copy • Send */
 .canvas-header-right{display:flex;align-items:center;gap:4px;}
 
-/* ---------- 2) Shared round icon-buttons ---------- */
+/* shared icon-button look */
 .canvas-icon-btn{
   background:none;border:none;
-  width:42px;height:42px;
+  width:42px;height:42px;              /* roomy click target  */
   display:flex;align-items:center;justify-content:center;
-  cursor:pointer;font-size:45px;line-height:1;color:#999;
+  cursor:pointer;
+  font-size:45px;line-height:1;        /* ×, ↶, ↻ glyph size   */
+  color:#999;
 }
 .canvas-icon-btn:hover{background:#e0e0e0;border-radius:12px;}
 .canvas-send-btn svg{width:26px;height:26px;}
 
-/* ---------- 3) Panel sizing / position ---------- */
+/* ---------- 2) Panel sizing / position ---------- */
+
+/* default = closed: zero width + invisible */
 .canvas-panel{
-  flex:0 0 0;max-width:0;overflow:hidden;
+  flex:0 0 0;
+  max-width:0;
+  overflow:hidden;
   background:#f3f3f3;
   transition:flex-basis .25s ease,max-width .25s ease,opacity .15s ease;
   display:flex;flex-direction:column;
 
+  /* border (only top + left) & rounded TL corner */
   border-top:1px solid #b0b0b0;
   border-left:1px solid #b0b0b0;
   border-radius:12px 0 0 0;
 
-  position:sticky;top:71px;height:calc(100vh - 71px);
+  /* sticky under nav bar */
+  position:sticky;
+  top:71px;
+  height:calc(100vh - 71px);
 
+  /* closed state visibility */
   opacity:0;pointer-events:none;
+
+  /* global RHS padding requested */
+  padding-right:35px;
 }
+
+/* ---------- 3) Panel open state widths ---------- */
 .wrp.cnt.canvas-open .bSeCont{
   flex:0 0 calc((100vw - 300px)/2);
   max-width:calc((100vw - 300px)/2);
@@ -3580,21 +3600,20 @@ body{
   opacity:1;pointer-events:auto;
 }
 
-/* ---------- 4) Editor itself ---------- */
-#canvas-editor, .EasyMDEContainer{height:100%;}
-
-.canvas-panel .editor-toolbar,
-.canvas-panel .CodeMirror,
-.canvas-panel .editor-preview{
-  border:none!important;             /* seamless look */
-  background:#f3f3f3!important;
+/* ---------- 4) Scrollable body & editor paddings ---------- */
+#working-canvas .canvas-body{
+  flex:1;
+  overflow:auto;
 }
-.canvas-panel .CodeMirror{
-  padding:8px 0 16px 0;              /* breathing room */
-  font-size:16px;line-height:1.6;
-}
-.canvas-panel .editor-toolbar a{color:#666;}
-.canvas-panel .editor-toolbar a:hover{color:#111;}
 
-/* ---------- 5) Mobile hide ---------- */
-@media(max-width:939px){.canvas-panel{display:none!important;}}
+/* CodeMirror instance created by EasyMDE */
+#working-canvas .CodeMirror{
+  padding:24px 12px 12px;   /* 24px top, 12px L/R/B */
+  height:100%;              /* fill remaining space */
+  box-sizing:border-box;
+}
+
+/* ---------- 5) Mobile / tablet – hide entirely ---------- */
+@media(max-width:939px){
+  .canvas-panel{display:none!important;}
+}
