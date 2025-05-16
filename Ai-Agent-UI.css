@@ -3562,10 +3562,3 @@ MOBILE STYLES BELOW
 body{
 	background: #ffffff !important;
 }
-/* DEBUG — remove after we find the culprit */
-#chat_conversation-wrapper > * {
-  outline: 2px solid red;        /* every row = red box            */
-}
-#chat_conversation-wrapper > * * {
-  outline: 1px solid rgba(0,0,255,.4);   /* cells = blue boxes      */
-}
