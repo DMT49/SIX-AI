@@ -3551,7 +3551,8 @@ body{
 .canvas-title{
   font-size:18px;
   font-weight:600;
-  color:#666;
+  color:#999;
+  padding-top:5px;
 }
 
 /* right cluster =  Undo • Redo • Send */
@@ -3607,6 +3608,7 @@ body{
   /* closed state visibility */
   opacity:0;
   pointer-events:none;
+  padding-right:35px;
 }
 
 /* ---------- 3) Panel open state widths ---------- */
