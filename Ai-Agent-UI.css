@@ -3496,5 +3496,5 @@ MOBILE STYLES BELOW
 
 /* Force the entire page background to white */
 html{
-  background-color:#fff;     /* pure white */
+  background-color:#fff !important;     /* pure white */
 }
