@@ -3532,17 +3532,17 @@ body{
    WORKING-CANVAS  (full replacement stylesheet)
    ───────────────────────────────────────────── */
 
-/* ---------- 1) Header basics ---------- */
+/* ---------- 1) Header layout / colours ---------- */
 .canvas-header{
-  flex:0 0 auto;                 /* keeps header height fixed */
+  flex:0 0 auto;                              /* fixed height  */
   display:flex;
   justify-content:space-between;
   align-items:center;
   padding:4px 8px;
-  background:#f3f3f3;            /* same colour as panel */
+  background:#f3f3f3;                         /* panel colour  */
 }
 
-/* left cluster =  ×  +  “The Canvas” */
+/* left cluster  ―  ×  +  “The Canvas” */
 .canvas-header-left{
   display:flex;
   align-items:center;
@@ -3555,63 +3555,66 @@ body{
   padding-top:5px;
 }
 
-/* right cluster =  Undo • Redo • Send */
+/* right cluster  ―  Undo • Redo • Copy • Send */
 .canvas-header-right{
   display:flex;
   align-items:center;
   gap:4px;
 }
 
-/* shared icon-button look */
+/* ---------- 2) Shared icon-button look ---------- */
 .canvas-icon-btn{
   background:none;
   border:none;
-  width:42px; height:42px;        /* roomy click target  */
+  width:42px; height:42px;                    /* large hit-box  */
   display:flex; align-items:center; justify-content:center;
   cursor:pointer;
-  font-size:45px;                 /* ×, ↶, ↻ glyph size   */
   line-height:1;
   color:#999;
+  transition:background .15s ease,color .15s ease;
 }
+
+/*  x  uses a glyph; other buttons use inline SVG */
+.canvas-close-btn{font-size:45px;}            /* ≈ 1.5× size    */
+
+/* SVG size & inherit colour */
+.canvas-icon-btn svg{width:24px;height:24px;fill:currentColor;}
+
+/* hover feedback */
 .canvas-icon-btn:hover{
   background:#e0e0e0;
   border-radius:12px;
+  color:#666;
 }
 
-/* SVG in the send button */
-.canvas-send-btn svg{width:26px;height:26px;}
+/* ---------- 3) Panel sizing / position ---------- */
 
-/* ---------- 2) Panel sizing / position ---------- */
-
-/* default = closed: zero width + invisible */
+/* default (closed)  ― 0 width + invisible */
 .canvas-panel{
   flex:0 0 0;
   max-width:0;
   overflow:hidden;
-  background:#f3f3f3;             /* panel colour          */
-  transition:
-    flex-basis .25s ease,
-    max-width   .25s ease,
-    opacity     .15s ease;
+  background:#f3f3f3;
+  transition:flex-basis .25s ease,max-width .25s ease,opacity .15s ease;
   display:flex; flex-direction:column;
 
-  /* border (only top + left) & rounded TL corner */
+  /* border (top + left only) & rounded TL corner */
   border-top:1px solid #b0b0b0;
   border-left:1px solid #b0b0b0;
   border-radius:12px 0 0 0;
 
-  /* sticky under nav bar */
+  /* sticky under global nav */
   position:sticky;
-  top:71px;                       /* nav height            */
-  height:calc(100vh - 71px);      /* full viewport minus nav */
+  top:71px;                                    /* nav height    */
+  height:calc(100vh - 71px);
 
   /* closed state visibility */
   opacity:0;
   pointer-events:none;
-  padding-right:35px;
+  padding-right:35px;                          /* room for gap  */
 }
 
-/* ---------- 3) Panel open state widths ---------- */
+/* open state – takes ½ of remaining width (after 300 px sidebar) */
 .wrp.cnt.canvas-open .bSeCont{
   flex:0 0 calc((100vw - 300px)/2);
   max-width:calc((100vw - 300px)/2);
@@ -3619,8 +3622,6 @@ body{
 .wrp.cnt.canvas-open .canvas-panel{
   flex:0 0 calc((100vw - 300px)/2);
   max-width:calc((100vw - 300px)/2);
-
-  /* become visible + clickable */
   opacity:1;
   pointer-events:auto;
 }
@@ -3632,7 +3633,7 @@ body{
   padding:16px;
 }
 
-/* ---------- 5) Mobile / tablet – hide entirely ---------- */
-@media (max-width:939px){
+/* ---------- 5) Hide entirely on ≤ 939 px ---------- */
+@media(max-width:939px){
   .canvas-panel{display:none!important;}
 }
