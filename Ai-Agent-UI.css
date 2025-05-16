@@ -3485,6 +3485,7 @@ MOBILE STYLES BELOW
 
 .bSe.right{
         max-width:900px !important;
+	width:100% !important;
 }
 
 .bSeCont{
