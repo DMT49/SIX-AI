@@ -3646,7 +3646,7 @@ body{
 .toastui-editor-defaultUI-toolbar{
 	padding: 4px 8px !important;
 	background-color: #F3F3F3 !important;
-	border: unset !important;
+	border: 0px !important;
 }
 
 .toastui-editor-toolbar-icons{
