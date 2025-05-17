@@ -3649,3 +3649,7 @@ body{
 .italic toastui-editor-toolbar-icons{
 	margin:0px !important;
 }
+.toastui-editor-defaultUI{
+	border:unset !important;
+	border-radius: 0px !important;
+}
