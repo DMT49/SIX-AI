@@ -462,8 +462,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       try {
         const item = new ClipboardItem({
           "text/plain":    new Blob([plain],    { type: "text/plain" }),
-          "text/html":     new Blob([html],     { type: "text/html"  }),
-          "text/markdown": new Blob([markdown], { type: "text/markdown" })
+          "text/html":     new Blob([html],     { type: "text/html"  })
         });
         await navigator.clipboard.write([item]);
       } catch (err) {
