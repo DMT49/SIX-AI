@@ -2124,13 +2124,24 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
         redoBtn && redoBtn.addEventListener('click', () =>
           window.__canvasEditor.exec('redo')
         );
-        copyBtn && copyBtn.addEventListener('click', () => {
-          navigator.clipboard.writeText(window.__canvasEditor.getMarkdown())
-            .then(() => {
-              copyBtn.classList.add('is-active');      // optional visual feedback
-              setTimeout(()=>copyBtn.classList.remove('is-active'),1500);
-            })
-            .catch(console.error);
+          /* ——— Canvas “Copy” button (rich + plain) ——— */
+        copyBtn && copyBtn.addEventListener('click', async () => {
+          /* 1) fetch raw markdown from Toast-UI */
+          const md = window.__canvasEditor.getMarkdown();
+        
+          /* 2) build rich + plain variants (helpers already exist globally) */
+          const html  = DOMPurify.sanitize(marked.parse(md)); // pretty HTML
+          const plain = markdownToPlainText(md);              // pure text
+        
+          /* 3) write to clipboard (uses the same smart writer as chat area) */
+          try {
+            await writeSmartClipboard({ plain, html });       // no markdown MIME → safest
+            copyBtn.classList.add('is-active');               // tiny “Copied!” flash
+            setTimeout(() => copyBtn.classList.remove('is-active'), 1500);
+          } catch (err) {
+            console.error('Clipboard copy failed:', err);
+            alert('Clipboard write was blocked – check browser permissions.');
+          }
         });
         sendBtn && sendBtn.addEventListener('click', () => {
           const md = window.__canvasEditor.getMarkdown();
