@@ -3665,3 +3665,21 @@ body{
 .toastui-editor-defaultUI-toolbar button {
     border: 0px solid #f7f9fc !important;
 }
+
+/* ─── Remove the built-in underline from H1 / H2 ───────────────────────── */
+.toastui-editor-contents h1,
+.toastui-editor-contents h2,
+.toastui-editor .ProseMirror h1,
+.toastui-editor .ProseMirror h2 {
+  border-bottom: none !important;   /* kill the line */
+  padding-bottom: 0 !important;     /* tighten spacing */
+}
+/* Optional: adjust heading spacing the way you like */
+.toastui-editor-contents h1,
+.toastui-editor .ProseMirror h1 {
+  margin: 0 0 0.6em;                /* example */
+}
+.toastui-editor-contents h2,
+.toastui-editor .ProseMirror h2 {
+  margin: 0 0 0.5em;
+}
