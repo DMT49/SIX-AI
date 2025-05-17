@@ -441,6 +441,37 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       // Use flex on mobile; grid on desktop
       chatInputWrapper.style.display = isMobile ? "flex" : "grid";
     }
+    
+    /*───────────────────────────────────────────────────────────
+      Smart clipboard writer
+      – Writes text/plain (always)
+      – Also writes text/html  and text/markdown when supported
+    ───────────────────────────────────────────────────────────*/
+    async function writeSmartClipboard({ plain, html, markdown }) {
+      // 1. Feature / security checks
+      const canWriteRich =
+        window.isSecureContext &&                 // HTTPS
+        navigator.clipboard?.write &&             // ‘write’ API
+        window.ClipboardItem;                     // constructor
+    
+      if (!canWriteRich) {
+        // Fallback: old behaviour = plain text only
+        return navigator.clipboard.writeText(plain);
+      }
+    
+      try {
+        const item = new ClipboardItem({
+          "text/plain":    new Blob([plain],    { type: "text/plain" }),
+          "text/html":     new Blob([html],     { type: "text/html"  }),
+          "text/markdown": new Blob([markdown], { type: "text/markdown" })
+        });
+        await navigator.clipboard.write([item]);
+      } catch (err) {
+        // If rich write fails, fall back to plain text so the user still gets something
+        console.warn("Rich clipboard write failed, falling back to plain text:", err);
+        await navigator.clipboard.writeText(plain);
+      }
+    }
 
 
     function markdownToPlainText(markdown) {
@@ -518,25 +549,32 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
         `;
         
         // 6) On click, copy plainText to clipboard
-        copyBtn.addEventListener('click', () => {
-          navigator.clipboard.writeText(plainText)
-            .then(() => {
-              // Swap to tick icon + "Copied!"
-              copyBtn.innerHTML = `
-                <span class="icon-container">${CHECK_ICON_SVG}</span>
-                <span class="button-text">Copied!</span>
-              `;
-              setTimeout(() => {
-                copyBtn.innerHTML = `
-                  <span class="icon-container">${COPY_ICON_SVG}</span>
-                  <span class="button-text">Copy</span>
-                `;
-              }, 2000);
-            })
-            .catch((err) => {
-              console.error('Clipboard copy failed:', err);
+         copyBtn.addEventListener('click', async () => {
+          try {
+            await writeSmartClipboard({
+              plain   : plainText,
+              html    : sanitizedHtml,  // already defined earlier
+              markdown: rawText         // original fenced block, including MD
             });
+        
+            /* visual feedback (unchanged) */
+            copyBtn.innerHTML = `
+              <span class="icon-container">${CHECK_ICON_SVG}</span>
+              <span class="button-text">Copied!</span>
+            `;
+            setTimeout(() => {
+              copyBtn.innerHTML = `
+                <span class="icon-container">${COPY_ICON_SVG}</span>
+                <span class="button-text">Copy</span>
+              `;
+            }, 2000);
+        
+          } catch (err) {
+            console.error('Clipboard copy failed:', err);
+            alert('Sorry—your browser blocked copying. Try again or enable permissions.');
+          }
         });
+
     
         // 7) Optionally wrap the button in a small header
         const headerDiv = document.createElement('div');
