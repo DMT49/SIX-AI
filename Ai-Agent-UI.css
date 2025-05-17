@@ -3661,3 +3661,7 @@ body{
 .toastui-editor-contents{
 	background-color: #F3F3F3 !important;
 }
+
+.toastui-editor-defaultUI-toolbar button {
+    border: 0px solid #f7f9fc !important;
+}
