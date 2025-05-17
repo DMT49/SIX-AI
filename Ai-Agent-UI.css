@@ -3652,4 +3652,5 @@ body{
 .toastui-editor-defaultUI{
 	border:unset !important;
 	border-radius: 0px !important;
+	background-color: #F3F3F3;
 }
