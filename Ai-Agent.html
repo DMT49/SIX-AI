@@ -2058,12 +2058,12 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       /* CSS */
       const css = document.createElement('link');
       css.rel  = 'stylesheet';
-      css.href = 'https://cdn.jsdelivr.net/npm/@toast-ui/editor@3.4.0/dist/toastui-editor.min.css';
+      css.href = 'https://uicdn.toast.com/editor/latest/toastui-editor.min.css';
       document.head.appendChild(css);
     
       /* JS */
       const js  = document.createElement('script');
-      js.src    = 'https://cdn.jsdelivr.net/npm/@toast-ui/editor@3.4.0/dist/toastui-editor-all.min.js';
+      js.src    = 'https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js';
       js.onload = () => {
         const { Editor } = window.toastui;
         window.__canvasEditor = new Editor({
