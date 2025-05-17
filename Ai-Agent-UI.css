@@ -3641,3 +3641,7 @@ body{
 @media (max-width:939px){
   .canvas-panel{display:none!important;}
 }
+
+.toastui-editor-defaultUI-toolbar{
+	padding: 4px 8px !important;
+}
