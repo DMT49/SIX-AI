@@ -2046,48 +2046,71 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       </div>
     
       <!-- textarea that EasyMDE will enhance -->
-      <textarea id="canvas-editor" placeholder="Start writing…"></textarea>
+      <div id="canvas-editor" style="height:100%;"></div>
     `;
     /* Insert immediately after the main content column */
     main.insertAdjacentElement('afterend', canvas);
 
-
-    /*  ░░░  EasyMDE loader / initialiser  ░░░ */
+    /*  ░░░  Toast UI Editor loader / initialiser  ░░░ */
     function initCanvasEditor(){
-      if(window.__canvasMDE){ return; }
+      if(window.__canvasEditor){ return; }           // guard against double-load
     
+      /* CSS */
       const css = document.createElement('link');
       css.rel  = 'stylesheet';
-      css.href = 'https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css';
+      css.href = 'https://cdn.jsdelivr.net/npm/@toast-ui/editor@3.4.0/dist/toastui-editor.min.css';
       document.head.appendChild(css);
     
+      /* JS */
       const js  = document.createElement('script');
-      js.src    = 'https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js';
+      js.src    = 'https://cdn.jsdelivr.net/npm/@toast-ui/editor@3.4.0/dist/toastui-editor-all.min.js';
       js.onload = () => {
-        window.__canvasMDE = new EasyMDE({
-          element: document.getElementById('canvas-editor'),
-          spellChecker: false,
-          status: false,
-          autofocus: true,
-          autoDownloadFontAwesome: false,
-          toolbar: [
-            'bold','italic','strikethrough','heading','|',
-            'quote','unordered-list','ordered-list','code','horizontal-rule','|',
-            'preview','side-by-side','fullscreen'
-          ]
+        const { Editor } = window.toastui;
+        window.__canvasEditor = new Editor({
+          el:      document.getElementById('canvas-editor'),
+          height:  '100%',
+          initialEditType: 'wysiwyg',
+          previewStyle:    'vertical',
+          hideModeSwitch:  true,
+          usageStatistics: false
         });
+    
+        /* ——— Header-button wiring ——— */
+        const undoBtn = document.getElementById('canvas-undo-btn');
+        const redoBtn = document.getElementById('canvas-redo-btn');
+        const copyBtn = document.getElementById('canvas-copy-btn');
+        const sendBtn = document.getElementById('canvas-send-btn');
+    
+        undoBtn && undoBtn.addEventListener('click', () =>
+          window.__canvasEditor.exec('undo')
+        );
+        redoBtn && redoBtn.addEventListener('click', () =>
+          window.__canvasEditor.exec('redo')
+        );
+        copyBtn && copyBtn.addEventListener('click', () => {
+          navigator.clipboard.writeText(window.__canvasEditor.getMarkdown())
+            .then(() => {
+              copyBtn.classList.add('is-active');      // optional visual feedback
+              setTimeout(()=>copyBtn.classList.remove('is-active'),1500);
+            })
+            .catch(console.error);
+        });
+        sendBtn && sendBtn.addEventListener('click', () => {
+          const md = window.__canvasEditor.getMarkdown();
+          /* ——---  REPLACE the next line with your real e-mail / chat logic  ---—— */
+          console.log('[Canvas] Send clicked. Markdown content:\n', md);
+        });
+    
+        /* Re-arm tool-tips for these new buttons */
+        if (typeof initTooltips === 'function') initTooltips();
       };
       document.head.appendChild(js);
     }
+
     
     initTooltips();      // (re-hook tool-tips for the new buttons, already in your code)
     initCanvasEditor();  // <-- add this call right here
 
-
-
-    
-    /* NEW — re-initialise tool-tips so the fresh buttons get listeners */
-    if (typeof initTooltips === 'function') initTooltips();
   }
 
   /* 2 – Wire the open / close behaviour */
