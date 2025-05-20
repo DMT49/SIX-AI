@@ -2098,13 +2098,13 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
     function initCanvasEditor(){
       if (window.__canvasEditor) return;           // guard against double‐load
     
-      /* CSS */
+      /* 1) Load Toast UI CSS */
       const css = document.createElement('link');
       css.rel  = 'stylesheet';
       css.href = 'https://uicdn.toast.com/editor/latest/toastui-editor.min.css';
       document.head.appendChild(css);
     
-      /* JS */
+      /* 2) Load Toast UI JS */
       const js  = document.createElement('script');
       js.src    = 'https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js';
       js.onload = () => {
@@ -2117,15 +2117,65 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
           hideModeSwitch:   true,
           usageStatistics:  false
         });
-        
+    
+        /* 3) If we fetched `initialCanvasContent`, load it now */
         if (window.initialCanvasContent) {
           window.__canvasEditor.setMarkdown(window.initialCanvasContent);
         }
     
-        // … autosave, undo/redo, copy-button wiring remain unchanged …
+        /* 4) Autosave → Airtable */
+        async function saveCanvasToAirtable(markdown) {
+          if (!window.airtableRecordId) return;
+          const url = `https://api.airtable.com/v0/app2N6x5jeRnIzSpL/Conversations/${window.airtableRecordId}`;
+          await fetch(url, {
+            method: 'PATCH',
+            headers: {
+              Authorization: 'Bearer patTeuxUuzgG0ZU8Q.2eb9ff7f31afe3e06f3c128c5b5b832bcc4e4e85bd58a5007a8368f218d28b83',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              fields: { 'Canvas Content': markdown }
+            })
+          });
+        }
+        let autosaveTimer;
+        window.__canvasEditor.on('change', () => {
+          clearTimeout(autosaveTimer);
+          autosaveTimer = setTimeout(() => {
+            const md = window.__canvasEditor.getMarkdown();
+            saveCanvasToAirtable(md);
+          }, 5000);
+        });
     
-        /* ——— Canvas “Send via Email” button ——— */
+        /* 5) Header-button wiring */
+        const undoBtn = document.getElementById('canvas-undo-btn');
+        const redoBtn = document.getElementById('canvas-redo-btn');
+        const copyBtn = document.getElementById('canvas-copy-btn');
         const sendBtn = document.getElementById('canvas-send-btn');
+    
+        undoBtn && undoBtn.addEventListener('click', () =>
+          window.__canvasEditor.exec('undo')
+        );
+        redoBtn && redoBtn.addEventListener('click', () =>
+          window.__canvasEditor.exec('redo')
+        );
+    
+        /* 6) Copy (rich + plain) */
+        copyBtn && copyBtn.addEventListener('click', async () => {
+          const md    = window.__canvasEditor.getMarkdown();
+          const html  = DOMPurify.sanitize(marked.parse(md));
+          const plain = markdownToPlainText(md);
+          try {
+            await writeSmartClipboard({ plain, html });
+            copyBtn.classList.add('is-active');
+            setTimeout(() => copyBtn.classList.remove('is-active'), 1500);
+          } catch (err) {
+            console.error('Clipboard copy failed:', err);
+            alert('Clipboard write was blocked – check browser permissions.');
+          }
+        });
+    
+        /* 7) Send via Email */
         if (sendBtn) {
           sendBtn.addEventListener('click', async () => {
             sendBtn.disabled = true;
@@ -2140,24 +2190,21 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
               >
             `;
     
-            // ←—— UPDATED: retrieve real email + first name
-            const container = document.getElementById('ai-agent-container') || {};
-            const email     = container.getAttribute('data-user-email') || '';
-            const fullName  = container.getAttribute('data-user-name')  || '';
-            const firstName = fullName.split(' ')[0];
-    
+            // retrieve dynamic inputs from data-attributes
+            const container      = document.getElementById('ai-agent-container') || {};
+            const email          = container.getAttribute('data-user-email') || '';
+            const fullName       = container.getAttribute('data-user-name')  || '';
+            const firstName      = fullName.split(' ')[0] || '';
             const conversationId = window.conversationId || '';
             const canvasMd       = window.__canvasEditor.getMarkdown();
-    
-            // agent ID stays the same
-            const agentId = container.getAttribute('data-agent-id') || '';
+            const agentId        = container.getAttribute('data-agent-id') || '';
     
             const payload = {
               email,
-              first_name: firstName,
-              conversation_id: conversationId,
+              first_name:            firstName,
+              conversation_id:       conversationId,
               canvas_content_markdown: canvasMd,
-              agent_id: agentId
+              agent_id:              agentId
             };
     
             try {
@@ -2186,6 +2233,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
           });
         }
     
+        /* 8) Re-arm tooltips */
         if (typeof initTooltips === 'function') initTooltips();
       };
       document.head.appendChild(js);
@@ -2193,7 +2241,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
 
     
     initTooltips();      // (re-hook tool-tips for the new buttons, already in your code)
-    initCanvasEditor();  // <-- add this call right here
+    ;  // <-- add this call right here
 
   }
 
