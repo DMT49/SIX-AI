@@ -8,7 +8,7 @@
         <div id="chat_conversation-wrapper" class="chat_conversation-wrapper"></div>
         <div class="chat_input-wrapper">
 
-          <!-- New  hamburger button (visible only on mobile) -->
+          <!-- New hamburger button (visible only on mobile) -->
           <div id="hamburger-menu-mobile" class="chat_input-button my-btn" data-tooltip="Open Menu">
             <div class="icon-embed-small w-embed">
             </div>
@@ -2118,7 +2118,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
           usageStatistics:  false
         });
     
-        /* 3) If we fetched `initialCanvasContent`, load it now */
+        /* 3) Load any previously-saved Markdown */
         if (window.initialCanvasContent) {
           window.__canvasEditor.setMarkdown(window.initialCanvasContent);
         }
@@ -2147,12 +2147,9 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
           }, 5000);
         });
     
-        /* 5) Header-button wiring */
+        /* 5) Undo/Redo buttons */
         const undoBtn = document.getElementById('canvas-undo-btn');
         const redoBtn = document.getElementById('canvas-redo-btn');
-        const copyBtn = document.getElementById('canvas-copy-btn');
-        const sendBtn = document.getElementById('canvas-send-btn');
-    
         undoBtn && undoBtn.addEventListener('click', () =>
           window.__canvasEditor.exec('undo')
         );
@@ -2160,7 +2157,8 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
           window.__canvasEditor.exec('redo')
         );
     
-        /* 6) Copy (rich + plain) */
+        /* 6) Copy button (rich & plain) */
+        const copyBtn = document.getElementById('canvas-copy-btn');
         copyBtn && copyBtn.addEventListener('click', async () => {
           const md    = window.__canvasEditor.getMarkdown();
           const html  = DOMPurify.sanitize(marked.parse(md));
@@ -2171,17 +2169,17 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
             setTimeout(() => copyBtn.classList.remove('is-active'), 1500);
           } catch (err) {
             console.error('Clipboard copy failed:', err);
-            alert('Clipboard write was blocked – check browser permissions.');
+            alert('Clipboard write was blocked – check permissions.');
           }
         });
     
-        /* 7) Send via Email */
+        /* 7) Send-via-email button */
+        const sendBtn = document.getElementById('canvas-send-btn');
         if (sendBtn) {
           sendBtn.addEventListener('click', async () => {
             sendBtn.disabled = true;
             const originalHTML = sendBtn.innerHTML;
-    
-            // show loading GIF
+            // show loading
             sendBtn.innerHTML = `
               <img
                 src="https://member.archmarketing.org/wp-content/uploads/2025/01/ZKZg.gif"
@@ -2190,7 +2188,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
               >
             `;
     
-            // retrieve dynamic inputs from data-attributes
+            // pull real data from the DOM
             const container      = document.getElementById('ai-agent-container') || {};
             const email          = container.getAttribute('data-user-email') || '';
             const fullName       = container.getAttribute('data-user-name')  || '';
@@ -2201,10 +2199,10 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
     
             const payload = {
               email,
-              first_name:            firstName,
-              conversation_id:       conversationId,
+              first_name:              firstName,
+              conversation_id:         conversationId,
               canvas_content_markdown: canvasMd,
-              agent_id:              agentId
+              agent_id:                agentId
             };
     
             try {
@@ -2218,7 +2216,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
               );
               if (!res.ok) throw new Error(`HTTP ${res.status}`);
     
-              // success: show tick
+              // show success
               sendBtn.innerHTML = `<span style="font-size:24px;color:green;">✔️</span>`;
               setTimeout(() => {
                 sendBtn.innerHTML = originalHTML;
@@ -2226,22 +2224,21 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
               }, 2000);
     
             } catch (err) {
-              console.error('Error sending canvas via email:', err);
+              console.error('Email send failed:', err);
               sendBtn.innerHTML = originalHTML;
               sendBtn.disabled = false;
             }
           });
         }
     
-        /* 8) Re-arm tooltips */
+        /* 8) Re-arm tooltips on the new buttons */
         if (typeof initTooltips === 'function') initTooltips();
       };
       document.head.appendChild(js);
     }
-
     
     initTooltips();      // (re-hook tool-tips for the new buttons, already in your code)
-    ;  // <-- add this call right here
+    initCanvasEditor();  // <-- add this call right here
 
   }
 
