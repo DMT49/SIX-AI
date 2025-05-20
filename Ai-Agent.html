@@ -161,23 +161,6 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
 
     window.airtableRecordId = null;
 
-    // ——— Autosave helper (global) ———
-    async function saveCanvasToAirtable(markdown) {
-      if (!window.airtableRecordId) return;
-      const url = `https://api.airtable.com/v0/app2N6x5jeRnIzSpL/Conversations/${window.airtableRecordId}`;
-      await fetch(url, {
-        method: 'PATCH',
-        headers: {
-          Authorization: 'Bearer patTeuxUuzgG0ZU8Q.2eb9ff7f31afe3e06f3c128c5b5b832bcc4e4e85bd58a5007a8368f218d28b83',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          fields: { 'Canvas Content': markdown }
-        })
-      });
-    }
-
-
     // Helper: Convert Float32Array to 16-bit PCM ArrayBuffer
     function floatTo16BitPCM(input) {
       const output = new Int16Array(input.length);
@@ -714,12 +697,9 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
 
     if (conversationID) {
       console.log("Conversation ID found in URL:", conversationID);
-      fetchAirtableRecordId(conversationID)
-        .then(() => {
-          console.log("Airtable Record ID set:", window.airtableRecordId);
-          // ——— Flush any edits already in the canvas ———
-          saveCanvasToAirtable(window.__canvasEditor.getMarkdown());
-        });
+      fetchAirtableRecordId(conversationID).then(() => {
+        console.log("Airtable Record ID set from existing conversation ID:", airtableRecordId);
+      });
     } else {
       console.log("No conversation ID provided in the URL. Waiting for user to start a new conversation.");
     }
@@ -1811,9 +1791,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
           metadata["Design-Brief-Firm-ID"] = designBriefFirmId;
         }
 
-        const newRecordId = await ensureAirtableConversation(metadata);
-        // ——— Flush whatever’s in the canvas immediately ———
-        saveCanvasToAirtable(window.__canvasEditor.getMarkdown());
+        await ensureAirtableConversation(metadata);
 
       });
     } else {
