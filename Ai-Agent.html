@@ -2118,6 +2118,11 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
           hideModeSwitch:   true,
           usageStatistics:  false
         });
+        
+        // ←—— NEW: load existing canvas if we have it
+        if (window.initialCanvasContent) {
+          window.__canvasEditor.setMarkdown(window.initialCanvasContent);
+        }
     
         // ——— Autosave helper: PATCH markdown to Airtable ———
         async function saveCanvasToAirtable(markdown) {
