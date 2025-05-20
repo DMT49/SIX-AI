@@ -2097,7 +2097,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
 
     /*  ░░░  Toast UI Editor loader / initialiser  ░░░ */
     function initCanvasEditor(){
-      if (window.__canvasEditor) return;           // guard against double-load
+      if (window.__canvasEditor) return;           // guard against double‐load
     
       /* CSS */
       const css = document.createElement('link');
@@ -2178,16 +2178,69 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
           }
         });
     
-        sendBtn && sendBtn.addEventListener('click', () => {
-          const md = window.__canvasEditor.getMarkdown();
-          console.log('[Canvas] Send clicked. Markdown content:\n', md);
-        });
+        /* ——— Canvas “Send via Email” button ——— */
+        if (sendBtn) {
+          sendBtn.addEventListener('click', async () => {
+            sendBtn.disabled = true;
+            const originalHTML = sendBtn.innerHTML;
+    
+            // show loading GIF
+            sendBtn.innerHTML = `
+              <img
+                src="https://member.archmarketing.org/wp-content/uploads/2025/01/ZKZg.gif"
+                alt="Loading..."
+                style="width:24px; height:24px;"
+              >
+            `;
+    
+            // gather payload
+            const email          = '%%EMAIL%%';
+            const firstName      = '%%FIRST_NAME%%';
+            const conversationId = window.conversationId || '';
+            const canvasMd       = window.__canvasEditor.getMarkdown();
+            const container      = document.getElementById('ai-agent-container');
+            const agentId        = container?.getAttribute('data-agent-id') || '';
+    
+            const payload = {
+              email,
+              first_name: firstName,
+              conversation_id: conversationId,
+              canvas_content_markdown: canvasMd,
+              agent_id: agentId
+            };
+    
+            try {
+              const res = await fetch(
+                'https://api-bcbe5a.stack.tryrelevance.com/latest/studios/9741f7e1-6d62-4e88-a164-655b647f0665/trigger_webhook?project=c5bf489c1af9-4886-afba-073965a5ad71',
+                {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(payload)
+                }
+              );
+              if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    
+              // success: show tick
+              sendBtn.innerHTML = `<span style="font-size:24px;color:green;">✔️</span>`;
+              setTimeout(() => {
+                sendBtn.innerHTML = originalHTML;
+                sendBtn.disabled = false;
+              }, 2000);
+    
+            } catch (err) {
+              console.error('Error sending canvas via email:', err);
+              sendBtn.innerHTML = originalHTML;
+              sendBtn.disabled = false;
+            }
+          });
+        }
     
         /* Re-arm tool-tips for these new buttons */
         if (typeof initTooltips === 'function') initTooltips();
       };
       document.head.appendChild(js);
     }
+
 
 
     
