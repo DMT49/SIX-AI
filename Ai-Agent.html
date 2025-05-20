@@ -2090,7 +2090,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
 
     /*  ░░░  Toast UI Editor loader / initialiser  ░░░ */
     function initCanvasEditor(){
-      if(window.__canvasEditor){ return; }           // guard against double-load
+      if (window.__canvasEditor) return;           // guard against double-load
     
       /* CSS */
       const css = document.createElement('link');
@@ -2104,12 +2104,38 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       js.onload = () => {
         const { Editor } = window.toastui;
         window.__canvasEditor = new Editor({
-          el:      document.getElementById('canvas-editor'),
-          height:  '100%',
-          initialEditType: 'wysiwyg',
-          previewStyle:    'vertical',
-          hideModeSwitch:  true,
-          usageStatistics: false
+          el:               document.getElementById('canvas-editor'),
+          height:           '100%',
+          initialEditType:  'wysiwyg',
+          previewStyle:     'vertical',
+          hideModeSwitch:   true,
+          usageStatistics:  false
+        });
+    
+        // ——— Autosave helper: PATCH markdown to Airtable ———
+        async function saveCanvasToAirtable(markdown) {
+          if (!window.airtableRecordId) return;
+          const url = `https://api.airtable.com/v0/app2N6x5jeRnIzSpL/Conversations/${window.airtableRecordId}`;
+          await fetch(url, {
+            method: 'PATCH',
+            headers: {
+              Authorization: 'Bearer patTeuxUuzgG0ZU8Q.2eb9ff7f31afe3e06f3c128c5b5b832bcc4e4e85bd58a5007a8368f218d28b83',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              fields: { 'Canvas Content': markdown }
+            })
+          });
+        }
+    
+        // ——— Debounced change listener (max once per 5s) ———
+        let autosaveTimer;
+        window.__canvasEditor.on('change', () => {
+          clearTimeout(autosaveTimer);
+          autosaveTimer = setTimeout(() => {
+            const md = window.__canvasEditor.getMarkdown();
+            saveCanvasToAirtable(md);
+          }, 5000);
         });
     
         /* ——— Header-button wiring ——— */
@@ -2124,28 +2150,24 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
         redoBtn && redoBtn.addEventListener('click', () =>
           window.__canvasEditor.exec('redo')
         );
-          /* ——— Canvas “Copy” button (rich + plain) ——— */
+    
+        /* ——— Canvas “Copy” button (rich + plain) ——— */
         copyBtn && copyBtn.addEventListener('click', async () => {
-          /* 1) fetch raw markdown from Toast-UI */
-          const md = window.__canvasEditor.getMarkdown();
-        
-          /* 2) build rich + plain variants (helpers already exist globally) */
-          const html  = DOMPurify.sanitize(marked.parse(md)); // pretty HTML
-          const plain = markdownToPlainText(md);              // pure text
-        
-          /* 3) write to clipboard (uses the same smart writer as chat area) */
+          const md    = window.__canvasEditor.getMarkdown();
+          const html  = DOMPurify.sanitize(marked.parse(md));
+          const plain = markdownToPlainText(md);
           try {
-            await writeSmartClipboard({ plain, html });       // no markdown MIME → safest
-            copyBtn.classList.add('is-active');               // tiny “Copied!” flash
+            await writeSmartClipboard({ plain, html });
+            copyBtn.classList.add('is-active');
             setTimeout(() => copyBtn.classList.remove('is-active'), 1500);
           } catch (err) {
             console.error('Clipboard copy failed:', err);
             alert('Clipboard write was blocked – check browser permissions.');
           }
         });
+    
         sendBtn && sendBtn.addEventListener('click', () => {
           const md = window.__canvasEditor.getMarkdown();
-          /* ——---  REPLACE the next line with your real e-mail / chat logic  ---—— */
           console.log('[Canvas] Send clicked. Markdown content:\n', md);
         });
     
@@ -2154,6 +2176,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       };
       document.head.appendChild(js);
     }
+
 
     
     initTooltips();      // (re-hook tool-tips for the new buttons, already in your code)
