@@ -1152,15 +1152,15 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
           }
         }
       });
-
     
       console.log("Conversation ID found:", conversationID);
       // Fetch and render messages as before
       fetchConversationMessages(conversationID).then((messages) => {
         if (messages) {
           renderConversationMessages(messages);
-          conversationId = conversationID; 
-          console.log("Global conversationId set to:", conversationId);
+          conversationId = conversationID;
+          window.conversationId = conversationID;      // ← ensure global is set
+          console.log("Global conversationId set to:", window.conversationId);
         } else {
           console.error("Failed to fetch conversation messages.");
         }
@@ -1172,7 +1172,6 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       console.log("No conversation ID found. Hiding input wrapper.");
       chatInputWrapper.style.display = "none";
     }
-
 
     let conversationId = null;      // local variable used in this file
     window.conversationId = null;   // copy on window for other scripts
