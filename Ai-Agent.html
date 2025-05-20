@@ -759,32 +759,33 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
         'Content-Type': 'application/json',
       };
       try {
-        const response = await fetch(`${airtableBaseUrl}?filterByFormula={Conversation-ID}="${conversationID}"`, {
-          method: 'GET',
-          headers: airtableHeaders,
-        });
-        if (response.ok) {
-          const data = await response.json();
-          if (data.records && data.records.length > 0) {
-            const record = data.records[0];
-            // Retrieve the desired fields
-            const clientName = record.fields['Client-Name'] || 'Unknown';
-            const timeLastEdited = record.fields['Time-Last-Edited'] || 'Unknown';
-            const summary = record.fields['Summary'] || '';
-            return { clientName, timeLastEdited, summary };
-          } else {
-            console.error("No matching Airtable record found for Conversation-ID:", conversationID);
-            return null;
-          }
-        } else {
+        const response = await fetch(
+          `${airtableBaseUrl}?filterByFormula={Conversation-ID}="${conversationID}"`,
+          { method: 'GET', headers: airtableHeaders }
+        );
+        if (!response.ok) {
           console.error("Error fetching conversation metadata:", await response.text());
           return null;
         }
+        const data = await response.json();
+        if (!data.records || data.records.length === 0) {
+          console.error("No matching Airtable record found for Conversation-ID:", conversationID);
+          return null;
+        }
+    
+        const record = data.records[0];
+        const clientName      = record.fields['Client-Name']       || 'Unknown';
+        const timeLastEdited  = record.fields['Time-Last-Edited'] || 'Unknown';
+        const summary         = record.fields['Summary']          || '';
+        const canvasContent   = record.fields['Canvas Content']   || '';      // ← new
+    
+        return { clientName, timeLastEdited, summary, canvasContent };
       } catch (error) {
         console.error("Error during fetchConversationMetadata:", error);
         return null;
       }
     }
+
 
 
 
@@ -1141,8 +1142,17 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       fetchConversationMetadata(conversationID).then((metadata) => {
         if (metadata) {
           renderConversationHeader(metadata);
+      
+          // Store for initial render…
+          window.initialCanvasContent = metadata.canvasContent || '';
+      
+          // …and immediately load if editor is ready
+          if (window.__canvasEditor) {
+            window.__canvasEditor.setMarkdown(window.initialCanvasContent);
+          }
         }
       });
+
     
       console.log("Conversation ID found:", conversationID);
       // Fetch and render messages as before
