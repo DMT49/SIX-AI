@@ -2118,12 +2118,13 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
           usageStatistics:  false
         });
 
-        /* ───  Highlight / edit overlay  v1.1  (robust) ─────────── */
+
+        /* ───  Highlight / edit overlay  v1.2  (document-level listener) ─── */
         (() => {
         
           /* ---------- state ---------- */
-          const state = { currentId:null, map:{} };   // id → { spanEl, btnEl }
-          window.__canvasHLState = state;
+          const state = { currentId:null, map:{} };            // id → { spanEl, btnEl }
+          window.__canvasHLState = state;                      // debugging hook
         
           const PENCIL = `
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -2153,7 +2154,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
           function deactivate(id){
             const e = state.map[id];
             if(!e) return;
-            e.spanEl.outerHTML = e.spanEl.innerHTML;
+            e.spanEl.outerHTML = e.spanEl.innerHTML;   // unwrap
             e.btnEl.remove();
             delete state.map[id];
             state.currentId = null;
@@ -2176,15 +2177,17 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
             state.map[id]={spanEl:span,btnEl:btn};
           }
         
-          /* ---------- main selection routine ---------- */
+          /* ---------- selection routine ---------- */
           function processSelection(){
-            if(!window.__canvasEditor.isWysiwygMode()) return;
+            if(!window.__canvasEditor || !window.__canvasEditor.isWysiwygMode()) return;
         
             const sel = window.getSelection();
             if(!sel || sel.isCollapsed) return;
         
-            // anchor must live inside the editor root
-            if(!root.contains(sel.anchorNode)) return;
+            /* make sure selection happened **inside** the canvas */
+            const anchor = sel.anchorNode;
+            const root   = document.getElementById('canvas-editor')?.parentNode; // #working-canvas body
+            if(!root || !root.contains(anchor)) return;
         
             /* hop to markdown, wrap, hop back */
             window.__canvasEditor.changeMode('markdown', true);
@@ -2208,26 +2211,16 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
               if(span) addBtn(span,id);
             });
         
-            sel.removeAllRanges();
+            sel.removeAllRanges();          // tidy up native highlight
           }
         
-          /* ---------- find WYSIWYG root robustly ---------- */
-          const els = window.__canvasEditor.getEditorElements();
-          const root =
-            Object.values(els).find(n=>n && n.nodeType===1 && n.classList.contains('toastui-editor-ww-container'));
-          if(!root){
-            console.error('[Canvas HL] WYSIWYG root not found – highlight overlay disabled.');
-            return;
-          }
-        
-          /* ---------- attach events ---------- */
-          root.addEventListener('mouseup', processSelection);
-          root.addEventListener('keyup',  (e)=>{
+          /* ---------- attach *once* at document level ---------- */
+          document.addEventListener('mouseup', processSelection);
+          document.addEventListener('keyup',  e=>{
             if(e.key==='Shift' || e.key.startsWith('Arrow')) processSelection();
           });
         
         })();
-
 
     
         /* 3) Load any previously-saved Markdown */
