@@ -2118,104 +2118,68 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
           usageStatistics:  false
         });
 
-        /* ───  Highlight / edit overlay  v1  (fixed listener) ───── */
+        /* ───  Highlight / edit overlay  v1  (Markdown hop) ──────── */
         (() => {
+        
+          /* ===== state ===== */
           const state = {
             currentId : null,
-            map       : {}          // id → { spanEl, btnEl }
+            map       : {}           // id → { spanEl, btnEl }
           };
-          window.__canvasHLState = state;     // expose for debugging
+          window.__canvasHLState = state;    // handy for console debugging
         
-          /* —— icons —— */
+          /* ===== icons ===== */
           const PENCIL_SVG = `
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
+              <path d="M12 20h9"/>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
             </svg>`;
           const BACK_SVG = `
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="15 18 9 12 15 6"/><polyline points="9 18 3 12 9 6"/>
+              <polyline points="15 18 9 12 15 6"/>
+              <polyline points="9 18 3 12 9 6"/>
             </svg>`;
         
-          /* —— helpers —— */
-          function posBtn(btn, span){
+          /* ===== helpers ===== */
+          function posBtn (btn, span) {
             const r = span.getBoundingClientRect();
-            btn.style.top  = (r.top + window.scrollY) + 'px';
+            btn.style.top  = (r.top  + window.scrollY) + 'px';
             btn.style.left = (r.left + window.scrollX - 28) + 'px';
           }
-          function handleScroll(){
-            if(!state.currentId) return;
-            const { spanEl, btnEl } = state.map[state.currentId] || {};
-            if(spanEl && btnEl) posBtn(btnEl, spanEl);
-          }
-          window.addEventListener('scroll', handleScroll, { passive:true });
         
-          /* — deactivate & clean — */
-          function deactivate(id){
+          function onScroll () {
+            if (!state.currentId) return;
+            const entry = state.map[state.currentId];
+            if (entry) posBtn(entry.btnEl, entry.spanEl);
+          }
+          window.addEventListener('scroll', onScroll, { passive: true });
+        
+          function deactivate (id) {
             const entry = state.map[id];
-            if(!entry) return;
-            /* unwrap span */
-            const span = entry.spanEl;
-            span.outerHTML = span.innerHTML;   // keep text, drop wrapper
-            /* remove btn */
+            if (!entry) return;
+        
+            /* unwrap the <span> but keep its text */
+            entry.spanEl.outerHTML = entry.spanEl.innerHTML;
             entry.btnEl.remove();
             delete state.map[id];
             state.currentId = null;
           }
         
-          /* — activate (pencil → back) — */
-          function activate(id){
-            if(state.currentId) deactivate(state.currentId);
+          function activate (id) {
+            if (state.currentId && state.currentId !== id) deactivate(state.currentId);
             state.currentId = id;
             const entry = state.map[id];
-            if(!entry) return;
-            entry.spanEl.classList.replace('canvas-hl-pending','canvas-hl-active');
+            if (!entry) return;
+        
+            entry.spanEl.classList.replace('canvas-hl-pending', 'canvas-hl-active');
             entry.btnEl.innerHTML = BACK_SVG;
             entry.btnEl.onclick   = () => deactivate(id);
             posBtn(entry.btnEl, entry.spanEl);
           }
         
-          /* — main selection handler — */
-          function handleSelection(){
-            /* MODE 1 – Markdown pane */
-            if(window.__canvasEditor.isMarkdownMode()){
-              const sel = window.__canvasEditor.getSelection();     // {start,end}
-              if(!sel || sel.start === sel.end) return;             // nothing chosen
-              const id = 'hl_' + Date.now();
-              window.__canvasEditor.exec('replaceSelection', [
-                `<span class="canvas-hl-pending" data-hl-id="${id}">`,
-                '</span>'
-              ]);
-              const span = window.__canvasEditor.el
-                .querySelector(`[data-hl-id="${id}"]`);
-              if(span) buildButtonForSpan(id, span);
-              window.getSelection()?.removeAllRanges();
-              return;
-            }
-        
-            /* MODE 2 – WYSIWYG pane */
-            const sel = window.getSelection();
-            if(!sel || sel.rangeCount === 0) return;
-            const range = sel.getRangeAt(0);
-            if(range.collapsed) return;                            // no real drag
-        
-            const id   = 'hl_' + Date.now();
-            const span = document.createElement('span');
-            span.className = 'canvas-hl-pending';
-            span.dataset.hlId = id;
-            try{ range.surroundContents(span); }
-            catch(err){ return; }                                  // e.g. partial tags
-        
-            /* let the editor notice the DOM change */
-            window.__canvasEditor.getCurrentModeEditor()?.trigger('change');
-        
-            buildButtonForSpan(id, span);
-            sel.removeAllRanges();
-          }
-        
-          /* — build & record the floating button for a span — */
-          function buildButtonForSpan(id, span){
+          function buildBtn (span, id) {
             const btn = document.createElement('button');
             btn.className = 'canvas-hl-btn';
             btn.type      = 'button';
@@ -2223,14 +2187,60 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
             document.body.appendChild(btn);
             posBtn(btn, span);
             btn.onclick = () => activate(id);
+        
             state.map[id] = { spanEl: span, btnEl: btn };
           }
         
-          /* — hook listeners directly to the real editable nodes — */
-          const els = window.__canvasEditor.getEditorElements();
-          els.wwEditor  && els.wwEditor.addEventListener('mouseup', handleSelection);
-          els.mdEditor  && els.mdEditor.addEventListener('mouseup', handleSelection);
+          /* ===== main selection handler ===== */
+          function handleMouseUp () {
+        
+            /* we only react while the editor is **currently** in WYSIWYG mode */
+            if (!window.__canvasEditor.isWysiwygMode()) return;
+        
+            /* Step 0 – confirm the user dragged over text (not just clicked) */
+            const domSel = window.getSelection();
+            if (!domSel || domSel.isCollapsed) return;
+        
+            /* Step 1 – hop to Markdown mode (no focus change!) */
+            window.__canvasEditor.changeMode('markdown', true);
+        
+            /* Step 2 – get range in Markdown coordinates */
+            const mdSel = window.__canvasEditor.getSelection();        // [start,end]
+            if (!mdSel || mdSel[0] === mdSel[1]) {
+              window.__canvasEditor.changeMode('wysiwyg', true);
+              return;
+            }
+        
+            /* Step 3 – wrap that range in a unique <span> */
+            const id = 'hl_' + Date.now();
+            window.__canvasEditor.exec('replaceSelection', [
+              `<span class="canvas-hl-pending" data-hl-id="${id}">`,
+              '</span>'
+            ]);
+        
+            /* Step 4 – hop straight back to WYSIWYG */
+            window.__canvasEditor.changeMode('wysiwyg', true);
+        
+            /* Step 5 – span now exists in new wysiwyg DOM → find & decorate */
+            requestAnimationFrame(() => {                            // wait one frame
+              const span = window.__canvasEditor
+                .getEditorElements().wysiwyg
+                .querySelector(`[data-hl-id="${id}"]`);
+              if (!span) return;
+        
+              buildBtn(span, id);
+            });
+        
+            /* Step 6 – clear the native selection for neatness */
+            domSel.removeAllRanges();
+          }
+        
+          /* ===== attach listener directly to wysiwyg root ===== */
+          const wysiwygRoot = window.__canvasEditor.getEditorElements().wysiwyg;
+          wysiwygRoot && wysiwygRoot.addEventListener('mouseup', handleMouseUp);
+        
         })();
+
 
 
     
