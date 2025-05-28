@@ -2167,24 +2167,25 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
             e.btnEl.onclick   = () => deactivate(id);
             pos(e.btnEl, e.spanEl);
           }
-          function addBtn(span,id){
+          function addBtn (span, id) {
             const btn = document.createElement('button');
             btn.className = 'canvas-hl-btn';
             btn.type      = 'button';
             btn.innerHTML = PENCIL;
           
-            /* ░░ STOP the overlay’s global mouse handler from seeing this click ░░ */
-            btn.addEventListener('mousedown', e => e.stopPropagation(), { capture:true });
-            btn.addEventListener('mouseup',   e => e.stopPropagation(), { capture:true });
-          
-            /* normal click → activate */
-            btn.addEventListener('click', () => activate(id));
+            /* Stop this click looking like a fresh text-selection,
+               *then* run activate(). */
+            btn.addEventListener('click', e => {
+              e.stopPropagation();           // don’t bubble to document listener
+              e.preventDefault();
+              activate(id);
+            }, { capture: true });
           
             document.body.appendChild(btn);
             pos(btn, span);
-          
             state.map[id] = { spanEl: span, btnEl: btn };
           }
+
 
         
           /* ---------- DOM-range wrapper ---------- */
@@ -2224,10 +2225,12 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
         
             addBtn(span, id);
             sel.removeAllRanges();
-        
-            /* Mark canvas dirty so autosave (getMarkdown) picks up the <span> */
-            window.__canvasEditor.getCurrentModeEditor().trigger('change');
-          }
+            
+            const cur = window.__canvasEditor.getCurrentModeEditor?.();
+            if (cur && typeof cur.trigger === 'function') {
+              cur.trigger('change');
+            }
+
         
           /* ---------- attach global listener ---------- */
           document.addEventListener('mouseup', handleMouseUp);
