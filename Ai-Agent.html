@@ -2117,6 +2117,111 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
           hideModeSwitch:   true,
           usageStatistics:  false
         });
+
+        /* ───  Highlight / edit overlay  v1  ────────────────────── */
+        
+        (() => {
+          const state = {
+            currentId : null,
+            map       : {}          // id → { spanEl, btnEl }
+          };
+          window.__canvasHLState = state;     // expose for debugging
+        
+          /* SVGs */
+          const PENCIL_SVG = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 20h9" />
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+            </svg>`;
+          const BACK_SVG = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6" /><polyline points="9 18 3 12 9 6"/>
+            </svg>`;
+        
+          /* helpers */
+          function posBtn(btn, span){
+            const r = span.getBoundingClientRect();
+            btn.style.top  = (r.top + window.scrollY) + 'px';
+            btn.style.left = (r.left + window.scrollX - 28) + 'px';
+          }
+          function handleScroll(){
+            if(!state.currentId) return;
+            const { spanEl, btnEl } = state.map[state.currentId] || {};
+            if(spanEl && btnEl) posBtn(btnEl, spanEl);
+          }
+          window.addEventListener('scroll', handleScroll, { passive:true });
+        
+          /* Deactivate & clean */
+          function deactivate(id){
+            const entry = state.map[id];
+            if(!entry) return;
+            /* unwrap span */
+            const span = entry.spanEl;
+            span.outerHTML = span.innerHTML;      // remove wrapper but keep text
+            /* remove btn */
+            entry.btnEl.remove();
+            /* clear */
+            delete state.map[id];
+            state.currentId = null;
+          }
+        
+          /* Activate */
+          function activate(id){
+            if(state.currentId) deactivate(state.currentId);
+            state.currentId = id;
+            const entry = state.map[id];
+            if(!entry) return;
+            /* update styles */
+            entry.spanEl.classList.remove('canvas-hl-pending');
+            entry.spanEl.classList.add('canvas-hl-active');
+            /* swap icon */
+            entry.btnEl.innerHTML = BACK_SVG;
+            entry.btnEl.onclick = () => deactivate(id);
+            /* initial positioning */
+            posBtn(entry.btnEl, entry.spanEl);
+          }
+        
+          /* Selection → highlight */
+          function handleSelection(){
+            const sel = window.__canvasEditor.getSelection();  // {start,end}
+            if(!sel || sel.start === sel.end) return;          // nothing selected
+        
+            /* wrap in span with unique id */
+            const id = 'hl_' + Date.now();
+            window.__canvasEditor.exec('replaceSelection', [
+              `<span class="canvas-hl-pending" data-hl-id="${id}">`,
+              '</span>'
+            ]);
+        
+            /* find the freshly-inserted span in the DOM */
+            const span = window.__canvasEditor.el
+              .querySelector(`[data-hl-id="${id}"]`);
+            if(!span) return;
+        
+            /* build floating button */
+            const btn = document.createElement('button');
+            btn.className = 'canvas-hl-btn';
+            btn.type = 'button';
+            btn.innerHTML = PENCIL_SVG;
+            document.body.appendChild(btn);
+        
+            /* save in map */
+            state.map[id] = { spanEl: span, btnEl: btn };
+        
+            /* first position & set click */
+            posBtn(btn, span);
+            btn.onclick = () => activate(id);
+        
+            /* clear browser selection for a cleaner look */
+            window.getSelection()?.removeAllRanges();
+          }
+        
+          /* attach handler once */
+          window.__canvasEditor.on('mouseup', handleSelection);
+        })();
+
     
         /* 3) Load any previously-saved Markdown */
         if (window.initialCanvasContent) {
