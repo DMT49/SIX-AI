@@ -489,7 +489,6 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
     }
 
     function replacePreCodeWithMarkdown(parentElement) {
-	  if (parentElement.closest('#working-canvas')) return;   // ← ignore canvas
       // STEP 1: Define your icons (copy + check)
       const COPY_ICON_SVG = `
         <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true"
@@ -2118,130 +2117,6 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
           hideModeSwitch:   true,
           usageStatistics:  false
         });
-
-        /* ───  Highlight / edit overlay  v2  (pure WYSIWYG DOM) ─── */
-        (() => {
-        
-          /* ---------- state ---------- */
-          const state = { currentId:null, map:{} };            // id → { spanEl, btnEl }
-          window.__canvasHLState = state;                      // for debugging
-        
-          const PENCIL = `
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 20h9"/>
-              <path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/>
-            </svg>`;
-          const BACK = `
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="15 18 9 12 15 6"/>
-              <polyline points="9 18 3 12 9 6"/>
-            </svg>`;
-        
-          /* ---------- helpers ---------- */
-          function pos(btn, span){
-            const r = span.getBoundingClientRect();
-            btn.style.top  = r.top  + window.scrollY + 'px';
-            btn.style.left = r.left + window.scrollX - 28 + 'px';
-          }
-          window.addEventListener('scroll', ()=>{
-            const e = state.map[state.currentId];
-            if(e) pos(e.btnEl, e.spanEl);
-          }, { passive:true });
-        
-          function deactivate(id){
-            const e = state.map[id];
-            if(!e) return;
-            e.spanEl.outerHTML = e.spanEl.innerHTML;   // unwrap
-            e.btnEl.remove();
-            delete state.map[id];
-            state.currentId = null;
-          }
-          function activate(id){
-            if(state.currentId && state.currentId!==id) deactivate(state.currentId);
-            state.currentId = id;
-            const e = state.map[id];
-            if(!e) return;
-            e.spanEl.classList.replace('canvas-hl-pending','canvas-hl-active');
-            e.btnEl.innerHTML = BACK;
-            e.btnEl.onclick   = () => deactivate(id);
-            pos(e.btnEl, e.spanEl);
-          }
-          function addBtn (span, id) {
-            const btn = document.createElement('button');
-            btn.className = 'canvas-hl-btn';
-            btn.type      = 'button';
-            btn.innerHTML = PENCIL;
-          
-            /* Stop this button’s DOWN and UP from bubbling,
-               then flip icon on the CLICK. */
-            const stop = e => { e.stopPropagation(); e.preventDefault(); };
-            btn.addEventListener('mousedown', stop, { capture:true });
-            btn.addEventListener('mouseup',   stop, { capture:true });
-            btn.addEventListener('click',     e => {
-              stop(e);                // safety
-              activate(id);           // swap to “back” + orange bar
-            }, { capture:true });
-          
-            document.body.appendChild(btn);
-            pos(btn, span);
-            state.map[id] = { spanEl: span, btnEl: btn };
-          }
-
-
-
-        
-          /* ---------- DOM-range wrapper ---------- */
-          function wrapRange(range, span){
-            // Extract the selection, push inside <span>, then re-insert
-            const frag = range.extractContents();
-            span.appendChild(frag);
-            range.insertNode(span);
-          }
-        
-          /* ---------- main handler ---------- */
-          function handleMouseUp () {
-            if(!window.__canvasEditor || !window.__canvasEditor.isWysiwygMode()) return;
-        
-            const sel = window.getSelection();
-            if(!sel || sel.isCollapsed) return;
-        
-            // ensure selection is inside the canvas
-            const canvasRoot = document.getElementById('working-canvas');
-            if(!canvasRoot || !canvasRoot.contains(sel.anchorNode)) return;
-        
-            const range = sel.getRangeAt(0);
-            if(range.toString().trim()==='') return;           // only spaces
-        
-            const id = 'hl_' + Date.now();
-            const span = document.createElement('span');
-            span.className = 'canvas-hl-pending';
-            span.dataset.hlId = id;
-        
-            try {
-              wrapRange(range, span);
-            } catch(err){
-              console.warn('[HL] could not wrap selection:', err);
-              sel.removeAllRanges();
-              return;
-            }
-        
-            addBtn(span, id);
-            sel.removeAllRanges();
-            
-            const cur = window.__canvasEditor.getCurrentModeEditor?.();
-            if (cur && typeof cur.trigger === 'function') {
-              cur.trigger('change');
-            }
-
-          }
-
-        
-          /* ---------- attach global listener ---------- */
-          document.addEventListener('mouseup', handleMouseUp);
-        })();
-
     
         /* 3) Load any previously-saved Markdown */
         if (window.initialCanvasContent) {
