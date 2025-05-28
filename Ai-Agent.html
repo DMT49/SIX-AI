@@ -2173,18 +2173,21 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
             btn.type      = 'button';
             btn.innerHTML = PENCIL;
           
-            /* Stop this click looking like a fresh text-selection,
-               *then* run activate(). */
-            btn.addEventListener('click', e => {
-              e.stopPropagation();           // don’t bubble to document listener
-              e.preventDefault();
-              activate(id);
-            }, { capture: true });
+            /* Stop this button’s DOWN and UP from bubbling,
+               then flip icon on the CLICK. */
+            const stop = e => { e.stopPropagation(); e.preventDefault(); };
+            btn.addEventListener('mousedown', stop, { capture:true });
+            btn.addEventListener('mouseup',   stop, { capture:true });
+            btn.addEventListener('click',     e => {
+              stop(e);                // safety
+              activate(id);           // swap to “back” + orange bar
+            }, { capture:true });
           
             document.body.appendChild(btn);
             pos(btn, span);
             state.map[id] = { spanEl: span, btnEl: btn };
           }
+
 
 
         
