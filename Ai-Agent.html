@@ -2118,13 +2118,12 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
           usageStatistics:  false
         });
 
-
-        /* ───  Highlight / edit overlay  v1.2  (document-level listener) ─── */
+        /* ───  Highlight / edit overlay  v2  (pure WYSIWYG DOM) ─── */
         (() => {
         
           /* ---------- state ---------- */
           const state = { currentId:null, map:{} };            // id → { spanEl, btnEl }
-          window.__canvasHLState = state;                      // debugging hook
+          window.__canvasHLState = state;                      // for debugging
         
           const PENCIL = `
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -2145,11 +2144,10 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
             btn.style.top  = r.top  + window.scrollY + 'px';
             btn.style.left = r.left + window.scrollX - 28 + 'px';
           }
-          function onScroll(){
+          window.addEventListener('scroll', ()=>{
             const e = state.map[state.currentId];
             if(e) pos(e.btnEl, e.spanEl);
-          }
-          window.addEventListener('scroll', onScroll, {passive:true});
+          }, { passive:true });
         
           function deactivate(id){
             const e = state.map[id];
@@ -2177,49 +2175,50 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
             state.map[id]={spanEl:span,btnEl:btn};
           }
         
-          /* ---------- selection routine ---------- */
-          function processSelection(){
+          /* ---------- DOM-range wrapper ---------- */
+          function wrapRange(range, span){
+            // Extract the selection, push inside <span>, then re-insert
+            const frag = range.extractContents();
+            span.appendChild(frag);
+            range.insertNode(span);
+          }
+        
+          /* ---------- main handler ---------- */
+          function handleMouseUp () {
             if(!window.__canvasEditor || !window.__canvasEditor.isWysiwygMode()) return;
         
             const sel = window.getSelection();
             if(!sel || sel.isCollapsed) return;
         
-            /* make sure selection happened **inside** the canvas */
-            const anchor = sel.anchorNode;
-            const root   = document.getElementById('canvas-editor')?.parentNode; // #working-canvas body
-            if(!root || !root.contains(anchor)) return;
+            // ensure selection is inside the canvas
+            const canvasRoot = document.getElementById('working-canvas');
+            if(!canvasRoot || !canvasRoot.contains(sel.anchorNode)) return;
         
-            /* hop to markdown, wrap, hop back */
-            window.__canvasEditor.changeMode('markdown', true);
+            const range = sel.getRangeAt(0);
+            if(range.toString().trim()==='') return;           // only spaces
         
-            const mdSel = window.__canvasEditor.getSelection();
-            if(!mdSel || mdSel[0]===mdSel[1]){
-              window.__canvasEditor.changeMode('wysiwyg', true);
+            const id = 'hl_' + Date.now();
+            const span = document.createElement('span');
+            span.className = 'canvas-hl-pending';
+            span.dataset.hlId = id;
+        
+            try {
+              wrapRange(range, span);
+            } catch(err){
+              console.warn('[HL] could not wrap selection:', err);
+              sel.removeAllRanges();
               return;
             }
         
-            const id='hl_'+Date.now();
-            window.__canvasEditor.exec('replaceSelection',[
-              `<span class="canvas-hl-pending" data-hl-id="${id}">`,
-              '</span>'
-            ]);
+            addBtn(span, id);
+            sel.removeAllRanges();
         
-            window.__canvasEditor.changeMode('wysiwyg', true);
-        
-            requestAnimationFrame(()=>{
-              const span = root.querySelector(`[data-hl-id="${id}"]`);
-              if(span) addBtn(span,id);
-            });
-        
-            sel.removeAllRanges();          // tidy up native highlight
+            /* Mark canvas dirty so autosave (getMarkdown) picks up the <span> */
+            window.__canvasEditor.getCurrentModeEditor().trigger('change');
           }
         
-          /* ---------- attach *once* at document level ---------- */
-          document.addEventListener('mouseup', processSelection);
-          document.addEventListener('keyup',  e=>{
-            if(e.key==='Shift' || e.key.startsWith('Arrow')) processSelection();
-          });
-        
+          /* ---------- attach global listener ---------- */
+          document.addEventListener('mouseup', handleMouseUp);
         })();
 
     
