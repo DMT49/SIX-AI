@@ -2168,12 +2168,24 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
             pos(e.btnEl, e.spanEl);
           }
           function addBtn(span,id){
-            const btn=document.createElement('button');
-            btn.className='canvas-hl-btn'; btn.type='button'; btn.innerHTML=PENCIL;
-            document.body.appendChild(btn); pos(btn,span);
-            btn.onclick=()=>activate(id);
-            state.map[id]={spanEl:span,btnEl:btn};
+            const btn = document.createElement('button');
+            btn.className = 'canvas-hl-btn';
+            btn.type      = 'button';
+            btn.innerHTML = PENCIL;
+          
+            /* ░░ STOP the overlay’s global mouse handler from seeing this click ░░ */
+            btn.addEventListener('mousedown', e => e.stopPropagation(), { capture:true });
+            btn.addEventListener('mouseup',   e => e.stopPropagation(), { capture:true });
+          
+            /* normal click → activate */
+            btn.addEventListener('click', () => activate(id));
+          
+            document.body.appendChild(btn);
+            pos(btn, span);
+          
+            state.map[id] = { spanEl: span, btnEl: btn };
           }
+
         
           /* ---------- DOM-range wrapper ---------- */
           function wrapRange(range, span){
