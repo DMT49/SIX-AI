@@ -3684,3 +3684,11 @@ body{
 .toastui-editor .ProseMirror h2 {
   margin: 0 0 0.5em;
 }
+
+/* ── Inline “review” highlight ───────────────────────────── */
+.toastui-editor-contents mark.review-hl,
+mark.review-hl{
+  background:#fff59d;           /* pale yellow */
+  padding:0 2px;
+  border-radius:2px;
+}
