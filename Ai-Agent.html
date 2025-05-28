@@ -2118,129 +2118,115 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
           usageStatistics:  false
         });
 
-        /* ───  Highlight / edit overlay  v1  (Markdown hop) ──────── */
+        /* ───  Highlight / edit overlay  v1.1  (robust) ─────────── */
         (() => {
         
-          /* ===== state ===== */
-          const state = {
-            currentId : null,
-            map       : {}           // id → { spanEl, btnEl }
-          };
-          window.__canvasHLState = state;    // handy for console debugging
+          /* ---------- state ---------- */
+          const state = { currentId:null, map:{} };   // id → { spanEl, btnEl }
+          window.__canvasHLState = state;
         
-          /* ===== icons ===== */
-          const PENCIL_SVG = `
+          const PENCIL = `
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 20h9"/>
-              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
+              <path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/>
             </svg>`;
-          const BACK_SVG = `
+          const BACK = `
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="15 18 9 12 15 6"/>
               <polyline points="9 18 3 12 9 6"/>
             </svg>`;
         
-          /* ===== helpers ===== */
-          function posBtn (btn, span) {
+          /* ---------- helpers ---------- */
+          function pos(btn, span){
             const r = span.getBoundingClientRect();
-            btn.style.top  = (r.top  + window.scrollY) + 'px';
-            btn.style.left = (r.left + window.scrollX - 28) + 'px';
+            btn.style.top  = r.top  + window.scrollY + 'px';
+            btn.style.left = r.left + window.scrollX - 28 + 'px';
           }
-        
-          function onScroll () {
-            if (!state.currentId) return;
-            const entry = state.map[state.currentId];
-            if (entry) posBtn(entry.btnEl, entry.spanEl);
+          function onScroll(){
+            const e = state.map[state.currentId];
+            if(e) pos(e.btnEl, e.spanEl);
           }
-          window.addEventListener('scroll', onScroll, { passive: true });
+          window.addEventListener('scroll', onScroll, {passive:true});
         
-          function deactivate (id) {
-            const entry = state.map[id];
-            if (!entry) return;
-        
-            /* unwrap the <span> but keep its text */
-            entry.spanEl.outerHTML = entry.spanEl.innerHTML;
-            entry.btnEl.remove();
+          function deactivate(id){
+            const e = state.map[id];
+            if(!e) return;
+            e.spanEl.outerHTML = e.spanEl.innerHTML;
+            e.btnEl.remove();
             delete state.map[id];
             state.currentId = null;
           }
-        
-          function activate (id) {
-            if (state.currentId && state.currentId !== id) deactivate(state.currentId);
+          function activate(id){
+            if(state.currentId && state.currentId!==id) deactivate(state.currentId);
             state.currentId = id;
-            const entry = state.map[id];
-            if (!entry) return;
-        
-            entry.spanEl.classList.replace('canvas-hl-pending', 'canvas-hl-active');
-            entry.btnEl.innerHTML = BACK_SVG;
-            entry.btnEl.onclick   = () => deactivate(id);
-            posBtn(entry.btnEl, entry.spanEl);
+            const e = state.map[id];
+            if(!e) return;
+            e.spanEl.classList.replace('canvas-hl-pending','canvas-hl-active');
+            e.btnEl.innerHTML = BACK;
+            e.btnEl.onclick   = () => deactivate(id);
+            pos(e.btnEl, e.spanEl);
+          }
+          function addBtn(span,id){
+            const btn=document.createElement('button');
+            btn.className='canvas-hl-btn'; btn.type='button'; btn.innerHTML=PENCIL;
+            document.body.appendChild(btn); pos(btn,span);
+            btn.onclick=()=>activate(id);
+            state.map[id]={spanEl:span,btnEl:btn};
           }
         
-          function buildBtn (span, id) {
-            const btn = document.createElement('button');
-            btn.className = 'canvas-hl-btn';
-            btn.type      = 'button';
-            btn.innerHTML = PENCIL_SVG;
-            document.body.appendChild(btn);
-            posBtn(btn, span);
-            btn.onclick = () => activate(id);
+          /* ---------- main selection routine ---------- */
+          function processSelection(){
+            if(!window.__canvasEditor.isWysiwygMode()) return;
         
-            state.map[id] = { spanEl: span, btnEl: btn };
-          }
+            const sel = window.getSelection();
+            if(!sel || sel.isCollapsed) return;
         
-          /* ===== main selection handler ===== */
-          function handleMouseUp () {
+            // anchor must live inside the editor root
+            if(!root.contains(sel.anchorNode)) return;
         
-            /* we only react while the editor is **currently** in WYSIWYG mode */
-            if (!window.__canvasEditor.isWysiwygMode()) return;
-        
-            /* Step 0 – confirm the user dragged over text (not just clicked) */
-            const domSel = window.getSelection();
-            if (!domSel || domSel.isCollapsed) return;
-        
-            /* Step 1 – hop to Markdown mode (no focus change!) */
+            /* hop to markdown, wrap, hop back */
             window.__canvasEditor.changeMode('markdown', true);
         
-            /* Step 2 – get range in Markdown coordinates */
-            const mdSel = window.__canvasEditor.getSelection();        // [start,end]
-            if (!mdSel || mdSel[0] === mdSel[1]) {
+            const mdSel = window.__canvasEditor.getSelection();
+            if(!mdSel || mdSel[0]===mdSel[1]){
               window.__canvasEditor.changeMode('wysiwyg', true);
               return;
             }
         
-            /* Step 3 – wrap that range in a unique <span> */
-            const id = 'hl_' + Date.now();
-            window.__canvasEditor.exec('replaceSelection', [
+            const id='hl_'+Date.now();
+            window.__canvasEditor.exec('replaceSelection',[
               `<span class="canvas-hl-pending" data-hl-id="${id}">`,
               '</span>'
             ]);
         
-            /* Step 4 – hop straight back to WYSIWYG */
             window.__canvasEditor.changeMode('wysiwyg', true);
         
-            /* Step 5 – span now exists in new wysiwyg DOM → find & decorate */
-            requestAnimationFrame(() => {                            // wait one frame
-              const span = window.__canvasEditor
-                .getEditorElements().wysiwyg
-                .querySelector(`[data-hl-id="${id}"]`);
-              if (!span) return;
-        
-              buildBtn(span, id);
+            requestAnimationFrame(()=>{
+              const span = root.querySelector(`[data-hl-id="${id}"]`);
+              if(span) addBtn(span,id);
             });
         
-            /* Step 6 – clear the native selection for neatness */
-            domSel.removeAllRanges();
+            sel.removeAllRanges();
           }
         
-          /* ===== attach listener directly to wysiwyg root ===== */
-          const wysiwygRoot = window.__canvasEditor.getEditorElements().wysiwyg;
-          wysiwygRoot && wysiwygRoot.addEventListener('mouseup', handleMouseUp);
+          /* ---------- find WYSIWYG root robustly ---------- */
+          const els = window.__canvasEditor.getEditorElements();
+          const root =
+            Object.values(els).find(n=>n && n.nodeType===1 && n.classList.contains('toastui-editor-ww-container'));
+          if(!root){
+            console.error('[Canvas HL] WYSIWYG root not found – highlight overlay disabled.');
+            return;
+          }
+        
+          /* ---------- attach events ---------- */
+          root.addEventListener('mouseup', processSelection);
+          root.addEventListener('keyup',  (e)=>{
+            if(e.key==='Shift' || e.key.startsWith('Arrow')) processSelection();
+          });
         
         })();
-
 
 
     
