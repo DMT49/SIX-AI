@@ -2118,8 +2118,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
           usageStatistics:  false
         });
 
-        /* ───  Highlight / edit overlay  v1  ────────────────────── */
-        
+        /* ───  Highlight / edit overlay  v1  (fixed listener) ───── */
         (() => {
           const state = {
             currentId : null,
@@ -2127,20 +2126,19 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
           };
           window.__canvasHLState = state;     // expose for debugging
         
-          /* SVGs */
+          /* —— icons —— */
           const PENCIL_SVG = `
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 20h9" />
-              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+              <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
             </svg>`;
           const BACK_SVG = `
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="15 18 9 12 15 6" /><polyline points="9 18 3 12 9 6"/>
+              <polyline points="15 18 9 12 15 6"/><polyline points="9 18 3 12 9 6"/>
             </svg>`;
         
-          /* helpers */
+          /* —— helpers —— */
           function posBtn(btn, span){
             const r = span.getBoundingClientRect();
             btn.style.top  = (r.top + window.scrollY) + 'px';
@@ -2153,74 +2151,87 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
           }
           window.addEventListener('scroll', handleScroll, { passive:true });
         
-          /* Deactivate & clean */
+          /* — deactivate & clean — */
           function deactivate(id){
             const entry = state.map[id];
             if(!entry) return;
             /* unwrap span */
             const span = entry.spanEl;
-            span.outerHTML = span.innerHTML;      // remove wrapper but keep text
+            span.outerHTML = span.innerHTML;   // keep text, drop wrapper
             /* remove btn */
             entry.btnEl.remove();
-            /* clear */
             delete state.map[id];
             state.currentId = null;
           }
         
-          /* Activate */
+          /* — activate (pencil → back) — */
           function activate(id){
             if(state.currentId) deactivate(state.currentId);
             state.currentId = id;
             const entry = state.map[id];
             if(!entry) return;
-            /* update styles */
-            entry.spanEl.classList.remove('canvas-hl-pending');
-            entry.spanEl.classList.add('canvas-hl-active');
-            /* swap icon */
+            entry.spanEl.classList.replace('canvas-hl-pending','canvas-hl-active');
             entry.btnEl.innerHTML = BACK_SVG;
-            entry.btnEl.onclick = () => deactivate(id);
-            /* initial positioning */
+            entry.btnEl.onclick   = () => deactivate(id);
             posBtn(entry.btnEl, entry.spanEl);
           }
         
-          /* Selection → highlight */
+          /* — main selection handler — */
           function handleSelection(){
-            const sel = window.__canvasEditor.getSelection();  // {start,end}
-            if(!sel || sel.start === sel.end) return;          // nothing selected
+            /* MODE 1 – Markdown pane */
+            if(window.__canvasEditor.isMarkdownMode()){
+              const sel = window.__canvasEditor.getSelection();     // {start,end}
+              if(!sel || sel.start === sel.end) return;             // nothing chosen
+              const id = 'hl_' + Date.now();
+              window.__canvasEditor.exec('replaceSelection', [
+                `<span class="canvas-hl-pending" data-hl-id="${id}">`,
+                '</span>'
+              ]);
+              const span = window.__canvasEditor.el
+                .querySelector(`[data-hl-id="${id}"]`);
+              if(span) buildButtonForSpan(id, span);
+              window.getSelection()?.removeAllRanges();
+              return;
+            }
         
-            /* wrap in span with unique id */
-            const id = 'hl_' + Date.now();
-            window.__canvasEditor.exec('replaceSelection', [
-              `<span class="canvas-hl-pending" data-hl-id="${id}">`,
-              '</span>'
-            ]);
+            /* MODE 2 – WYSIWYG pane */
+            const sel = window.getSelection();
+            if(!sel || sel.rangeCount === 0) return;
+            const range = sel.getRangeAt(0);
+            if(range.collapsed) return;                            // no real drag
         
-            /* find the freshly-inserted span in the DOM */
-            const span = window.__canvasEditor.el
-              .querySelector(`[data-hl-id="${id}"]`);
-            if(!span) return;
+            const id   = 'hl_' + Date.now();
+            const span = document.createElement('span');
+            span.className = 'canvas-hl-pending';
+            span.dataset.hlId = id;
+            try{ range.surroundContents(span); }
+            catch(err){ return; }                                  // e.g. partial tags
         
-            /* build floating button */
-            const btn = document.createElement('button');
-            btn.className = 'canvas-hl-btn';
-            btn.type = 'button';
-            btn.innerHTML = PENCIL_SVG;
-            document.body.appendChild(btn);
+            /* let the editor notice the DOM change */
+            window.__canvasEditor.getCurrentModeEditor()?.trigger('change');
         
-            /* save in map */
-            state.map[id] = { spanEl: span, btnEl: btn };
-        
-            /* first position & set click */
-            posBtn(btn, span);
-            btn.onclick = () => activate(id);
-        
-            /* clear browser selection for a cleaner look */
-            window.getSelection()?.removeAllRanges();
+            buildButtonForSpan(id, span);
+            sel.removeAllRanges();
           }
         
-          /* attach handler once */
-          window.__canvasEditor.on('mouseup', handleSelection);
+          /* — build & record the floating button for a span — */
+          function buildButtonForSpan(id, span){
+            const btn = document.createElement('button');
+            btn.className = 'canvas-hl-btn';
+            btn.type      = 'button';
+            btn.innerHTML = PENCIL_SVG;
+            document.body.appendChild(btn);
+            posBtn(btn, span);
+            btn.onclick = () => activate(id);
+            state.map[id] = { spanEl: span, btnEl: btn };
+          }
+        
+          /* — hook listeners directly to the real editable nodes — */
+          const els = window.__canvasEditor.getEditorElements();
+          els.wwEditor  && els.wwEditor.addEventListener('mouseup', handleSelection);
+          els.mdEditor  && els.mdEditor.addEventListener('mouseup', handleSelection);
         })();
+
 
     
         /* 3) Load any previously-saved Markdown */
