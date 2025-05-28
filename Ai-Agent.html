@@ -2109,14 +2109,53 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       js.src    = 'https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js';
       js.onload = () => {
         const { Editor } = window.toastui;
+        /* ⇢ add the highlight plugin */
+        import highlightReviewPlugin from './highlightReviewPlugin.js';   // path exactly as you saved it
+        
         window.__canvasEditor = new Editor({
           el:               document.getElementById('canvas-editor'),
           height:           '100%',
           initialEditType:  'wysiwyg',
           previewStyle:     'vertical',
           hideModeSwitch:   true,
-          usageStatistics:  false
+          usageStatistics:  false,
+          plugins:          [highlightReviewPlugin]        // ⬅️ NEW
         });
+
+        /* ── floating pencil that appears on text selection ─────── */
+        (function attachReviewPencil(){
+          const host   = document.getElementById('working-canvas');
+          if (!host) return;
+        
+          const btn = document.createElement('button');
+          btn.className = 'canvas-hl-btn';
+          btn.textContent = '✏️';               // change to SVG if you like
+          btn.style.cssText = `
+              position:absolute; display:none; z-index:9999;
+              background:#fff;border:1px solid #ccc;border-radius:4px;
+              cursor:pointer;padding:2px 4px;`;
+          document.body.appendChild(btn);
+        
+          let curRange = null;
+          function hide(){ btn.style.display='none'; curRange=null; }
+        
+          btn.onclick = () => {
+            window.__canvasEditor?.exec('toggleReviewHighlight');
+            hide();
+          };
+        
+          host.addEventListener('mouseup', ()=>{
+            const sel = window.getSelection();
+            if (!sel || sel.isCollapsed) { hide(); return; }
+        
+            curRange = sel.getRangeAt(0);
+            const rect = curRange.getBoundingClientRect();
+            btn.style.top  = (rect.top  + window.scrollY) + 'px';
+            btn.style.left = (rect.left + window.scrollX - 28) + 'px';
+            btn.style.display = 'block';
+          });
+        })();
+
     
         /* 3) Load any previously-saved Markdown */
         if (window.initialCanvasContent) {
