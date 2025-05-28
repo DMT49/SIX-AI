@@ -489,6 +489,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
     }
 
     function replacePreCodeWithMarkdown(parentElement) {
+	  if (parentElement.closest('#working-canvas')) return;   // ← ignore canvas
       // STEP 1: Define your icons (copy + check)
       const COPY_ICON_SVG = `
         <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true"
@@ -2233,6 +2234,8 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
             if (cur && typeof cur.trigger === 'function') {
               cur.trigger('change');
             }
+
+          }
 
         
           /* ---------- attach global listener ---------- */
