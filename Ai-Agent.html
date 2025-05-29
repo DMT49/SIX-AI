@@ -2235,7 +2235,275 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
         if (typeof initTooltips === 'function') initTooltips();
       };
       document.head.appendChild(js);
+      // Add this at the end of the initCanvasEditor function, right before the closing brace
+      /* Initialize the edit system when editor is ready */
+      window.__canvasEditor.on('load', () => {
+        setTimeout(() => {
+          initCanvasEditSystem();
+        }, 500);
+      });
     }
+
+    /* ─────────────────────────────────────────────────────────
+     * Canvas Text Editing System
+     * ───────────────────────────────────────────────────────── */
+    function initCanvasEditSystem() {
+      // Only initialize if editor exists
+      if (!window.__canvasEditor) {
+        console.warn('Canvas editor not initialized yet');
+        return;
+      }
+    
+      // State management
+      window.__canvasEditState = {
+        activeEdit: null,
+        editButton: null,
+        observer: null
+      };
+    
+      // SVG Icons
+      const PENCIL_ICON = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>`;
+    
+      const CANCEL_ICON = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M19 12H5M5 12l7-7m-7 7l7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>`;
+    
+      // Create the floating edit button
+      function createEditButton() {
+        const button = document.createElement('button');
+        button.className = 'canvas-edit-button';
+        button.innerHTML = PENCIL_ICON;
+        button.style.display = 'none';
+        document.body.appendChild(button);
+        
+        // Store reference
+        window.__canvasEditState.editButton = button;
+        
+        // Click handler
+        button.addEventListener('click', handleEditButtonClick);
+        
+        return button;
+      }
+    
+      // Handle edit button click
+      function handleEditButtonClick() {
+        const state = window.__canvasEditState;
+        
+        if (state.activeEdit) {
+          // Cancel mode - clear the edit
+          cancelActiveEdit();
+        } else {
+          // Start edit mode
+          startEditMode();
+        }
+      }
+    
+      // Start edit mode
+      function startEditMode() {
+        const selection = window.getSelection();
+        const selectedText = selection.toString().trim();
+        
+        if (!selectedText) return;
+        
+        // Generate unique ID
+        const editId = 'edit-' + Date.now();
+        
+        // Get current markdown
+        const currentMarkdown = window.__canvasEditor.getMarkdown();
+        
+        // Create markers
+        const startMarker = `<!--edit-start-${editId}-->`;
+        const endMarker = `<!--edit-end-${editId}-->`;
+        
+        // Find and replace the selected text with marked version
+        // Note: This is a simple replacement. In production, you'd want more sophisticated matching
+        const markedText = `${startMarker}${selectedText}${endMarker}`;
+        const newMarkdown = currentMarkdown.replace(selectedText, markedText);
+        
+        // Update editor
+        window.__canvasEditor.setMarkdown(newMarkdown);
+        
+        // Store edit state
+        window.__canvasEditState.activeEdit = {
+          id: editId,
+          originalText: selectedText,
+          startMarker: startMarker,
+          endMarker: endMarker
+        };
+        
+        // Change button to cancel mode
+        const button = window.__canvasEditState.editButton;
+        button.innerHTML = CANCEL_ICON;
+        button.classList.add('cancel-mode');
+        
+        // Start highlighting
+        startHighlighting(editId);
+        
+        // Clear selection
+        selection.removeAllRanges();
+      }
+    
+      // Cancel active edit
+      function cancelActiveEdit() {
+        const state = window.__canvasEditState;
+        if (!state.activeEdit) return;
+        
+        // Get current markdown
+        const currentMarkdown = window.__canvasEditor.getMarkdown();
+        
+        // Remove markers
+        const cleanMarkdown = currentMarkdown
+          .replace(state.activeEdit.startMarker, '')
+          .replace(state.activeEdit.endMarker, '');
+        
+        // Update editor
+        window.__canvasEditor.setMarkdown(cleanMarkdown);
+        
+        // Reset button
+        const button = state.editButton;
+        button.innerHTML = PENCIL_ICON;
+        button.classList.remove('cancel-mode');
+        button.style.display = 'none';
+        
+        // Clear state
+        state.activeEdit = null;
+        
+        // Stop observer if running
+        if (state.observer) {
+          state.observer.disconnect();
+          state.observer = null;
+        }
+      }
+    
+      // Start highlighting system
+      function startHighlighting(editId) {
+        // Function to apply highlights
+        function applyHighlights() {
+          const editorContent = document.querySelector('.toastui-editor-contents');
+          if (!editorContent) return;
+          
+          // Get current HTML
+          let html = editorContent.innerHTML;
+          
+          // Check if we have our markers
+          if (!html.includes(`edit-start-${editId}`)) return;
+          
+          // Regular expression to find text between our markers
+          const regex = new RegExp(
+            `<!--edit-start-${editId}-->(.*?)<!--edit-end-${editId}-->`,
+            'gs'
+          );
+          
+          // Replace with highlighted version
+          html = html.replace(regex, (match, text) => {
+            return `<!--edit-start-${editId}--><span class="canvas-highlighted-text" data-edit-id="${editId}">${text}</span><!--edit-end-${editId}-->`;
+          });
+          
+          // Update HTML
+          editorContent.innerHTML = html;
+        }
+        
+        // Apply initial highlighting
+        setTimeout(applyHighlights, 100);
+        
+        // Set up MutationObserver to maintain highlights
+        const observer = new MutationObserver((mutations) => {
+          // Check if our highlights are still there
+          const highlighted = document.querySelector(`[data-edit-id="${editId}"]`);
+          if (!highlighted) {
+            // Reapply highlights
+            applyHighlights();
+          }
+        });
+        
+        // Start observing
+        const editorContent = document.querySelector('.toastui-editor-contents');
+        if (editorContent) {
+          observer.observe(editorContent, {
+            childList: true,
+            subtree: true,
+            characterData: true
+          });
+          
+          // Store observer reference
+          window.__canvasEditState.observer = observer;
+        }
+      }
+    
+      // Selection change handler
+      function handleSelectionChange() {
+        const selection = window.getSelection();
+        const selectedText = selection.toString().trim();
+        const button = window.__canvasEditState.editButton;
+        
+        // Don't show button if we have an active edit
+        if (window.__canvasEditState.activeEdit) {
+          return;
+        }
+        
+        if (selectedText && isSelectionInCanvas(selection)) {
+          // Show button near selection
+          showEditButton(selection);
+        } else {
+          // Hide button
+          button.style.display = 'none';
+        }
+      }
+    
+      // Check if selection is within canvas editor
+      function isSelectionInCanvas(selection) {
+        if (!selection.rangeCount) return false;
+        
+        const range = selection.getRangeAt(0);
+        const container = range.commonAncestorContainer;
+        
+        // Check if the selection is within the editor
+        const editorContent = document.querySelector('.toastui-editor-contents');
+        if (!editorContent) return false;
+        
+        return editorContent.contains(container);
+      }
+    
+      // Show edit button near selection
+      function showEditButton(selection) {
+        const button = window.__canvasEditState.editButton;
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        
+        // Position button to the left of selection
+        button.style.left = (rect.left - 40) + 'px';
+        button.style.top = (rect.top + window.scrollY) + 'px';
+        button.style.display = 'block';
+      }
+    
+      // Initialize the system
+      function init() {
+        // Create edit button
+        createEditButton();
+        
+        // Listen for selection changes
+        document.addEventListener('selectionchange', handleSelectionChange);
+        
+        // Hide button when clicking elsewhere
+        document.addEventListener('click', (e) => {
+          if (!e.target.closest('.canvas-edit-button') && 
+              !window.__canvasEditState.activeEdit) {
+            window.__canvasEditState.editButton.style.display = 'none';
+          }
+        });
+      }
+    
+      // Start the system
+      init();
+    }
+    
+    // Initialize the edit system after a short delay to ensure editor is ready
+    setTimeout(() => {
+      initCanvasEditSystem();
+    }, 1000);
     
     initTooltips();      // (re-hook tool-tips for the new buttons, already in your code)
     initCanvasEditor();  // <-- add this call right here
@@ -2249,7 +2517,15 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
     if (!toggleBtn || !wrp) return;
 
     const open  = () => { wrp.classList.add('canvas-open');  toggleBtn.classList.add('is-active'); };
-    const close = () => { wrp.classList.remove('canvas-open'); toggleBtn.classList.remove('is-active'); };
+    const close = () => { 
+      wrp.classList.remove('canvas-open'); 
+      toggleBtn.classList.remove('is-active');
+      
+      // Clean up any active edits
+      if (window.__canvasEditState && window.__canvasEditState.activeEdit) {
+        cancelActiveEdit();
+      }
+    };
 
     /* open ⇄ close when the toolbar button is clicked */
     toggleBtn.addEventListener('click', () => {
