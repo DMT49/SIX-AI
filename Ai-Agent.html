@@ -2241,6 +2241,14 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
               initCanvasEditSystem();
             }, 500);
           });
+          
+          // Also try to initialize immediately if editor is already loaded
+          setTimeout(() => {
+            if (window.__canvasEditor && !window.__canvasEditState) {
+              console.log('Initializing canvas edit system...');
+              initCanvasEditSystem();
+            }
+          }, 1000);
         };
         document.head.appendChild(js);
       }
