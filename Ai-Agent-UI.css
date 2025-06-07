@@ -3709,4 +3709,7 @@ body{
 	width:unset !important;
 }
 
+.md-copy-btn{
+	padding-left: 12px !important;
+}
 
