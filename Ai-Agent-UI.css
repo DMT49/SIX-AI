@@ -2294,7 +2294,7 @@ figcaption {
   border: 1px solid #949494;
   border-radius: 35px;
   grid-template-rows: auto;
-  grid-template-columns: 77px 70px 70px 1fr auto;
+  grid-template-columns: 77px 70px 70px 70px 1fr auto;
   grid-auto-columns: 1fr;
   display: grid;
   position: fixed;
@@ -2339,6 +2339,15 @@ figcaption {
   }
 }
 
+/* Working-Doc button alignment (desktop) */
+#chat-canvas-toggle{
+  place-self: end start;   /* matches the mic + voice buttons */
+}
+@media (max-width: 939px){
+  #chat-canvas-toggle{display:none !important;}
+}
+
+
 .chat_block-wrapper {
   justify-content: center;
   width: 100%;
@@ -2366,6 +2375,7 @@ figcaption {
   max-width: 54rem;
   display: grid;
   position: relative;
+	width:100%
 }
 
 .chat_block.is-greeting {
@@ -3298,6 +3308,26 @@ margin: 0rem !important;
   /* fill: #333;  <- uncomment if you want a specific icon color */
 }
 
+/* ─── Add-to-canvas button – clones .md-copy-btn ─── */
+.md-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 400;   /* match .md-copy-btn */
+}
+
+/* Optional: same SVG sizing rules */
+.md-add-btn svg {
+  vertical-align: middle;
+  width: 16px;
+  height: 16px;
+}
+
+
 #global-tooltip {
   position: fixed;
   background: #444; /* Slightly lighter than pure black */
@@ -3463,4 +3493,222 @@ MOBILE STYLES BELOW
 .chat_multi-choice-send svg {
   transform: rotate(-53deg) scale(0.6);
   margin-left:3px;
+}
+
+.wrp.cnt{
+  max-width: unset !important;   /* or `none` – both remove the cap           */
+  width: 100% !important;        /* be explicit so it stretches the viewport  */
+}
+
+.sAs.left{
+    width:300px !important;
+}
+
+.bSe.right{
+        max-width:900px !important;
+	width:100% !important;
+}
+
+.bSeCont{
+	display:flex !important;
+	justify-content: center !important;
+}
+
+/*──────────────────────────────────────────────
+  FLEX LAYOUT: sidebar (300px) | convo | canvas
+──────────────────────────────────────────────*/
+.wrp.cnt{           /* parent wrapper – was block, now flex */
+  display:flex;
+  width:100%;
+  padding-bottom:0px;
+}
+
+/* left Webflow sidebar – keep fixed width */
+.sAsCont{flex:0 0 300px;}
+
+/* conversation column */
+.bSeCont{
+  flex:1 1 auto;                 /* fills all space when canvas closed */
+  max-width:100%;
+  transition:all .25s ease;
+}
+
+
+
+.sAs.left{
+	position: sticky !important;
+	top: 20px !important;
+}
+
+.awr-i{
+	margin-right:10px !important;
+}
+
+body{
+	background: #ffffff !important;
+}
+
+/* ─────────────────────────────────────────────
+   WORKING-CANVAS  (full replacement stylesheet)
+   ───────────────────────────────────────────── */
+
+/* ---------- 1) Header basics ---------- */
+.canvas-header{
+  flex:0 0 auto;                 /* keeps header height fixed */
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:4px 8px;
+  padding-bottom: 12px;
+  background:#f3f3f3;            /* same colour as panel */
+}
+
+/* left cluster =  ×  +  “The Canvas” */
+.canvas-header-left{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.canvas-title{
+  font-size:18px;
+  font-weight:600;
+  color:#999;
+  padding-top:5px;
+}
+
+/* right cluster =  Undo • Redo • Copy • Send */
+.canvas-header-right{
+  display:flex;
+  align-items:center;
+  gap:4px;
+}
+
+/* shared icon-button look */
+.canvas-icon-btn{
+  background:none;
+  border:none;
+  width:42px; height:42px;        /* roomy click target  */
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  font-size:45px;                 /* ×, ↶, ↻ glyph size   */
+  line-height:1;
+  color:#999;
+}
+.canvas-icon-btn:hover{
+  background:#e0e0e0;
+  border-radius:12px;
+}
+
+/* SVG in the send / copy buttons */
+.canvas-send-btn  svg,
+.canvas-copy-btn  svg{width:26px;height:26px;}
+
+/* ---------- 2) Panel sizing / position ---------- */
+
+/* default = closed: zero width + invisible */
+.canvas-panel{
+  flex:0 0 0;
+  max-width:0;
+  overflow:hidden;
+  background:#f3f3f3;             /* panel colour          */
+  transition:
+    flex-basis .25s ease,
+    max-width   .25s ease,
+    opacity     .15s ease;
+  display:flex; flex-direction:column;
+
+  /* border (only top + left) & rounded TL corner */
+  border-top:1px solid #b0b0b0;
+  border-left:1px solid #b0b0b0;
+  border-radius:12px 0 0 0;
+
+  /* sticky under nav bar */
+  position:sticky;
+  top:71px;                       /* nav height            */
+  height:calc(100vh - 71px);      /* full viewport minus nav */
+
+  /* NEW ► universal right-side padding */
+  padding-right:35px;             /* ← as requested        */
+
+  /* closed state visibility */
+  opacity:0;
+  pointer-events:none;
+}
+
+/* ---------- 3) Panel open state widths ---------- */
+.wrp.cnt.canvas-open .bSeCont{
+  flex:0 0 calc((100vw - 300px)/2);
+  max-width:calc((100vw - 300px)/2);
+}
+.wrp.cnt.canvas-open .canvas-panel{
+  flex:0 0 calc((100vw - 300px)/2);
+  max-width:calc((100vw - 300px)/2);
+
+  /* become visible + clickable */
+  opacity:1;
+  pointer-events:auto;
+}
+
+/* ---------- 4) Scrollable body inside panel ---------- */
+#working-canvas .canvas-body{
+  flex:1;
+  overflow:auto;
+
+  /* NEW ► top 24 px, sides & bottom 12 px */
+  padding:24px 12px 12px 12px;
+}
+
+/* ---------- 5) Mobile / tablet – hide entirely ---------- */
+@media (max-width:939px){
+  .canvas-panel{display:none!important;}
+}
+
+.toastui-editor-defaultUI-toolbar{
+	padding: 4px 8px !important;
+	background-color: #F3F3F3 !important;
+	border: 0px !important;
+}
+
+.toastui-editor-toolbar-icons{
+	margin: 0px !important;
+}
+.toastui-editor-defaultUI{
+	border:unset !important;
+	border-radius: 0px !important;
+	background-color: #F3F3F3 !important;
+}
+
+.toastui-editor-contents{
+	background-color: #F3F3F3 !important;
+	padding: 36px !important;
+}
+
+.toastui-editor-defaultUI-toolbar button {
+    border: 0px solid #f7f9fc !important;
+}
+
+/* ─── Remove the built-in underline from H1 / H2 ───────────────────────── */
+.toastui-editor-contents h1,
+.toastui-editor-contents h2,
+.toastui-editor .ProseMirror h1,
+.toastui-editor .ProseMirror h2 {
+  border-bottom: none !important;   /* kill the line */
+  padding-bottom: 0 !important;     /* tighten spacing */
+}
+/* Optional: adjust heading spacing the way you like */
+.toastui-editor-contents h1,
+.toastui-editor .ProseMirror h1 {
+  margin: 0 0 0.6em;                /* example */
+}
+.toastui-editor-contents h2,
+.toastui-editor .ProseMirror h2 {
+  margin: 0 0 0.5em;
+}
+
+.wrp{
+	width:unset !important;
+}
+
+.md-copy-btn{
+	padding-left: 12px !important;
 }
