@@ -3308,6 +3308,26 @@ margin: 0rem !important;
   /* fill: #333;  <- uncomment if you want a specific icon color */
 }
 
+/* ─── Add-to-canvas button – clones .md-copy-btn ─── */
+.md-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 400;   /* match .md-copy-btn */
+}
+
+/* Optional: same SVG sizing rules */
+.md-add-btn svg {
+  vertical-align: middle;
+  width: 16px;
+  height: 16px;
+}
+
+
 #global-tooltip {
   position: fixed;
   background: #444; /* Slightly lighter than pure black */
