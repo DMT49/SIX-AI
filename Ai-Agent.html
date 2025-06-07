@@ -488,8 +488,37 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       return tmpDiv.innerText || '';
     }
 
+    /* Open the canvas panel if it’s not already visible */
+    function ensureCanvasIsOpen () {
+      const wrp = document.querySelector('.wrp.cnt');
+      if (wrp && !wrp.classList.contains('canvas-open')) {
+        document.getElementById('chat-canvas-toggle')?.click();
+      }
+    }
+    
+    /* Append markdown string `md` to the Toast UI Canvas */
+    function pushMarkdownToCanvas (md) {
+      const waitForEditor = () => new Promise(r => {
+        if (window.__canvasEditor) return r();
+        const h = setInterval(() => {
+          if (window.__canvasEditor) { clearInterval(h); r(); }
+        }, 100);
+      });
+      waitForEditor().then(() => {
+        const ed = window.__canvasEditor;
+        ed.setMarkdown(ed.getMarkdown() + '\n\n' + md);
+        ed.moveCursorToEnd?.();     // Toast UI helper, safe if undefined
+      });
+    }
+
+
+    /* ────────────────────────────────────────────────────────────
+       Post-process <pre><code> blocks:
+       • Keeps existing “Copy” behaviour
+       • Adds new “Add” button that appends the raw markdown to the Canvas
+       ────────────────────────────────────────────────────────────*/
     function replacePreCodeWithMarkdown(parentElement) {
-      // STEP 1: Define your icons (copy + check)
+      /* ——— SVG ICONS (complete) ——— */
       const COPY_ICON_SVG = `
         <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true"
              role="img" width="16" height="16" viewBox="0 0 24 24">
@@ -504,8 +533,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
                    0 2-.9 2-2m-2 
                    0H9V4h9z">
           </path>
-        </svg>
-      `;
+        </svg>`;
     
       const CHECK_ICON_SVG = `
         <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true"
@@ -518,77 +546,107 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
                    0 1.42 0l10-10a1 
                    1 0 0 0 0-1.42Z">
           </path>
-        </svg>
-      `;
+        </svg>`;
     
+      const ADD_ICON_SVG = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+             xmlns="http://www.w3.org/2000/svg">
+          <path d="M2.5 5.5C4.3 5.2 5.2 4 5.5 2.5C5.8 4 6.7 5.2 8.5 5.5
+                   C6.7 5.8 5.8 7 5.5 8.5C5.2 7 4.3 5.8 2.5 5.5Z"
+                fill="currentColor" stroke="currentColor"
+                stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M5.66282 16.5231L5.18413 19.3952C5.12203 19.7678 5.09098 19.9541 5.14876 20.0888C5.19933 20.2067 5.29328 20.3007 5.41118 20.3512C5.54589 20.409 5.73218 20.378 6.10476 20.3159L8.97693 19.8372C9.72813 19.712 10.1037 19.6494 10.4542 19.521C10.7652 19.407 11.0608 19.2549 11.3343 19.068C11.6425 18.8575 11.9118 18.5882 12.4503 18.0497L20 10.5C21.3807 9.11929 21.3807 6.88071 20 5.5C18.6193 4.11929 16.3807 4.11929 15 5.5L7.45026 13.0497C6.91175 13.5882 6.6425 13.8575 6.43197 14.1657C6.24513 14.4392 6.09299 14.7348 5.97903 15.0458C5.85062 15.3963 5.78802 15.7719 5.66282 16.5231Z"
+                stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M14.5 7L18.5 11"
+                stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>`;
+    
+      /* Process every <pre><code> block inside parentElement */
       const codeBlocks = parentElement.querySelectorAll('pre code');
     
       codeBlocks.forEach((codeBlock) => {
-        // 1) Grab the raw text inside <code>
+        /* raw fenced text */
         const rawText = codeBlock.textContent || '';
     
-        // 2) Render it as normal Markdown HTML for DISPLAY
-        const renderedHtml = marked.parse(rawText);
-        const sanitizedHtml = DOMPurify.sanitize(renderedHtml);
+        /* rendered preview */
+        const htmlPreview   = marked.parse(rawText);
+        const sanitizedHtml = DOMPurify.sanitize(htmlPreview);
     
-        // 3) Create a container <div> for that rendered content
+        /* container holding header + preview */
         const mdContainer = document.createElement('div');
         mdContainer.classList.add('md-block-container');
         mdContainer.innerHTML = sanitizedHtml;
     
-        // 4) Convert rawText to plain text (if you want no markdown in the copied text)
-        const plainText = markdownToPlainText(rawText);
+        /* header */
+        const headerDiv = document.createElement('div');
+        headerDiv.classList.add('md-header');
     
-        // 5) Create a "Copy" button with icon + text
+        /* COPY button */
         const copyBtn = document.createElement('button');
-        copyBtn.classList.add('md-copy-btn');
+        copyBtn.className = 'md-copy-btn my-btn';
         copyBtn.innerHTML = `
           <span class="icon-container">${COPY_ICON_SVG}</span>
-          <span class="button-text">Copy</span>
-        `;
-        
-        // 6) On click, copy plainText to clipboard
-         copyBtn.addEventListener('click', async () => {
+          <span class="button-text">Copy</span>`;
+        copyBtn.addEventListener('click', async () => {
           try {
             await writeSmartClipboard({
-              plain   : plainText,
-              html    : sanitizedHtml,  // already defined earlier
-              markdown: rawText         // original fenced block, including MD
+              plain   : markdownToPlainText(rawText),
+              html    : sanitizedHtml,
+              markdown: rawText
             });
-        
-            /* visual feedback (unchanged) */
             copyBtn.innerHTML = `
               <span class="icon-container">${CHECK_ICON_SVG}</span>
-              <span class="button-text">Copied!</span>
-            `;
+              <span class="button-text">Copied!</span>`;
             setTimeout(() => {
               copyBtn.innerHTML = `
                 <span class="icon-container">${COPY_ICON_SVG}</span>
-                <span class="button-text">Copy</span>
-              `;
+                <span class="button-text">Copy</span>`;
             }, 2000);
-        
           } catch (err) {
             console.error('Clipboard copy failed:', err);
-            alert('Sorry—your browser blocked copying. Try again or enable permissions.');
+            alert('Copy blocked – check permissions.');
           }
         });
-
     
-        // 7) Optionally wrap the button in a small header
-        const headerDiv = document.createElement('div');
-        headerDiv.classList.add('md-header');
+        /* ADD-to-Canvas button */
+        const addBtn = document.createElement('button');
+        addBtn.className = 'md-add-btn my-btn';
+        addBtn.innerHTML = `
+          <span class="icon-container">${ADD_ICON_SVG}</span>
+          <span class="button-text">Add</span>`;
+        addBtn.addEventListener('click', () => {
+          /* feedback */
+          addBtn.disabled = true;
+          addBtn.innerHTML = `
+            <span class="icon-container">${CHECK_ICON_SVG}</span>
+            <span class="button-text">Added!</span>`;
+    
+          /* core work */
+          pushMarkdownToCanvas(rawText); // helper you added earlier
+          ensureCanvasIsOpen();          // helper you added earlier
+    
+          /* reset */
+          setTimeout(() => {
+            addBtn.disabled = false;
+            addBtn.innerHTML = `
+              <span class="icon-container">${ADD_ICON_SVG}</span>
+              <span class="button-text">Add</span>`;
+          }, 2000);
+        });
+    
+        /* assemble header – Add first, Copy second */
+        headerDiv.appendChild(addBtn);
         headerDiv.appendChild(copyBtn);
-    
         mdContainer.insertBefore(headerDiv, mdContainer.firstChild);
     
-        // 8) Replace the entire <pre> with mdContainer
+        /* swap in new content */
         const preEl = codeBlock.closest('pre');
-        if (preEl?.parentNode) {
-          preEl.parentNode.replaceChild(mdContainer, preEl);
-        }
+        preEl?.parentNode?.replaceChild(mdContainer, preEl);
       });
     }
+
 
 
     function handleFileUpload() {
