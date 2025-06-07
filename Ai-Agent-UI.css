@@ -3685,57 +3685,8 @@ body{
   margin: 0 0 0.5em;
 }
 
-/* Canvas Edit Button Styles */
-.canvas-edit-button {
-  position: absolute;
-  background: #ffffff;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  padding: 6px;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-  display: none;
-  transition: all 0.2s ease;
+.wrp{
+	width:unset !important;
 }
 
-.canvas-edit-button:hover {
-  background: #f5f5f5;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
 
-.canvas-edit-button svg {
-  width: 20px;
-  height: 20px;
-  display: block;
-}
-
-.canvas-edit-button.cancel-mode {
-  background: #fee;
-}
-
-.canvas-edit-button.cancel-mode:hover {
-  background: #fdd;
-}
-
-/* Highlighted Text in Canvas */
-.canvas-highlighted-text {
-  background-color: #ffeb3b !important;
-  padding: 2px 0;
-  border-radius: 2px;
-  position: relative;
-}
-
-/* Animation for highlight appearance */
-@keyframes highlightFadeIn {
-  from {
-    background-color: #fff59d;
-  }
-  to {
-    background-color: #ffeb3b;
-  }
-}
-
-.canvas-highlighted-text {
-  animation: highlightFadeIn 0.3s ease;
-}
