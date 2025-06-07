@@ -40,6 +40,25 @@
               </svg>
             </div>
           </div>
+          <div id="chat-canvas-toggle"
+               class="chat_input-button my-btn"
+               data-tooltip="Open the canvas">
+            <div class="icon-embed-small w-embed">
+              <!-- BEGIN OpenAI-style pencil-plus SVG -->
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+                   xmlns="http://www.w3.org/2000/svg">
+                <path d="M2.5 5.5C4.3 5.2 5.2 4 5.5 2.5C5.8 4 6.7 5.2 8.5 5.5C6.7 5.8 5.8 7 5.5 8.5C5.2 7 4.3 5.8 2.5 5.5Z"
+                      fill="currentColor" stroke="currentColor"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M5.66282 16.5231L5.18413 19.3952C5.12203 19.7678 5.09098 19.9541 5.14876 20.0888C5.19933 20.2067 5.29328 20.3007 5.41118 20.3512C5.54589 20.409 5.73218 20.378 6.10476 20.3159L8.97693 19.8372C9.72813 19.712 10.1037 19.6494 10.4542 19.521C10.7652 19.407 11.0608 19.2549 11.3343 19.068C11.6425 18.8575 11.9118 18.5882 12.4503 18.0497L20 10.5C21.3807 9.11929 21.3807 6.88071 20 5.5C18.6193 4.11929 16.3807 4.11929 15 5.5L7.45026 13.0497C6.91175 13.5882 6.6425 13.8575 6.43197 14.1657C6.24513 14.4392 6.09299 14.7348 5.97903 15.0458C5.85062 15.3963 5.78802 15.7719 5.66282 16.5231Z"
+                      stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M14.5 7L18.5 11"
+                      stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
           <div id="w-node-_819b1fcb-bef5-c69d-b33b-f104bd5e9695-8f158f72" class="chat_input-text">
             <div id="w-node-_256faa1f-1943-6b85-6f8e-bd7a8a4af011-8f158f72" class="code-embed-2 w-embed">
               <div class="form-input is-app">
@@ -422,6 +441,36 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       // Use flex on mobile; grid on desktop
       chatInputWrapper.style.display = isMobile ? "flex" : "grid";
     }
+    
+    /*───────────────────────────────────────────────────────────
+      Smart clipboard writer
+      – Writes text/plain (always)
+      – Also writes text/html  and text/markdown when supported
+    ───────────────────────────────────────────────────────────*/
+    async function writeSmartClipboard({ plain, html, markdown }) {
+      // 1. Feature / security checks
+      const canWriteRich =
+        window.isSecureContext &&                 // HTTPS
+        navigator.clipboard?.write &&             // ‘write’ API
+        window.ClipboardItem;                     // constructor
+    
+      if (!canWriteRich) {
+        // Fallback: old behaviour = plain text only
+        return navigator.clipboard.writeText(plain);
+      }
+    
+      try {
+        const item = new ClipboardItem({
+          "text/plain":    new Blob([plain],    { type: "text/plain" }),
+          "text/html":     new Blob([html],     { type: "text/html"  })
+        });
+        await navigator.clipboard.write([item]);
+      } catch (err) {
+        // If rich write fails, fall back to plain text so the user still gets something
+        console.warn("Rich clipboard write failed, falling back to plain text:", err);
+        await navigator.clipboard.writeText(plain);
+      }
+    }
 
 
     function markdownToPlainText(markdown) {
@@ -439,8 +488,37 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       return tmpDiv.innerText || '';
     }
 
+    /* Open the canvas panel if it’s not already visible */
+    function ensureCanvasIsOpen () {
+      const wrp = document.querySelector('.wrp.cnt');
+      if (wrp && !wrp.classList.contains('canvas-open')) {
+        document.getElementById('chat-canvas-toggle')?.click();
+      }
+    }
+    
+    /* Append markdown string `md` to the Toast UI Canvas */
+    function pushMarkdownToCanvas (md) {
+      const waitForEditor = () => new Promise(r => {
+        if (window.__canvasEditor) return r();
+        const h = setInterval(() => {
+          if (window.__canvasEditor) { clearInterval(h); r(); }
+        }, 100);
+      });
+      waitForEditor().then(() => {
+        const ed = window.__canvasEditor;
+        ed.setMarkdown(ed.getMarkdown() + '\n\n' + md);
+        ed.moveCursorToEnd?.();     // Toast UI helper, safe if undefined
+      });
+    }
+
+
+    /* ────────────────────────────────────────────────────────────
+       Post-process <pre><code> blocks:
+       • Keeps existing “Copy” behaviour
+       • Adds new “Add” button that appends the raw markdown to the Canvas
+       ────────────────────────────────────────────────────────────*/
     function replacePreCodeWithMarkdown(parentElement) {
-      // STEP 1: Define your icons (copy + check)
+      /* ——— SVG ICONS (complete) ——— */
       const COPY_ICON_SVG = `
         <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true"
              role="img" width="16" height="16" viewBox="0 0 24 24">
@@ -455,8 +533,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
                    0 2-.9 2-2m-2 
                    0H9V4h9z">
           </path>
-        </svg>
-      `;
+        </svg>`;
     
       const CHECK_ICON_SVG = `
         <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true"
@@ -469,70 +546,107 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
                    0 1.42 0l10-10a1 
                    1 0 0 0 0-1.42Z">
           </path>
-        </svg>
-      `;
+        </svg>`;
     
+      const ADD_ICON_SVG = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+             xmlns="http://www.w3.org/2000/svg">
+          <path d="M2.5 5.5C4.3 5.2 5.2 4 5.5 2.5C5.8 4 6.7 5.2 8.5 5.5
+                   C6.7 5.8 5.8 7 5.5 8.5C5.2 7 4.3 5.8 2.5 5.5Z"
+                fill="currentColor" stroke="currentColor"
+                stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M5.66282 16.5231L5.18413 19.3952C5.12203 19.7678 5.09098 19.9541 5.14876 20.0888C5.19933 20.2067 5.29328 20.3007 5.41118 20.3512C5.54589 20.409 5.73218 20.378 6.10476 20.3159L8.97693 19.8372C9.72813 19.712 10.1037 19.6494 10.4542 19.521C10.7652 19.407 11.0608 19.2549 11.3343 19.068C11.6425 18.8575 11.9118 18.5882 12.4503 18.0497L20 10.5C21.3807 9.11929 21.3807 6.88071 20 5.5C18.6193 4.11929 16.3807 4.11929 15 5.5L7.45026 13.0497C6.91175 13.5882 6.6425 13.8575 6.43197 14.1657C6.24513 14.4392 6.09299 14.7348 5.97903 15.0458C5.85062 15.3963 5.78802 15.7719 5.66282 16.5231Z"
+                stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M14.5 7L18.5 11"
+                stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>`;
+    
+      /* Process every <pre><code> block inside parentElement */
       const codeBlocks = parentElement.querySelectorAll('pre code');
     
       codeBlocks.forEach((codeBlock) => {
-        // 1) Grab the raw text inside <code>
+        /* raw fenced text */
         const rawText = codeBlock.textContent || '';
     
-        // 2) Render it as normal Markdown HTML for DISPLAY
-        const renderedHtml = marked.parse(rawText);
-        const sanitizedHtml = DOMPurify.sanitize(renderedHtml);
+        /* rendered preview */
+        const htmlPreview   = marked.parse(rawText);
+        const sanitizedHtml = DOMPurify.sanitize(htmlPreview);
     
-        // 3) Create a container <div> for that rendered content
+        /* container holding header + preview */
         const mdContainer = document.createElement('div');
         mdContainer.classList.add('md-block-container');
         mdContainer.innerHTML = sanitizedHtml;
     
-        // 4) Convert rawText to plain text (if you want no markdown in the copied text)
-        const plainText = markdownToPlainText(rawText);
-    
-        // 5) Create a "Copy" button with icon + text
-        const copyBtn = document.createElement('button');
-        copyBtn.classList.add('md-copy-btn');
-        copyBtn.innerHTML = `
-          <span class="icon-container">${COPY_ICON_SVG}</span>
-          <span class="button-text">Copy</span>
-        `;
-        
-        // 6) On click, copy plainText to clipboard
-        copyBtn.addEventListener('click', () => {
-          navigator.clipboard.writeText(plainText)
-            .then(() => {
-              // Swap to tick icon + "Copied!"
-              copyBtn.innerHTML = `
-                <span class="icon-container">${CHECK_ICON_SVG}</span>
-                <span class="button-text">Copied!</span>
-              `;
-              setTimeout(() => {
-                copyBtn.innerHTML = `
-                  <span class="icon-container">${COPY_ICON_SVG}</span>
-                  <span class="button-text">Copy</span>
-                `;
-              }, 2000);
-            })
-            .catch((err) => {
-              console.error('Clipboard copy failed:', err);
-            });
-        });
-    
-        // 7) Optionally wrap the button in a small header
+        /* header */
         const headerDiv = document.createElement('div');
         headerDiv.classList.add('md-header');
-        headerDiv.appendChild(copyBtn);
     
+        /* COPY button */
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'md-copy-btn my-btn';
+        copyBtn.innerHTML = `
+          <span class="icon-container">${COPY_ICON_SVG}</span>
+          <span class="button-text">Copy</span>`;
+        copyBtn.addEventListener('click', async () => {
+          try {
+            await writeSmartClipboard({
+              plain   : markdownToPlainText(rawText),
+              html    : sanitizedHtml,
+              markdown: rawText
+            });
+            copyBtn.innerHTML = `
+              <span class="icon-container">${CHECK_ICON_SVG}</span>
+              <span class="button-text">Copied!</span>`;
+            setTimeout(() => {
+              copyBtn.innerHTML = `
+                <span class="icon-container">${COPY_ICON_SVG}</span>
+                <span class="button-text">Copy</span>`;
+            }, 2000);
+          } catch (err) {
+            console.error('Clipboard copy failed:', err);
+            alert('Copy blocked – check permissions.');
+          }
+        });
+    
+        /* ADD-to-Canvas button */
+        const addBtn = document.createElement('button');
+        addBtn.className = 'md-add-btn my-btn';
+        addBtn.innerHTML = `
+          <span class="icon-container">${ADD_ICON_SVG}</span>
+          <span class="button-text">Add</span>`;
+        addBtn.addEventListener('click', () => {
+          /* feedback */
+          addBtn.disabled = true;
+          addBtn.innerHTML = `
+            <span class="icon-container">${CHECK_ICON_SVG}</span>
+            <span class="button-text">Added!</span>`;
+    
+          /* core work */
+          pushMarkdownToCanvas(rawText); // helper you added earlier
+          ensureCanvasIsOpen();          // helper you added earlier
+    
+          /* reset */
+          setTimeout(() => {
+            addBtn.disabled = false;
+            addBtn.innerHTML = `
+              <span class="icon-container">${ADD_ICON_SVG}</span>
+              <span class="button-text">Add</span>`;
+          }, 2000);
+        });
+    
+        /* assemble header – Add first, Copy second */
+        headerDiv.appendChild(addBtn);
+        headerDiv.appendChild(copyBtn);
         mdContainer.insertBefore(headerDiv, mdContainer.firstChild);
     
-        // 8) Replace the entire <pre> with mdContainer
+        /* swap in new content */
         const preEl = codeBlock.closest('pre');
-        if (preEl?.parentNode) {
-          preEl.parentNode.replaceChild(mdContainer, preEl);
-        }
+        preEl?.parentNode?.replaceChild(mdContainer, preEl);
       });
     }
+
 
 
     function handleFileUpload() {
@@ -648,8 +762,6 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       console.log("No conversation ID provided in the URL. Waiting for user to start a new conversation.");
     }
 
-
-
     async function fetchAirtableRecordId(conversationID) {
       const airtableBaseUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/Conversations';
       const airtableHeaders = {
@@ -658,16 +770,17 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       };
     
       try {
-        const response = await fetch(`${airtableBaseUrl}?filterByFormula={Conversation-ID}="${conversationID}"`, {
-          method: 'GET',
-          headers: airtableHeaders,
-        });
+        const response = await fetch(
+          `${airtableBaseUrl}?filterByFormula={Conversation-ID}="${conversationID}"`,
+          { method: 'GET', headers: airtableHeaders }
+        );
     
         if (response.ok) {
           const data = await response.json();
           if (data.records && data.records.length > 0) {
             const record = data.records[0];
-            airtableRecordId = record.id; // Save the record ID
+            airtableRecordId = record.id;            // Save the record ID
+            window.airtableRecordId = record.id;     // Expose globally for autosave
             console.log("Fetched Airtable Record ID:", airtableRecordId);
     
             // Retrieve and log the Email from the conversation record.
@@ -675,12 +788,9 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
             if (conversationEmail) {
               console.log("Conversation email:", conversationEmail);
               const encodedEmail = encodeURIComponent(conversationEmail);
-              // Query the Users table using the encoded email.
               const userProfileImage = await fetchUserProfileImageByEmail(encodedEmail);
               console.log("User profile image from conversation email:", userProfileImage);
-              // Store the image URL globally for rendering previous messages.
               conversationUserAvatar = userProfileImage;
-              // Inject the CSS rule to override avatars in previous messages.
               if (userProfileImage) {
                 updateConversationUserAvatarStyle(userProfileImage);
               }
@@ -698,6 +808,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       }
     }
 
+
     // --- NEW: Function to fetch conversation metadata from Airtable ---
     async function fetchConversationMetadata(conversationID) {
       const airtableBaseUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/Conversations';
@@ -706,32 +817,33 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
         'Content-Type': 'application/json',
       };
       try {
-        const response = await fetch(`${airtableBaseUrl}?filterByFormula={Conversation-ID}="${conversationID}"`, {
-          method: 'GET',
-          headers: airtableHeaders,
-        });
-        if (response.ok) {
-          const data = await response.json();
-          if (data.records && data.records.length > 0) {
-            const record = data.records[0];
-            // Retrieve the desired fields
-            const clientName = record.fields['Client-Name'] || 'Unknown';
-            const timeLastEdited = record.fields['Time-Last-Edited'] || 'Unknown';
-            const summary = record.fields['Summary'] || '';
-            return { clientName, timeLastEdited, summary };
-          } else {
-            console.error("No matching Airtable record found for Conversation-ID:", conversationID);
-            return null;
-          }
-        } else {
+        const response = await fetch(
+          `${airtableBaseUrl}?filterByFormula={Conversation-ID}="${conversationID}"`,
+          { method: 'GET', headers: airtableHeaders }
+        );
+        if (!response.ok) {
           console.error("Error fetching conversation metadata:", await response.text());
           return null;
         }
+        const data = await response.json();
+        if (!data.records || data.records.length === 0) {
+          console.error("No matching Airtable record found for Conversation-ID:", conversationID);
+          return null;
+        }
+    
+        const record = data.records[0];
+        const clientName      = record.fields['Client-Name']       || 'Unknown';
+        const timeLastEdited  = record.fields['Time-Last-Edited'] || 'Unknown';
+        const summary         = record.fields['Summary']          || '';
+        const canvasContent   = record.fields['Canvas Content']   || '';      // ← new
+    
+        return { clientName, timeLastEdited, summary, canvasContent };
       } catch (error) {
         console.error("Error during fetchConversationMetadata:", error);
         return null;
       }
     }
+
 
 
 
@@ -1088,6 +1200,14 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       fetchConversationMetadata(conversationID).then((metadata) => {
         if (metadata) {
           renderConversationHeader(metadata);
+      
+          // Store for initial render…
+          window.initialCanvasContent = metadata.canvasContent || '';
+      
+          // …and immediately load if editor is ready
+          if (window.__canvasEditor) {
+            window.__canvasEditor.setMarkdown(window.initialCanvasContent);
+          }
         }
       });
     
@@ -1096,8 +1216,9 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       fetchConversationMessages(conversationID).then((messages) => {
         if (messages) {
           renderConversationMessages(messages);
-          conversationId = conversationID; 
-          console.log("Global conversationId set to:", conversationId);
+          conversationId = conversationID;
+          window.conversationId = conversationID;      // ← ensure global is set
+          console.log("Global conversationId set to:", window.conversationId);
         } else {
           console.error("Failed to fetch conversation messages.");
         }
@@ -1109,7 +1230,6 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       console.log("No conversation ID found. Hiding input wrapper.");
       chatInputWrapper.style.display = "none";
     }
-
 
     let conversationId = null;      // local variable used in this file
     window.conversationId = null;   // copy on window for other scripts
@@ -1944,6 +2064,269 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
     
     // Finally, call initTooltips() once
     initTooltips();
+
+    /*************  Canvas sidebar infrastructure  *************/
+(function addCanvasInfrastructure () {
+
+  /* 1 – Create the grey panel (runs only once) */
+  function ensureCanvasPanel () {
+    if (document.getElementById('working-canvas')) return;   // already injected
+
+    const wrp  = document.querySelector('.wrp.cnt');  // outer wrapper
+    const main = wrp?.querySelector('.bSeCont');      // main chat column
+    if (!wrp || !main) {
+      console.warn('[Canvas] .wrp.cnt or .bSeCont not found');
+      return;
+    }
+
+    /* Build the panel */
+    const canvas = document.createElement('div');
+    canvas.id        = 'working-canvas';
+    canvas.className = 'canvas-panel';                // for CSS
+    canvas.innerHTML = `
+      <div class="canvas-header">
+        <!-- ───── Left  -->
+        <div class="canvas-header-left">
+          <button id="canvas-close-btn"
+                  class="canvas-icon-btn canvas-close-btn my-btn"
+                  data-tooltip="Close"
+                  aria-label="Close">×</button>
+          <span class="canvas-title">The Canvas</span>
+        </div>
+    
+        <!-- ───── Right -->
+        <div class="canvas-header-right">
+          <!-- Undo -->
+          <button id="canvas-undo-btn"
+                  class="canvas-icon-btn my-btn"
+                  data-tooltip="Undo"
+                  aria-label="Undo">
+            ${/* OpenAI undo */''}
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                 xmlns="http://www.w3.org/2000/svg"><path d="M21 13.6647C21 14.9442 20.7333 16.0559 20.1996 17C19.666 17.9503 18.8997 18.6863 17.9008 19.208C16.908 19.736 15.7198 20 14.3361 20H12.0372C11.696 20 11.4137 19.8851 11.1902 19.6553C10.9669 19.4317 10.8553 19.1584 10.8553 18.8354C10.8553 18.5124 10.9669 18.2391 11.1902 18.0155C11.4137 17.792 11.696 17.6801 12.0372 17.6801H14.2245C15.18 17.6801 15.9897 17.5032 16.6535 17.1491C17.3237 16.795 17.8325 16.3136 18.1799 15.7049C18.5336 15.0901 18.7105 14.3851 18.7105 13.5901C18.7105 12.8075 18.5336 12.1118 18.1799 11.5031C17.8325 10.8944 17.3237 10.4193 16.6535 10.0776C15.9897 9.73607 15.18 9.56516 14.2245 9.56516H8.64014L5.3268 9.41619L5.70838 8.80125L8.05379 10.7577L10.2316 12.8819C10.331 12.9876 10.4116 13.1056 10.4737 13.236C10.5419 13.3664 10.5761 13.5187 10.5761 13.6926C10.5761 14.0155 10.4705 14.2826 10.2596 14.4938C10.0549 14.705 9.78176 14.8106 9.44056 14.8106C9.13032 14.8106 8.85421 14.6894 8.61223 14.4472L3.36299 9.25782C3.2451 9.1522 3.15513 9.0249 3.09307 8.8758C3.03103 8.72056 3 8.56519 3 8.40995C3 8.24845 3.03103 8.09321 3.09307 7.94411C3.15513 7.78888 3.2451 7.65531 3.36299 7.54342L8.61223 2.35404C8.85421 2.11801 9.13032 2 9.44056 2C9.78176 2 10.0549 2.1056 10.2596 2.31678C10.4705 2.52175 10.5761 2.78572 10.5761 3.1087C10.5761 3.28261 10.5419 3.4379 10.4737 3.57454C10.4116 3.70497 10.331 3.82299 10.2316 3.92857L8.05379 6.0528L5.70838 8.00926L5.3268 7.39445L8.64014 7.24535H14.2245C15.6267 7.24535 16.8335 7.51548 17.8449 8.05587C18.8624 8.59626 19.6412 9.35091 20.1811 10.3199C20.727 11.2826 21 12.3976 21 13.6647Z" fill="currentColor"/></svg>
+          </button>
+    
+          <!-- Redo -->
+          <button id="canvas-redo-btn"
+                  class="canvas-icon-btn my-btn"
+                  data-tooltip="Redo"
+                  aria-label="Redo">
+            <!-- OpenAI redo -->
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                 xmlns="http://www.w3.org/2000/svg"><path d="M3 13.6647C3 12.3976 3.26992 11.2826 3.80973 10.3199C4.35574 9.35091 5.13444 8.59626 6.14582 8.05587C7.16341 7.51548 8.37334 7.24535 9.77563 7.24535H15.3506L18.6732 7.39445L18.2917 8.00926L15.937 6.0528L13.7684 3.92857C13.6629 3.82299 13.576 3.70497 13.5078 3.57454C13.4457 3.4379 13.4147 3.28261 13.4147 3.1087C13.4147 2.78572 13.517 2.52175 13.7218 2.31678C13.9328 2.1056 14.209 2 14.5501 2C14.8666 2 15.1427 2.11801 15.3785 2.35404L20.637 7.54342C20.7549 7.65531 20.8449 7.78888 20.907 7.94411C20.969 8.09321 21 8.24845 21 8.40995C21 8.56519 20.969 8.72056 20.907 8.8758C20.8449 9.0249 20.7549 9.1522 20.637 9.25782L15.3785 14.4472C15.1427 14.6894 14.8666 14.8106 14.5501 14.8106C14.209 14.8106 13.9328 14.705 13.7218 14.4938C13.517 14.2826 13.4147 14.0155 13.4147 13.6926C13.4147 13.5187 13.4457 13.3664 13.5078 13.236C13.576 13.1056 13.6629 12.9876 13.7684 12.8819L15.937 10.7577L18.2917 8.80125L18.6732 9.41619L15.3506 9.56516H9.77563C8.82007 9.56516 8.00726 9.73607 7.33714 10.0776C6.66702 10.4193 6.15513 10.8944 5.80146 11.5031C5.45399 12.1118 5.28026 12.8075 5.28026 13.5901C5.28026 14.3851 5.45399 15.0901 5.80146 15.7049C6.15513 16.3136 6.66702 16.795 7.33714 17.1491C8.00726 17.5032 8.82007 17.6801 9.77563 17.6801H11.9627C12.3041 17.6801 12.5833 17.792 12.8005 18.0155C13.0238 18.2391 13.1355 18.5124 13.1355 18.8354C13.1355 19.1584 13.0238 19.4317 12.8005 19.6553C12.5833 19.8851 12.3041 20 11.9627 20H9.66399C8.28026 20 7.08895 19.736 6.08999 19.208C5.09722 18.6863 4.33403 17.9503 3.80043 17C3.26681 16.0559 3 14.9442 3 13.6647Z" fill="currentColor"/></svg>
+          </button>
+    
+          <!-- Copy -->
+          <button id="canvas-copy-btn"
+                  class="canvas-icon-btn my-btn"
+                  data-tooltip="Copy"
+                  aria-label="Copy">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"
+                 xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" clip-rule="evenodd"
+                    d="M7 5C7 3.34315 8.34315 2 10 2H19C20.6569 2 22 3.34315 22 5V14C22 15.6569 20.6569 17 19 17H17V19C17 20.6569 15.6569 22 14 22H5C3.34315 22 2 20.6569 2 19V10C2 8.34315 3.34315 7 5 7H7V5ZM9 7H14C15.6569 7 17 8.34315 17 10V15H19C19.5523 15 20 14.5523 20 14V5C20 4.44772 19.5523 4 19 4H10C9.44772 4 9 4.44772 9 5V7ZM5 9C4.44772 9 4 9.44772 4 10V19C4 19.5523 4.44772 20 5 20H14C14.5523 20 15 19.5523 15 19V10C15 9.44772 14.5523 9 14 9H5Z"/>
+            </svg>
+          </button>
+    
+          <!-- Send -->
+          <button id="canvas-send-btn"
+                  class="canvas-icon-btn canvas-send-btn my-btn"
+                  data-tooltip="Send via email"
+                  aria-label="Send via email">
+            <svg width="26" height="26" viewBox="0 0 20 20" fill="none"
+                 xmlns="http://www.w3.org/2000/svg">
+              <path d="M6.667 6.667 10 3.333l3.333 3.334M10 3.75V12.5"
+                    stroke="currentColor" stroke-width="1.5"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M3.333 11.667v.2c0 1.68 0 2.52.327 3.162.288.564.747 1.023 1.312 1.31C5.613 16.667 6.453 16.667 8.133 16.667h3.734c1.68 0 2.52 0 3.162-.328.564-.287 1.023-.746 1.311-1.31.327-.642.327-1.482.327-3.162v-.2"
+                    stroke="currentColor" stroke-width="1.5"
+                    stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    
+      <!-- textarea that EasyMDE will enhance -->
+      <div id="canvas-editor" style="height:100%;"></div>
+    `;
+    /* Insert immediately after the main content column */
+    main.insertAdjacentElement('afterend', canvas);
+
+    /*  ░░░  Toast UI Editor loader / initialiser  ░░░ */
+    function initCanvasEditor(){
+      if (window.__canvasEditor) return;           // guard against double‐load
+    
+      /* 1) Load Toast UI CSS */
+      const css = document.createElement('link');
+      css.rel  = 'stylesheet';
+      css.href = 'https://uicdn.toast.com/editor/latest/toastui-editor.min.css';
+      document.head.appendChild(css);
+    
+      /* 2) Load Toast UI JS */
+      const js  = document.createElement('script');
+      js.src    = 'https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js';
+      js.onload = () => {
+        const { Editor } = window.toastui;
+        window.__canvasEditor = new Editor({
+          el:               document.getElementById('canvas-editor'),
+          height:           '100%',
+          initialEditType:  'wysiwyg',
+          previewStyle:     'vertical',
+          hideModeSwitch:   true,
+          usageStatistics:  false
+        });
+    
+        /* 3) Load any previously-saved Markdown */
+        if (window.initialCanvasContent) {
+          window.__canvasEditor.setMarkdown(window.initialCanvasContent);
+        }
+    
+        /* 4) Autosave → Airtable */
+        async function saveCanvasToAirtable(markdown) {
+          if (!window.airtableRecordId) return;
+          const url = `https://api.airtable.com/v0/app2N6x5jeRnIzSpL/Conversations/${window.airtableRecordId}`;
+          await fetch(url, {
+            method: 'PATCH',
+            headers: {
+              Authorization: 'Bearer patTeuxUuzgG0ZU8Q.2eb9ff7f31afe3e06f3c128c5b5b832bcc4e4e85bd58a5007a8368f218d28b83',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              fields: { 'Canvas Content': markdown }
+            })
+          });
+        }
+        let autosaveTimer;
+        window.__canvasEditor.on('change', () => {
+          clearTimeout(autosaveTimer);
+          autosaveTimer = setTimeout(() => {
+            const md = window.__canvasEditor.getMarkdown();
+            saveCanvasToAirtable(md);
+          }, 5000);
+        });
+    
+        /* 5) Undo/Redo buttons */
+        const undoBtn = document.getElementById('canvas-undo-btn');
+        const redoBtn = document.getElementById('canvas-redo-btn');
+        undoBtn && undoBtn.addEventListener('click', () =>
+          window.__canvasEditor.exec('undo')
+        );
+        redoBtn && redoBtn.addEventListener('click', () =>
+          window.__canvasEditor.exec('redo')
+        );
+    
+        /* 6) Copy button (rich & plain) */
+        const copyBtn = document.getElementById('canvas-copy-btn');
+        copyBtn && copyBtn.addEventListener('click', async () => {
+          const md    = window.__canvasEditor.getMarkdown();
+          const html  = DOMPurify.sanitize(marked.parse(md));
+          const plain = markdownToPlainText(md);
+          try {
+            await writeSmartClipboard({ plain, html });
+            copyBtn.classList.add('is-active');
+            setTimeout(() => copyBtn.classList.remove('is-active'), 1500);
+          } catch (err) {
+            console.error('Clipboard copy failed:', err);
+            alert('Clipboard write was blocked – check permissions.');
+          }
+        });
+    
+        /* 7) Send-via-email button */
+        const sendBtn = document.getElementById('canvas-send-btn');
+        if (sendBtn) {
+          sendBtn.addEventListener('click', async () => {
+            sendBtn.disabled = true;
+            const originalHTML = sendBtn.innerHTML;
+            // show loading
+            sendBtn.innerHTML = `
+              <img
+                src="https://member.archmarketing.org/wp-content/uploads/2025/01/ZKZg.gif"
+                alt="Loading..."
+                style="width:24px; height:24px;"
+              >
+            `;
+    
+            // pull real data from the DOM
+            const container      = document.getElementById('ai-agent-container') || {};
+            const email          = container.getAttribute('data-user-email') || '';
+            const fullName       = container.getAttribute('data-user-name')  || '';
+            const firstName      = fullName.split(' ')[0] || '';
+            const conversationId = window.conversationId || '';
+            const canvasMd       = window.__canvasEditor.getMarkdown();
+            const agentId        = container.getAttribute('data-agent-id') || '';
+    
+            const payload = {
+              email,
+              first_name:              firstName,
+              conversation_id:         conversationId,
+              canvas_content_markdown: canvasMd,
+              agent_id:                agentId
+            };
+    
+            try {
+              const res = await fetch(
+                'https://api-bcbe5a.stack.tryrelevance.com/latest/studios/9741f7e1-6d62-4e88-a164-655b647f0665/trigger_webhook?project=c5bf489c1af9-4886-afba-073965a5ad71',
+                {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(payload)
+                }
+              );
+              if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    
+              // show success
+              sendBtn.innerHTML = `<span style="font-size:24px;color:green;">✔️</span>`;
+              setTimeout(() => {
+                sendBtn.innerHTML = originalHTML;
+                sendBtn.disabled = false;
+              }, 2000);
+    
+            } catch (err) {
+              console.error('Email send failed:', err);
+              sendBtn.innerHTML = originalHTML;
+              sendBtn.disabled = false;
+            }
+          });
+        }
+    
+        /* 8) Re-arm tooltips on the new buttons */
+        if (typeof initTooltips === 'function') initTooltips();
+      };
+      document.head.appendChild(js);
+    }
+    
+    initTooltips();      // (re-hook tool-tips for the new buttons, already in your code)
+    initCanvasEditor();  // <-- add this call right here
+
+  }
+
+  /* 2 – Wire the open / close behaviour */
+  function wireToggleBehaviour () {
+    const toggleBtn = document.getElementById('chat-canvas-toggle');
+    const wrp       = document.querySelector('.wrp.cnt');
+    if (!toggleBtn || !wrp) return;
+
+    const open  = () => { wrp.classList.add('canvas-open');  toggleBtn.classList.add('is-active'); };
+    const close = () => { wrp.classList.remove('canvas-open'); toggleBtn.classList.remove('is-active'); };
+
+    /* open ⇄ close when the toolbar button is clicked */
+    toggleBtn.addEventListener('click', () => {
+      wrp.classList.contains('canvas-open') ? close() : open();
+    });
+
+    /* close when the “×” inside the panel is clicked */
+    wrp.addEventListener('click', (e) => {
+      if (e.target.id === 'canvas-close-btn') close();
+    });
+  }
+
+  /* Run immediately */
+  ensureCanvasPanel();
+  wireToggleBehaviour();
+
+})();   /* ← end Canvas IIFE */
+/***********  (keep existing code below this point)  ***********/
+
 
     // --- Begin link update functionality ---
     (function() {
