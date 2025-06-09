@@ -2289,9 +2289,9 @@ figcaption {
   z-index: 300;
   grid-column-gap: 0px;
   grid-row-gap: 0px;
-  filter: drop-shadow(0 2px 4px #00000030);
-  background-color: #e7e7e7;
-  border: 1px solid #949494;
+  filter: drop-shadow(0 2px 4px #00000020);
+  background-color: #F2F2F2;
+  border: 1px solid #cfcfcf;
   border-radius: 35px;
   grid-template-rows: auto;
   grid-template-columns: 77px 70px 70px 70px 1fr auto;
