@@ -2530,8 +2530,8 @@ figcaption {
   border-radius: 999px;
   justify-content: center;
   align-items: center;
-  width: 60px;
-  height: 60px;
+  width: 45px;
+  height: 45px;
   transition: all .2s;
   display: flex;
 }
