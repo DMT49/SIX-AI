@@ -3714,35 +3714,37 @@ body{
 
 
 /* ────────────────────────────────────────────────
-   DESKTOP  (≥ 940 px)  –  two‑row, full‑width input
+   DESKTOP  (≥ 940 px)  •  two‑row flex layout only
    ──────────────────────────────────────────────── */
 @media (min-width: 940px){
 
-  /* 1️⃣  Make the wrapper a flex‑column that can wrap */
+  /* Make the wrapper a wrapping flex container        */
   .chat_input-wrapper{
-    display:flex;            /* overrides old grid */
-    flex-wrap:wrap;
-    flex-direction:column;
-    row-gap:8px;             /* gap between the two rows */
+    display:flex !important;   /* overrides earlier grid */
+    flex-wrap:wrap;            /* allows a second row   */
+    column-gap:8px;            /* horizontal gap        */
+    row-gap:8px;               /* vertical gap          */
+    align-items:center;
   }
 
-  /* 2️⃣  Text‑input row – 100 % width, comes first   */
+  /* 1️⃣  TEXTAREA: first item, owns the whole top row  */
   .chat_input-text{
-    order:1;                 /* first row */
-    flex:0 0 100%;           /* full width */
+    order:1;                   /* first in flow         */
+    flex:0 0 100%;             /* full‑width row        */
   }
 
-  /* 3️⃣  Utility icons – bottom‑left, original order */
+  /* 2️⃣  LEFT‑SIDE ICONS: second row, left‑aligned     */
   #chat-file-input,
   #chat-user-input-mic,
   #chat-voice-toggle,
   #chat-canvas-toggle{
-    order:2;                 /* second row */
+    order:2;                   /* appear after textarea */
+    /* keep their existing width/height styles */
   }
 
-  /* 4️⃣  Send arrow – bottom‑right                    */
+  /* 3️⃣  SEND BUTTON: second row, right‑aligned        */
   #chat-user-submit{
-    order:3;                 /* last in flex flow  */
-    margin-left:auto;        /* pushes it to the far right */
+    order:3;                   /* after the other icons */
+    margin-left:auto;          /* pushes it far right   */
   }
 }
