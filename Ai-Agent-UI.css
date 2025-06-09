@@ -3712,3 +3712,68 @@ body{
 	padding-left: 12px !important;
 }
 
+
+/* ────────────────────────────────────────────────
+   DESKTOP  (≥ 940 px) • two‑row input interface
+   ──────────────────────────────────────────────── */
+@media (min-width: 940px) {
+
+  /* 1️⃣  Wrapper becomes a two‑row grid            */
+  .chat_input-wrapper{
+    /* keep grid, just change the blueprint */
+    grid-template-columns: 1fr 45px;   /* col‑1: stretchy textarea  •  col‑2: send arrow */
+    grid-template-rows: auto auto;     /* row‑1: text  •  row‑2: icons */
+    column-gap: 8px;
+    row-gap: 8px;
+    padding: 10px 12px;
+  }
+
+  /* 2️⃣  Textarea row + col placement              */
+  .chat_input-text{
+    grid-column: 1 / 2;   /* first col */
+    grid-row:    1;       /* first row */
+    place-self: stretch start !important; /* neutralise earlier place‑self */
+  }
+
+  /* 3️⃣  Send button beside the textarea           */
+  #chat-user-submit{
+    grid-column: 2;       /* second col */
+    grid-row:    1;       /* first row */
+    width: 45px;
+    height:45px;
+    place-self: center end !important;
+  }
+
+  /* 4️⃣  All other controls line‑up in row 2        */
+  #chat-file-input,
+  #chat-user-input-mic,
+  #chat-voice-toggle,
+  #chat-canvas-toggle{
+    grid-row: 2 !important;
+    grid-column: auto;
+    width: 45px;
+    height:45px;
+    place-self: center start !important;  /* overrides earlier end/center rules */
+  }
+
+  /* 5️⃣  Cosmetic tweaks that match your latest palette */
+  .chat_input-wrapper{
+    background:#F2F2F2;          /* same as your mobile bar */
+    border:1px solid #cfcfcf;
+    box-shadow:0 2px 4px rgba(0,0,0,.12);
+  }
+  .chat_input-button,
+  #chat-user-submit{
+    background:#F2F2F2;
+    border:1px solid #d0d0d0;
+  }
+  .chat_input-button:hover,
+  #chat-user-submit:hover{
+    background:#d9d9d9;
+  }
+
+  /* 6️⃣  Visibility rules already handled elsewhere:
+         - #hamburger-menu-mobile is hidden on desktop
+         - #chat‑canvas‑toggle remains visible here      */
+}
+
