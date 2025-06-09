@@ -3624,8 +3624,8 @@ body{
 
   /* sticky under nav bar */
   position:sticky;
-  top:71px;                       /* nav height            */
-  height:calc(100vh - 71px);      /* full viewport minus nav */
+  top:-10px;                       /* nav height            */
+  height:calc(100vh + 10px);      /* full viewport minus nav */
 
   /* NEW ► universal right-side padding */
   padding-right:35px;             /* ← as requested        */
