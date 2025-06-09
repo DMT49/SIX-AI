@@ -2299,9 +2299,7 @@ figcaption {
   display: grid;
   position: fixed;
   bottom: 20px;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-right: 8px;
+  padding: 10px;
   box-sizing: border-box;
   max-width: 768px;
   width: 100%; /* Let it adapt dynamically */
