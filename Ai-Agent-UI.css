@@ -2303,7 +2303,7 @@ figcaption {
   padding-bottom: 8px;
   padding-right: 8px;
   box-sizing: border-box;
-  max-width: 52rem; /* Prevent the wrapper from becoming too wide */
+  max-width: 768px;
   width: 100%; /* Let it adapt dynamically */
   left: calc((100% - 1320px) / 2 + (1320px * 0.25) + ((1320px * 0.75) / 2) - (52rem / 2)); /* Center in main content for wider screens */
 }
