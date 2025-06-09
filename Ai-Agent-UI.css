@@ -2524,9 +2524,9 @@ figcaption {
 }
 
 .chat_input-button {
-  color: #F2F2F2;
+  color: #525252;
   cursor: pointer;
-  background-color: #e7e7e7;
+  background-color: #F2F2F2;
   border-radius: 999px;
   justify-content: center;
   align-items: center;
