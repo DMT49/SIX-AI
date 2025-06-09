@@ -2211,7 +2211,7 @@ figcaption {
   border-radius: 30px;
   height: auto;
   margin-bottom: 0;
-  padding: .25rem .75rem .25rem 1.15rem;
+  padding: 1px 10px 1px 10px;
   font-size: 1rem;
   line-height: 1.6;
   transition: all .2s;
