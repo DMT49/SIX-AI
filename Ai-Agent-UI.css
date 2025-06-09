@@ -2240,7 +2240,7 @@ figcaption {
 }
 
 .form-input.is-app {
-  border-color: #2e2e2e63;
+  border-color: #2e2e2e00;
   border-radius: 27.5px;
   flex: 0 auto;
   width: 100%;
@@ -2252,15 +2252,15 @@ figcaption {
 }
 
 .form-input.is-app:hover, .form-input.is-app:active, .form-input.is-app:focus {
-  border-color: #2e2e2e8f;
+  border-color: #2e2e2e00;
 }
 
 .form-input.is-app:focus-visible {
-  border-color: #2e2e2e8f;
+  border-color: #2e2e2e00;
 }
 
 .form-input.is-app[data-wf-focus-visible] {
-  border-color: #2e2e2e8f;
+  border-color: #2e2e2e00;
 }
 
 .shell15_wrapper {
