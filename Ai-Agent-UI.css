@@ -2285,7 +2285,7 @@ figcaption {
   position: relative;
 }
 
-.r {
+.chat_input-wrapper {
   z-index: 300;
   grid-column-gap: 0px;
   grid-row-gap: 0px;
@@ -3700,15 +3700,39 @@ body{
 	padding-left: 12px !important;
 }
 
-.chat_input-wrapper{
-  position: sticky;         /* pins it inside the column   */
-  bottom: 0;
-  width: 100% !important;   /* always match parent width   */
-  left:auto !important;     /* neutralise old centring calc*/
-  right:auto !important;
-}
 
-.chat_conversation-wrapper{
-  padding-bottom: 100px;    /* so the last message isn't hidden */
-}
+/* ────────────────────────────────────────────────
+   DESKTOP  (≥ 940 px)  •  two‑row flex layout only
+   ──────────────────────────────────────────────── */
+@media (min-width: 940px){
 
+  /* Make the wrapper a wrapping flex container        */
+  .chat_input-wrapper{
+    display:flex !important;   /* overrides earlier grid */
+    flex-wrap:wrap;            /* allows a second row   */
+    column-gap:8px;            /* horizontal gap        */
+    row-gap:8px;               /* vertical gap          */
+    align-items:center;
+  }
+
+  /* 1️⃣  TEXTAREA: first item, owns the whole top row  */
+  .chat_input-text{
+    order:1;                   /* first in flow         */
+    flex:0 0 100%;             /* full‑width row        */
+  }
+
+  /* 2️⃣  LEFT‑SIDE ICONS: second row, left‑aligned     */
+  #chat-file-input,
+  #chat-user-input-mic,
+  #chat-voice-toggle,
+  #chat-canvas-toggle{
+    order:2;                   /* appear after textarea */
+    /* keep their existing width/height styles */
+  }
+
+  /* 3️⃣  SEND BUTTON: second row, right‑aligned        */
+  #chat-user-submit{
+    order:3;                   /* after the other icons */
+    margin-left:auto;          /* pushes it far right   */
+  }
+}
