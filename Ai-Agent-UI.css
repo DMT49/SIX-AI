@@ -3602,7 +3602,7 @@ body{
 
   /* sticky under nav bar */
   position:sticky;
-  top:-10px;                       /* nav height            */
+  top: 0px;                       /* nav height            */
   height:calc(100vh + 10px);      /* full viewport minus nav */
 
   /* NEW ► universal right-side padding */
