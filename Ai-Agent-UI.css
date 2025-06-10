@@ -3874,3 +3874,21 @@ body{
 
 /* 11) CODE / PRE -------------------------------------------------- */
 .toastui-editor-contents pre{overflow-x:auto !important;}  /* keep Toast defaults */
+
+/* ─────────  ORDERED–LIST  FINAL FIX  ───────── */
+/* Use the browser’s native numbering: 1. 2. 3.  */
+.toastui-editor-contents ol{
+  list-style: decimal outside !important;   /* number • dot • space */
+  margin: 1em 0 !important;
+  padding-left: 2em !important;             /* same left indent as chat */
+}
+
+/* Remove every custom prefix we added earlier                       */
+.toastui-editor-contents ol li{
+  position: static !important;              /* let browser handle it   */
+  padding-left: 0 !important;
+}
+.toastui-editor-contents ol li::before,
+.toastui-editor-contents ol li::marker{
+  content: none !important;                 /* guarantee **one** marker */
+}
