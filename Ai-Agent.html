@@ -170,6 +170,58 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       }
       return output.buffer;
     }
+
+    (function () {
+      let bar, convo, resizeObs;
+    
+      function sync () {
+        if (!bar || !convo) return;
+    
+        /* Mobile ≤ 939 px → CSS rules are already correct */
+        if (window.innerWidth <= 939) {
+          bar.style.left  = '';
+          bar.style.width = '';
+          return;
+        }
+    
+        const { left, width } = convo.getBoundingClientRect();
+        const cs  = getComputedStyle(bar);
+        const pad = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
+        bar.style.left  = left          + 'px';
+        bar.style.width = (width - pad) + 'px';
+      }
+    
+      function attach () {
+        bar   = document.querySelector('.chat_input-wrapper');
+        convo = document.getElementById('chat_conversation-wrapper');
+        const wrp  = document.querySelector('.wrp.cnt');          // parent that gets .canvas-open
+    
+        if (!(bar && convo && wrp)) return false;                 // elements not in DOM yet
+    
+        /* expose hook for sidebar code if needed */
+        window.syncInputBar = sync;
+    
+        window.addEventListener('resize', sync);                  // viewport changes
+        wrp.addEventListener('transitionend', sync, true);        // canvas open/close
+    
+        if ('ResizeObserver' in window) {                         // chat column width changes
+          resizeObs = new ResizeObserver(sync);
+          resizeObs.observe(convo);
+        }
+    
+        sync();                                                   // first alignment
+        return true;
+      }
+    
+      /* wait until the bar & conversation column are injected */
+      if (!attach()) {
+        const domWatch = new MutationObserver(() => {
+          if (attach()) domWatch.disconnect();
+        });
+        domWatch.observe(document.body, { childList:true, subtree:true });
+      }
+    })();
+
     
     // Function to start Deepgram transcription
     async function startDeepgramTranscription() {
