@@ -3732,123 +3732,145 @@ body{
 }
 
 
-/*  ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
-   CANVAS  —  FINAL LIST‑FIX + TYPOGRAPHY
-   (everything inside #canvas‑editor only)
-   paste BELOW your earlier canvas rules
-   ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀ */
+/* ===============================================================
+   CANVAS  ⇢  LISTS & LINE‑HEIGHT FINAL FIX
+   (Replace the previous canvas‑only block with this one)
+   =============================================================== */
 
-/*───────────────────────────────────────────────────────────────
-  0) UNIVERSAL BODY TEXT / HEADINGS (unchanged but kept here for
-     completeness in case you remove the previous block someday)
-────────────────────────────────────────────────────────────────*/
-#canvas-editor{
-  font-size:1.1rem !important;          /* ≈17–18 px */
-  line-height:1.6  !important;          /* comfy read */
-  color:#000       !important;
+/* 0) GLOBAL TYPE SETTINGS ---------------------------------------- */
+.toastui-editor-contents{
+  font-size:1.1rem !important;          /* 17.6 px – same as chat */
+  line-height:1.6 !important;           /* roomy, readable body   */
+  color:#000 !important;
   overflow-wrap:break-word !important;
-  word-break:break-word   !important;
+  word-break:break-word !important;
 }
 
-#canvas-editor h1,
-#canvas-editor h2,
-#canvas-editor h3,
-#canvas-editor h4,
-#canvas-editor h5,
-#canvas-editor h6{
+/* apply the same line‑height to main text elements */
+.toastui-editor-contents p,
+.toastui-editor-contents li,
+.toastui-editor-contents blockquote{line-height:inherit !important;}
+
+/* 1) HEADINGS ----------------------------------------------------- */
+.toastui-editor-contents h1,
+.toastui-editor-contents h2,
+.toastui-editor-contents h3,
+.toastui-editor-contents h4,
+.toastui-editor-contents h5,
+.toastui-editor-contents h6{
   margin:1em 0 .5em 0 !important;
   font-weight:700 !important;
-  line-height:1.3 !important;
+  line-height:1.3 !important;           /* same chat feel         */
+  color:#000 !important;
 }
 
-#canvas-editor h1,
-#canvas-editor h2{font-size:1.3em !important;}   /* ≈22.9 px */
-#canvas-editor h3,
-#canvas-editor h4{font-size:1.15em !important;}  /* ≈20.2 px */
-#canvas-editor h5,
-#canvas-editor h6{font-size:1em !important;}     /* 17–18 px */
+.toastui-editor-contents h1,
+.toastui-editor-contents h2{font-size:1.3em !important;}   /* 22.88 px */
+.toastui-editor-contents h3,
+.toastui-editor-contents h4{font-size:1.15em !important;}  /* 20.24 px */
+.toastui-editor-contents h5,
+.toastui-editor-contents h6{font-size:1em !important;}     /* 17.6 px  */
 
-/*───────────────────────────────────────────────────────────────
-  1) FULL LIST RESET
-     – remove every built‑in marker (Toast UI + browser)
-     – then rebuild clean black bullets AND “1. ” numbering
-────────────────────────────────────────────────────────────────*/
+/* 2) PARAGRAPHS --------------------------------------------------- */
+.toastui-editor-contents p{margin:0 0 16px 0 !important;}
+.toastui-editor-contents p:last-child{margin-bottom:0 !important;}
 
-/* REMOVE ALL native list markers at both <ul/ol> AND <li> level */
-#canvas-editor ul,
-#canvas-editor ol,
-#canvas-editor ul li,
-#canvas-editor ol li{
-  list-style:none !important;
-  margin:0 0 .5em 0 !important;        /* keeps vertical rhythm */
+/* 3) BLOCKQUOTES -------------------------------------------------- */
+.toastui-editor-contents blockquote{
+  border-left:5px solid #ddd !important;
+  padding-left:15px !important;
+  font-style:italic !important;
+  color:#555 !important;
+  margin:1em 0 !important;
+}
+
+/* 4) UNORDERED LISTS  (single black bullet, no duplicates) -------- */
+.toastui-editor-contents ul{
+  /* rely on the browser’s own bullet, kill extra ones */
+  list-style:disc outside !important;
+  margin:1em 0 !important;
+  padding-left:2em !important;
+}
+/* remove Toast UI’s additional grey pseudo‑bullets */
+.toastui-editor-contents ul li::before{content:none !important;}
+/* ensure the native bullet is black */
+.toastui-editor-contents ul li::marker{color:#000 !important;}
+/* tidy spacing */
+.toastui-editor-contents li{margin-bottom:.5em !important;}
+
+/* 5) ORDERED LISTS  (number · dot · space · text) ----------------- */
+/* wipe every default / toast marker first */
+.toastui-editor-contents ol,
+.toastui-editor-contents ol li{list-style:none !important;}
+.toastui-editor-contents ol li::marker{content:none !important;}
+
+/* build fresh counter */
+.toastui-editor-contents ol{
+  counter-reset:list-counter;
+  margin:1em 0 !important;
   padding-left:0 !important;
 }
-
-/* Clear any Toast­UI pseudo bullets that might still fire */
-#canvas-editor ul li::before,
-#canvas-editor ul li::after,
-#canvas-editor ol li::before,
-#canvas-editor ol li::after{
-  content:none !important;
-}
-
-/*────────── UNORDERED  (• bullet) ──────────*/
-#canvas-editor ul li{
+.toastui-editor-contents ol li{
   position:relative;
-  padding-left:1.4em;                  /* bullet → text gap */
-}
-#canvas-editor ul li::before{
-  content:"•";
-  position:absolute;
-  left:0; top:0;
-  font-size:1em;                       /* same size as text */
-  line-height:1.6;
-  color:#000;                          /* single dark bullet */
-}
-
-/*────────── ORDERED  (1. Item) ──────────*/
-#canvas-editor ol{
-  counter-reset:list-counter;
-}
-#canvas-editor ol li{
-  position:relative;
-  padding-left:2em;                    /* number → text gap */
+  padding-left:1.9em;              /* gap matches chat version */
   counter-increment:list-counter;
 }
-#canvas-editor ol li::before{
-  content:counter(list-counter) ".";
+/* desired format:  “1.  Item text” */
+.toastui-editor-contents ol li::before{
+  content:counter(list-counter) ". ";
   position:absolute;
-  left:0; top:0;
-  width:1.8em;                         /* align multi‑digit */
+  left:0;
+  width:1.9em;                     /* aligns double‑digit nums */
   text-align:right;
-  line-height:1.6;
   color:#000;
   font-weight:400;
 }
 
-/* Let nested lists start fresh */
-#canvas-editor ol ol,
-#canvas-editor ul ul{margin-top:.5em;}
+/* 6) HORIZONTAL RULE --------------------------------------------- */
+.toastui-editor-contents hr{
+  border:none !important;
+  height:1px !important;
+  background:#ddd !important;
+  margin:2em 0 !important;
+}
 
-/*────────── OTHER TYPOGRAPHY HELPERS (optional) ──────────*/
-#canvas-editor p:last-child{margin-bottom:0 !important;}
-#canvas-editor blockquote{border-left:5px solid #ddd;padding-left:15px;font-style:italic;color:#555;margin:1em 0;}
+/* 7) EMPHASIS & STRONG ------------------------------------------- */
+.toastui-editor-contents em     {font-style:italic !important;}
+.toastui-editor-contents strong {font-weight:700 !important; color:#000 !important;}
 
-/* horizontal rules */
-#canvas-editor hr{border:none;height:1px;background:#ddd;margin:2em 0;}
+/* 8) LINKS -------------------------------------------------------- */
+.toastui-editor-contents a{
+  color:#0066cc !important;
+  text-decoration:none !important;
+}
+.toastui-editor-contents a:hover{text-decoration:underline !important;}
 
-/* links */
-#canvas-editor a{color:#0066cc;text-decoration:none;}
-#canvas-editor a:hover{text-decoration:underline;}
+/* 9) IMAGES ------------------------------------------------------- */
+.toastui-editor-contents img{
+  max-width:100% !important;
+  height:auto !important;
+  display:block !important;
+  margin:1em 0 !important;
+}
 
-/* images */
-#canvas-editor img{max-width:100%;height:auto;display:block;margin:1em 0;}
+/* 10) TABLES ------------------------------------------------------ */
+.toastui-editor-contents table{
+  width:100% !important;
+  border-collapse:collapse !important;
+  margin:1em 0 !important;
+}
+.toastui-editor-contents th,
+.toastui-editor-contents td{
+  border:1px solid #ddd !important;
+  padding:8px !important;
+  color:#000 !important;
+}
+.toastui-editor-contents th{
+  background:#f4f4f4 !important;
+  font-weight:700 !important;
+  text-align:left !important;
+}
+.toastui-editor-contents tr:nth-child(even){background:#f9f9f9 !important;}
 
-/* tables */
-#canvas-editor table{width:100%;border-collapse:collapse;margin:1em 0;}
-#canvas-editor th,#canvas-editor td{border:1px solid #ddd;padding:8px;}
-#canvas-editor th{background:#f4f4f4;font-weight:700;text-align:left;}
-#canvas-editor tr:nth-child(even){background:#f9f9f9;}
-
-/* code / pre blocks – leave Toast UI styling; just guarantee horizontal scroll */
-#canvas-editor pre{overflow-x:auto !important;}
+/* 11) CODE / PRE -------------------------------------------------- */
+.toastui-editor-contents pre{overflow-x:auto !important;}  /* keep Toast defaults */
