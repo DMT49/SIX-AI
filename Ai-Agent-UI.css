@@ -3812,7 +3812,7 @@ body{
 }
 .toastui-editor-contents ol li{
   position:relative;
-  padding-left:1.9em;              /* gap matches chat version */
+  padding-left:10px;              /* gap matches chat version */
   counter-increment:list-counter;
 }
 /* desired format:  “1.  Item text” */
