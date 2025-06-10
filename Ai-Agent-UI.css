@@ -3726,3 +3726,7 @@ body{
     margin-left:auto;          /* pushes it far right   */
   }
 }
+
+.toastui-editor-contents h2 {
+	font-size: 22px !important;
+}
