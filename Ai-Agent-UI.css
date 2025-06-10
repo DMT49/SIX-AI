@@ -2311,7 +2311,6 @@ figcaption {
   .chat_input-wrapper {
     left: calc(25%); /* Start at the main content boundary */
     width: calc(75% - 20px); /* Stay within the main content and leave padding */
-    max-width: calc(100% - 40px); /* Prevent overflowing on small screens */
   }
 }
 
