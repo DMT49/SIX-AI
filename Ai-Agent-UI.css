@@ -3699,7 +3699,6 @@ body{
 
   /* Make the wrapper a wrapping flex container        */
   .chat_input-wrapper{
-    display:flex !important;   /* overrides earlier grid */
     flex-wrap:wrap;            /* allows a second row   */
     column-gap:8px;            /* horizontal gap        */
     row-gap:8px;               /* vertical gap          */
