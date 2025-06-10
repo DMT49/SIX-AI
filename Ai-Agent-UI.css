@@ -2301,7 +2301,6 @@ figcaption {
   bottom: 20px;
   padding: 10px;
   box-sizing: border-box;
-  max-width: 768px;
   width: 100%; /* Let it adapt dynamically */
 }
 
