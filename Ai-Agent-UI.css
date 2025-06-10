@@ -3899,11 +3899,3 @@ body{
 .toastui-editor-contents > *:first-child {
   margin-top: 0 !important;
 }
-
-.white-fill-below-input{
-  position: absolute;          /* taken out of normal flow */
-  width: 100%;                    /* stretch to fill the parent (optional) */
-  height: 25px;
-  z-index: -1;                 /* painted behind the parent & its shadow */
-}
-
