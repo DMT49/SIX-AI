@@ -3895,4 +3895,9 @@ body{
   color:#000 !important;                        /* black, like chat */
 }
 
+
+.toastui-editor-contents > *:first-child {
+  margin-top: 0 !important;
 }
+
+
