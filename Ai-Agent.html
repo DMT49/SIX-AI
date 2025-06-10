@@ -492,6 +492,7 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       }
       // Use flex on mobile; grid on desktop
       chatInputWrapper.style.display = isMobile ? "flex" : "grid";
+      if (window.syncInputBar) window.syncInputBar();
     }
     
     /*───────────────────────────────────────────────────────────
