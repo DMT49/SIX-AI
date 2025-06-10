@@ -3730,3 +3730,155 @@ body{
 .toastui-editor-contents h2 {
 	font-size: 22px !important;
 }
+
+
+
+/* ===============================================================
+   ALIGN THE CANVAS (“toastui‑editor‑contents”) WITH CHAT STYLES
+   Copy‑and‑paste this at the END of your main CSS file
+   =============================================================== */
+
+/* 0) Text defaults ------------------------------------------------ */
+.toastui-editor-contents{
+  line-height:1.6 !important;
+  color:#000 !important;            /* standard black */
+  overflow-wrap:break-word !important;
+  word-break:break-word !important;
+}
+
+/* 1) Headings ----------------------------------------------------- */
+.toastui-editor-contents h1,
+.toastui-editor-contents h2,
+.toastui-editor-contents h3,
+.toastui-editor-contents h4,
+.toastui-editor-contents h5,
+.toastui-editor-contents h6{
+  margin-top:1em !important;
+  margin-bottom:.5em !important;
+  font-weight:bold !important;
+  color:#000 !important;
+}
+
+/* size & extra spacing exactly as chat_inner-wrapper */
+.toastui-editor-contents h1,
+.toastui-editor-contents h2{font-size:1.3em !important;}
+
+.toastui-editor-contents h3,
+.toastui-editor-contents h4{font-size:1.15em !important;}
+
+.toastui-editor-contents h5,
+.toastui-editor-contents h6{font-size:1em !important;}
+
+/* 2) Paragraphs --------------------------------------------------- */
+.toastui-editor-contents p{
+  margin:0 0 16px 0 !important;
+}
+.toastui-editor-contents p:last-child{margin-bottom:0 !important;}
+
+/* 3) Blockquotes -------------------------------------------------- */
+.toastui-editor-contents blockquote{
+  border-left:5px solid #ddd !important;
+  padding-left:15px !important;
+  font-style:italic !important;
+  color:#555 !important;
+  margin:1em 0 !important;
+}
+
+/* 4) Lists -------------------------------------------------------- */
+/* Ordered list: custom counter (top level only) */
+.toastui-editor-contents > ol{
+  list-style:none;
+  padding-left:0;
+  margin:1em 0;
+  counter-reset:list-counter;
+}
+.toastui-editor-contents > ol > li{
+  position:relative;
+  padding-left:2em;
+  counter-increment:list-counter;
+}
+.toastui-editor-contents > ol > li::before{
+  content:counter(list-counter) ". ";
+  position:absolute;
+  left:0;
+  width:2em;
+  text-align:center;
+}
+
+/* Unordered (and nested) lists */
+.toastui-editor-contents ul{
+  list-style:disc;
+  margin:1em 0;
+  padding-left:2em;
+}
+.toastui-editor-contents li{margin-bottom:.5em;}
+
+/* 5) Horizontal rule --------------------------------------------- */
+.toastui-editor-contents hr{
+  border:none !important;
+  height:1px !important;
+  background:#ddd !important;
+  margin:2em 0 !important;
+}
+
+/* 6) Emphasis & strong ------------------------------------------- */
+.toastui-editor-contents em{font-style:italic !important;}
+.toastui-editor-contents strong{
+  font-weight:700 !important;
+  color:#000 !important;
+}
+
+/* 7) Links -------------------------------------------------------- */
+.toastui-editor-contents a{
+  color:#0066cc !important;
+  text-decoration:none !important;
+}
+.toastui-editor-contents a:hover{text-decoration:underline !important;}
+
+/* 8) Images ------------------------------------------------------- */
+.toastui-editor-contents img{
+  max-width:100% !important;
+  height:auto !important;
+  display:block !important;
+  margin:1em 0 !important;
+}
+
+/* 9) Tables ------------------------------------------------------- */
+.toastui-editor-contents table{
+  width:100% !important;
+  border-collapse:collapse !important;
+  margin:1em 0 !important;
+}
+.toastui-editor-contents th,
+.toastui-editor-contents td{
+  border:1px solid #ddd !important;
+  padding:8px !important;
+  color:#000 !important;
+}
+.toastui-editor-contents th{
+  background:#f4f4f4 !important;
+  font-weight:bold !important;
+  text-align:left !important;
+}
+.toastui-editor-contents tr:nth-child(even){
+  background:#f9f9f9 !important;
+}
+
+/* 10) Code & pre blocks ------------------------------------------ */
+/* Make editor code look identical to chat “code‑block” styling */
+.toastui-editor-contents pre{
+  margin:0 !important;
+  padding:10px !important;
+  background:#fbfbfb !important;
+  overflow-x:auto !important;
+  border:1px solid #67b8d9 !important;
+  border-radius:10px !important;
+}
+.toastui-editor-contents code{
+  font-family:"Raleway",sans-serif !important;
+  font-size:16px !important;
+  font-weight:400 !important;
+  line-height:28px !important;
+  color:#000 !important;
+  background:none !important;
+}
