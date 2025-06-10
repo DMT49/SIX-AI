@@ -2331,7 +2331,6 @@ figcaption {
   .chat_input-wrapper {
     left: 10px; /* Add margin on the left */
     right: 10px; /* Add margin on the right */
-    width: calc(100% - 40px); /* Adjust width to account for side margins */
     max-width: none; /* Remove max-width constraint */
   }
 }
