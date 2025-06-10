@@ -3896,3 +3896,7 @@ body{
 }
 
 }
+
+.toastui-editor-popup-body h2 {
+	font-size:22px !important;
+}
