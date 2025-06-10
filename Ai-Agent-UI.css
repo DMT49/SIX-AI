@@ -3883,7 +3883,7 @@ body{
 .toastui-editor-contents ol{
   list-style: decimal outside !important;   /* use native numbering */
   margin: 1em 0 !important;
-  padding-left: 2em !important;             /* same indent as chat */
+  padding-left: 10px !important;             /* same indent as chat */
 }
 
 /* 1️⃣  REMOVE any custom prefix we added earlier */
