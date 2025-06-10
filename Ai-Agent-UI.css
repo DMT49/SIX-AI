@@ -3732,30 +3732,24 @@ body{
 }
 
 
-/* ===============================================================
-   CANVAS ‑ STYLES (target **everything** inside #canvas‑editor)
-   Replace the previous snippet with this one
-   =============================================================== */
+/*  ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+   CANVAS  —  FINAL LIST‑FIX + TYPOGRAPHY
+   (everything inside #canvas‑editor only)
+   paste BELOW your earlier canvas rules
+   ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀ */
 
-/* ──────────────────────────────────────────────────────────────
-   0) BASE TYPE / SPACING
-   ────────────────────────────────────────────────────────────── */
+/*───────────────────────────────────────────────────────────────
+  0) UNIVERSAL BODY TEXT / HEADINGS (unchanged but kept here for
+     completeness in case you remove the previous block someday)
+────────────────────────────────────────────────────────────────*/
 #canvas-editor{
-  font-size:1.1rem !important;     /* 17 – 18 px base – same as chat */
-  line-height:1.6   !important;    /* easy‑to‑read rhythm           */
-  color:#000        !important;
+  font-size:1.1rem !important;          /* ≈17–18 px */
+  line-height:1.6  !important;          /* comfy read */
+  color:#000       !important;
   overflow-wrap:break-word !important;
   word-break:break-word   !important;
 }
 
-/* keep line‑height consistent inside common text tags */
-#canvas-editor p,
-#canvas-editor li,
-#canvas-editor blockquote{line-height:inherit !important;}
-
-/* ──────────────────────────────────────────────────────────────
-   1) HEADINGS
-   ────────────────────────────────────────────────────────────── */
 #canvas-editor h1,
 #canvas-editor h2,
 #canvas-editor h3,
@@ -3764,138 +3758,97 @@ body{
 #canvas-editor h6{
   margin:1em 0 .5em 0 !important;
   font-weight:700 !important;
-  color:#000     !important;
   line-height:1.3 !important;
 }
+
 #canvas-editor h1,
-#canvas-editor h2{font-size:1.3em !important;}      /* ≈22.9 px */
+#canvas-editor h2{font-size:1.3em !important;}   /* ≈22.9 px */
 #canvas-editor h3,
-#canvas-editor h4{font-size:1.15em !important;}     /* ≈20.2 px */
+#canvas-editor h4{font-size:1.15em !important;}  /* ≈20.2 px */
 #canvas-editor h5,
-#canvas-editor h6{font-size:1em !important;}        /* 17 – 18 px */
+#canvas-editor h6{font-size:1em !important;}     /* 17–18 px */
 
-/* ──────────────────────────────────────────────────────────────
-   2) PARAGRAPHS
-   ────────────────────────────────────────────────────────────── */
-#canvas-editor p{margin:0 0 16px 0 !important;}
-#canvas-editor p:last-child{margin-bottom:0 !important;}
+/*───────────────────────────────────────────────────────────────
+  1) FULL LIST RESET
+     – remove every built‑in marker (Toast UI + browser)
+     – then rebuild clean black bullets AND “1. ” numbering
+────────────────────────────────────────────────────────────────*/
 
-/* ──────────────────────────────────────────────────────────────
-   3) BLOCKQUOTES
-   ────────────────────────────────────────────────────────────── */
-#canvas-editor blockquote{
-  border-left:5px solid #ddd !important;
-  padding-left:15px !important;
-  font-style:italic !important;
-  color:#555       !important;
-  margin:1em 0     !important;
+/* REMOVE ALL native list markers at both <ul/ol> AND <li> level */
+#canvas-editor ul,
+#canvas-editor ol,
+#canvas-editor ul li,
+#canvas-editor ol li{
+  list-style:none !important;
+  margin:0 0 .5em 0 !important;        /* keeps vertical rhythm */
+  padding-left:0 !important;
 }
 
-/* ──────────────────────────────────────────────────────────────
-   4) LISTS
-   ────────────────────────────────────────────────────────────── */
-
-/* --- UNORDERED (•) ------------------------------------------- */
-/* 1. Remove any extra pseudo markers Toast UI adds               */
+/* Clear any Toast­UI pseudo bullets that might still fire */
 #canvas-editor ul li::before,
-#canvas-editor ul li::after{content:none !important;}
-
-/* 2. Use a single black disc from the browser                    */
-#canvas-editor ul{
-  list-style:disc  !important;
-  list-style-position:outside !important;
-  margin:1em 0     !important;
-  padding-left:2em !important;
+#canvas-editor ul li::after,
+#canvas-editor ol li::before,
+#canvas-editor ol li::after{
+  content:none !important;
 }
-#canvas-editor ul li::marker{color:#000 !important;}
-#canvas-editor li{margin-bottom:.5em !important;}
 
-/* --- ORDERED (1. 2. 3.) -------------------------------------- */
-/* remove ALL markers then rebuild number‑dot‑space exactly */
+/*────────── UNORDERED  (• bullet) ──────────*/
+#canvas-editor ul li{
+  position:relative;
+  padding-left:1.4em;                  /* bullet → text gap */
+}
+#canvas-editor ul li::before{
+  content:"•";
+  position:absolute;
+  left:0; top:0;
+  font-size:1em;                       /* same size as text */
+  line-height:1.6;
+  color:#000;                          /* single dark bullet */
+}
+
+/*────────── ORDERED  (1. Item) ──────────*/
 #canvas-editor ol{
-  list-style:none  !important;      /* kill default / toast UI */
-  margin:1em 0     !important;
-  padding-left:0   !important;
   counter-reset:list-counter;
 }
-#canvas-editor ol li::marker{content:none !important;}   /* safety net */
-
-#canvas-editor ol > li{
+#canvas-editor ol li{
   position:relative;
-  padding-left:2em;                 /* tidy gap (matches chat) */
+  padding-left:2em;                    /* number → text gap */
   counter-increment:list-counter;
 }
-/* number + dot **after** number (“1. ”) */
-#canvas-editor ol > li::before{
-  content:counter(list-counter) ". ";
+#canvas-editor ol li::before{
+  content:counter(list-counter) ".";
   position:absolute;
-  left:0;
-  width:2em;
-  text-align:center;                /* centres numerals neatly  */
+  left:0; top:0;
+  width:1.8em;                         /* align multi‑digit */
+  text-align:right;
+  line-height:1.6;
   color:#000;
   font-weight:400;
 }
 
-/* ensure nested <ol> restart their own counters cleanly */
-#canvas-editor ol ol{counter-reset:list-counter;}
+/* Let nested lists start fresh */
+#canvas-editor ol ol,
+#canvas-editor ul ul{margin-top:.5em;}
 
-/* ──────────────────────────────────────────────────────────────
-   5) HORIZONTAL RULE
-   ────────────────────────────────────────────────────────────── */
-#canvas-editor hr{
-  border:none !important;
-  height:1px !important;
-  background:#ddd !important;
-  margin:2em 0 !important;
-}
+/*────────── OTHER TYPOGRAPHY HELPERS (optional) ──────────*/
+#canvas-editor p:last-child{margin-bottom:0 !important;}
+#canvas-editor blockquote{border-left:5px solid #ddd;padding-left:15px;font-style:italic;color:#555;margin:1em 0;}
 
-/* ──────────────────────────────────────────────────────────────
-   6) EMPHASIS & STRONG
-   ────────────────────────────────────────────────────────────── */
-#canvas-editor em     {font-style:italic !important;}
-#canvas-editor strong {font-weight:700 !important; color:#000 !important;}
+/* horizontal rules */
+#canvas-editor hr{border:none;height:1px;background:#ddd;margin:2em 0;}
 
-/* ──────────────────────────────────────────────────────────────
-   7) LINKS
-   ────────────────────────────────────────────────────────────── */
-#canvas-editor a{
-  color:#0066cc !important;
-  text-decoration:none !important;
-}
-#canvas-editor a:hover{text-decoration:underline !important;}
+/* links */
+#canvas-editor a{color:#0066cc;text-decoration:none;}
+#canvas-editor a:hover{text-decoration:underline;}
 
-/* ──────────────────────────────────────────────────────────────
-   8) IMAGES
-   ────────────────────────────────────────────────────────────── */
-#canvas-editor img{
-  max-width:100% !important;
-  height:auto !important;
-  display:block !important;
-  margin:1em 0 !important;
-}
+/* images */
+#canvas-editor img{max-width:100%;height:auto;display:block;margin:1em 0;}
 
-/* ──────────────────────────────────────────────────────────────
-   9) TABLES
-   ────────────────────────────────────────────────────────────── */
-#canvas-editor table{
-  width:100%        !important;
-  border-collapse:collapse !important;
-  margin:1em 0      !important;
-}
-#canvas-editor th,
-#canvas-editor td{
-  border:1px solid #ddd !important;
-  padding:8px       !important;
-  color:#000        !important;
-}
-#canvas-editor th{
-  background:#f4f4f4 !important;
-  font-weight:700    !important;
-  text-align:left    !important;
-}
-#canvas-editor tr:nth-child(even){background:#f9f9f9 !important;}
+/* tables */
+#canvas-editor table{width:100%;border-collapse:collapse;margin:1em 0;}
+#canvas-editor th,#canvas-editor td{border:1px solid #ddd;padding:8px;}
+#canvas-editor th{background:#f4f4f4;font-weight:700;text-align:left;}
+#canvas-editor tr:nth-child(even){background:#f9f9f9;}
 
-/* ──────────────────────────────────────────────────────────────
-   10) CODE / PRE  – leave Toast UI defaults, just ensure scroll
-   ────────────────────────────────────────────────────────────── */
+/* code / pre blocks – leave Toast UI styling; just guarantee horizontal scroll */
 #canvas-editor pre{overflow-x:auto !important;}
