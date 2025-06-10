@@ -2296,7 +2296,7 @@ figcaption {
   grid-template-rows: auto;
   grid-template-columns: 77px 70px 70px 70px 1fr auto;
   grid-auto-columns: 1fr;
-  display: grid;
+  display: none;
   position: fixed;
   bottom: 20px;
   padding: 10px;
