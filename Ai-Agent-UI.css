@@ -3875,20 +3875,24 @@ body{
 /* 11) CODE / PRE -------------------------------------------------- */
 .toastui-editor-contents pre{overflow-x:auto !important;}  /* keep Toast defaults */
 
-/* ─────────  ORDERED–LIST  FINAL FIX  ───────── */
-/* Use the browser’s native numbering: 1. 2. 3.  */
+/* ──────────────────────────────────────────────
+   ORDERED‑LIST  (toastui‑editor‑contents only)
+   Add this at the very END of your CSS
+   ────────────────────────────────────────────── */
+
 .toastui-editor-contents ol{
-  list-style: decimal outside !important;   /* number • dot • space */
+  list-style: decimal outside !important;   /* use native numbering */
   margin: 1em 0 !important;
-  padding-left: 2em !important;             /* same left indent as chat */
+  padding-left: 2em !important;             /* same indent as chat */
 }
 
-/* Remove every custom prefix we added earlier                       */
-.toastui-editor-contents ol li{
-  position: static !important;              /* let browser handle it   */
-  padding-left: 0 !important;
-}
-.toastui-editor-contents ol li::before,
+/* 1️⃣  REMOVE any custom prefix we added earlier */
+.toastui-editor-contents ol li::before{content:none !important;}
+
+/* 2️⃣  RESTORE the real marker */
 .toastui-editor-contents ol li::marker{
-  content: none !important;                 /* guarantee **one** marker */
+  content: counter(list-item) ". " !important;  /* 1. 2. 3. … */
+  color:#000 !important;                        /* black, like chat */
+}
+
 }
