@@ -2993,53 +2993,6 @@ margin: 0rem !important;
   margin: 1em 0 !important;
 }
 
-/* Headings */
-.toastui-editor-contents h1,
-.toastui-editor-contents h2,
-.toastui-editor-contents h3,
-.toastui-editor-contents h4,
-.toastui-editor-contents h5,
-.toastui-editor-contents h6 {
-  margin-top: 1em !important;
-  margin-bottom: 0.5em !important;
-  font-weight: bold !important;
-  color: #000 !important; /* Standard black text for all headings */
-}
-
-.toastui-editor-contents h4,
-.toastui-editor-contents h5,
-.toastui-editor-contents h6 {
-  padding-bottom: 0 !important; /* No bottom padding */
-}
-
-.toastui-editor-contents h1 { font-size: 1.3em !important; }
-.toastui-editor-contents h2 { font-size: 1.3em !important; }
-.toastui-editor-contents h3 { font-size: 1.15em !important; }
-.toastui-editor-contents h4 { font-size: 1.15em !important; }
-.toastui-editor-contents h5 { font-size: 1em !important; }
-.toastui-editor-contents h6 { font-size: 1em !important; }
-
-/* Paragraphs */
-.toastui-editor-contents p {
-  margin-top: 0 !important;
-  margin-bottom: 16px !important;
-  color: #000 !important;
-}
-
-.toastui-editor-contents p:last-child {
-  margin-bottom: 0 !important;
-}
-
-/* Blockquotes */
-.toastui-editor-contents blockquote {
-  border-left: 5px solid #ddd !important; /* Neutral gray border */
-  padding-left: 15px !important;
-  font-style: italic !important;
-  color: #555 !important; /* Dark gray text */
-  margin: 1em 0 !important;
-}
-
-
 
 /* Lists */
 . ul, 
@@ -3065,28 +3018,6 @@ margin: 0rem !important;
 /* Bold Text */
 .chat_conversation-wrapper strong {
   font-weight: 700 !important; /* Maximum bold */
-  color: #000 !important;
-}
-
-/* Lists */
-.toastui-editor-contents ul,
-.toastui-editor-contents ol {
-  margin: 1em 0 !important;
-  font-size: 16px !important;
-}
-
-.toastui-editor-contents ul ul,
-.toastui-editor-contents ol ol {
-  padding-left: 20px !important;  /* Reduced indent for nested lists */
-}
-
-.toastui-editor-contents li {
-  margin-bottom: 0.5em !important;
-}
-
-/* Bold Text */
-.toastui-editor-contents strong {
-  font-weight: 700 !important;     /* Maximum bold */
   color: #000 !important;
 }
 
