@@ -3732,16 +3732,16 @@ body{
 }
 
 
-
 /* ===============================================================
-   ALIGN THE CANVAS (“toastui‑editor‑contents”) WITH CHAT STYLES
-   Copy‑and‑paste this at the END of your main CSS file
+   MATCH CANVAS (“toastui‑editor‑contents”) TO CHAT STYLES
+   Drop this at the very end of your main stylesheet
    =============================================================== */
 
-/* 0) Text defaults ------------------------------------------------ */
+/* 0) Base font + text defaults ----------------------------------- */
 .toastui-editor-contents{
+  font-size:1.1rem !important;      /* same 17.6 px base as chat */
   line-height:1.6 !important;
-  color:#000 !important;            /* standard black */
+  color:#000 !important;
   overflow-wrap:break-word !important;
   word-break:break-word !important;
 }
@@ -3753,21 +3753,18 @@ body{
 .toastui-editor-contents h4,
 .toastui-editor-contents h5,
 .toastui-editor-contents h6{
-  margin-top:1em !important;
-  margin-bottom:.5em !important;
-  font-weight:bold !important;
+  margin:1em 0 .5em 0 !important;
+  font-weight:700 !important;
   color:#000 !important;
 }
 
-/* size & extra spacing exactly as chat_inner-wrapper */
+/* identical sizes to conversation */
 .toastui-editor-contents h1,
-.toastui-editor-contents h2{font-size:1.3em !important;}
-
+.toastui-editor-contents h2{font-size:1.3em !important;}   /* 22.88 px */
 .toastui-editor-contents h3,
-.toastui-editor-contents h4{font-size:1.15em !important;}
-
+.toastui-editor-contents h4{font-size:1.15em !important;}  /* 20.24 px */
 .toastui-editor-contents h5,
-.toastui-editor-contents h6{font-size:1em !important;}
+.toastui-editor-contents h6{font-size:1em !important;}     /* 17.6 px */
 
 /* 2) Paragraphs --------------------------------------------------- */
 .toastui-editor-contents p{
@@ -3784,12 +3781,12 @@ body{
   margin:1em 0 !important;
 }
 
-/* 4) Lists -------------------------------------------------------- */
-/* Ordered list: custom counter (top level only) */
+/* 4) LISTS  ------------------------------------------------------- */
+/* --- ordered (top level) --- */
 .toastui-editor-contents > ol{
-  list-style:none;
-  padding-left:0;
-  margin:1em 0;
+  list-style:none !important;      /* remove Toast UI default */
+  margin:1em 0 !important;
+  padding-left:0 !important;
   counter-reset:list-counter;
 }
 .toastui-editor-contents > ol > li{
@@ -3797,21 +3794,28 @@ body{
   padding-left:2em;
   counter-increment:list-counter;
 }
+/* black “1. ” prefix (number‑dot‑space‑text) */
 .toastui-editor-contents > ol > li::before{
   content:counter(list-counter) ". ";
   position:absolute;
   left:0;
   width:2em;
   text-align:center;
+  color:#000;
+  font-weight:400;
 }
 
-/* Unordered (and nested) lists */
+/* --- unordered lists (all levels) --- */
+/* kill Toast UI’s built‑in grey bullets */
+.toastui-editor-contents ul li::before{content:none !important;}
+
 .toastui-editor-contents ul{
-  list-style:disc;
-  margin:1em 0;
-  padding-left:2em;
+  list-style:disc !important;      /* single black bullet */
+  list-style-position:outside !important;
+  margin:1em 0 !important;
+  padding-left:2em !important;
 }
-.toastui-editor-contents li{margin-bottom:.5em;}
+.toastui-editor-contents li{margin-bottom:.5em !important;}
 
 /* 5) Horizontal rule --------------------------------------------- */
 .toastui-editor-contents hr{
@@ -3857,28 +3861,13 @@ body{
 }
 .toastui-editor-contents th{
   background:#f4f4f4 !important;
-  font-weight:bold !important;
+  font-weight:700 !important;
   text-align:left !important;
 }
 .toastui-editor-contents tr:nth-child(even){
   background:#f9f9f9 !important;
 }
 
-/* 10) Code & pre blocks ------------------------------------------ */
-/* Make editor code look identical to chat “code‑block” styling */
-.toastui-editor-contents pre{
-  margin:0 !important;
-  padding:10px !important;
-  background:#fbfbfb !important;
-  overflow-x:auto !important;
-  border:1px solid #67b8d9 !important;
-  border-radius:10px !important;
-}
-.toastui-editor-contents code{
-  font-family:"Raleway",sans-serif !important;
-  font-size:16px !important;
-  font-weight:400 !important;
-  line-height:28px !important;
-  color:#000 !important;
-  background:none !important;
-}
+/* 10) Code / pre blocks  → keep Toast UI defaults ----------------- */
+/* (only ensure horizontal scroll if needed) */
+.toastui-editor-contents pre{overflow-x:auto !important;}
