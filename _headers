@@ -1,15 +1,22 @@
-/Ai-Agent.html
-  Access-Control-Allow-Origin: *
-  Access-Control-Allow-Methods: GET, OPTIONS
+# ─────────────  _headers  (place this in the *publish* folder you deploy)  ─────────────
+# All comments start with #.  Every non‑comment line is interpreted by Netlify!
 
-/ai-agent
-  Access-Control-Allow-Origin: *
-  Access-Control-Allow-Methods: GET, OPTIONS
+# One catch‑all rule applies to every request (HTML, JS, CSS, and even redirects)
+# Indent header lines by exactly two spaces.
+#
+# Adjust the Access‑Control‑Allow‑Origin line if you need to lock it down to a
+# specific site or open it up to everyone.
 
-/Ai-Agent-UI.css
-  Access-Control-Allow-Origin: *
-  Access-Control-Allow-Methods: GET, OPTIONS
+ /*
+   # --- Caching: force browsers to fetch a fresh copy every time -------------
+   Cache-Control: no-cache, no-store, must-revalidate
+   Pragma: no-cache
+   Expires: 0
 
-/ConversationHandler.js
-  Access-Control-Allow-Origin: *
-  Access-Control-Allow-Methods: GET, OPTIONS
+   # --- CORS: allow fetch() from your main site ------------------------------
+   Access-Control-Allow-Origin: https://member.archmarketing.org
+   Access-Control-Allow-Methods: GET, OPTIONS
+   Access-Control-Allow-Headers: Content-Type
+
+   # If your fetch() includes cookies or an Authorization header, uncomment:
+   # Access-Control-Allow-Credentials: true
