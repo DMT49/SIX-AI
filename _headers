@@ -1,22 +1,33 @@
-# ─────────────  _headers  (place this in the *publish* folder you deploy)  ─────────────
-# All comments start with #.  Every non‑comment line is interpreted by Netlify!
+# ─────────────  _headers  ─────────────
+# Place this in the publish folder Netlify deploys (dist/, build/, public/, …)
 
-# One catch‑all rule applies to every request (HTML, JS, CSS, and even redirects)
-# Indent header lines by exactly two spaces.
+# 1) Global rule – applies to EVERY request (including Netlify’s 301 redirect)
+/*
+  # No‑cache (what you had before)
+  Cache-Control: no-cache, no-store, must-revalidate
+  Pragma: no-cache
+  Expires: 0
+
+  # CORS
+  Access-Control-Allow-Origin: https://member.archmarketing.org
+  Access-Control-Allow-Methods: GET, OPTIONS
+  Access-Control-Allow-Headers: Content-Type
+  # Access-Control-Allow-Credentials: true    # uncomment only if fetch() sends cookies / Authorization
+  
+
+# 2) (Optional) file‑specific overrides – keep only if you want DIFFERENT headers
+# /Ai-Agent.html
+#   Access-Control-Allow-Origin: *
+#   Access-Control-Allow-Methods: GET, OPTIONS
 #
-# Adjust the Access‑Control‑Allow‑Origin line if you need to lock it down to a
-# specific site or open it up to everyone.
-
- /*
-   # --- Caching: force browsers to fetch a fresh copy every time -------------
-   Cache-Control: no-cache, no-store, must-revalidate
-   Pragma: no-cache
-   Expires: 0
-
-   # --- CORS: allow fetch() from your main site ------------------------------
-   Access-Control-Allow-Origin: https://member.archmarketing.org
-   Access-Control-Allow-Methods: GET, OPTIONS
-   Access-Control-Allow-Headers: Content-Type
-
-   # If your fetch() includes cookies or an Authorization header, uncomment:
-   # Access-Control-Allow-Credentials: true
+# /ai-agent
+#   Access-Control-Allow-Origin: *
+#   Access-Control-Allow-Methods: GET, OPTIONS
+#
+# /Ai-Agent-UI.css
+#   Access-Control-Allow-Origin: *
+#   Access-Control-Allow-Methods: GET, OPTIONS
+#
+# /ConversationHandler.js
+#   Access-Control-Allow-Origin: *
+#   Access-Control-Allow-Methods: GET, OPTIONS
