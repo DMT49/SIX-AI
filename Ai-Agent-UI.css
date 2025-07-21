@@ -3899,3 +3899,9 @@ body{
 .toastui-editor-contents > *:first-child {
   margin-top: 0 !important;
 }
+
+#chat-user-submit[disabled],
+.chat_multi-choice-send.is-disabled {
+  opacity: .45;
+  pointer-events: none;
+}
