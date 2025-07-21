@@ -146,6 +146,30 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
     let isBusy = false; // NEW: Blocks user while AI is responding
     let conversationUserAvatar = null;
 
+    /* ───────── BUSY‑STATE HELPERS ───────── */
+    function lockSending () {
+      isBusy = true;
+    
+      /* main “Send” icon */
+      if (userSubmit) userSubmit.disabled = true;
+    
+      /* every ▶︎ icon inside multi‑choice blocks */
+      document
+        .querySelectorAll('.chat_multi-choice-send')
+        .forEach(el => el.classList.add('is-disabled'));
+    }
+    
+    function unlockSending () {
+      isBusy = false;
+      if (userSubmit) userSubmit.disabled = false;
+    
+      document
+        .querySelectorAll('.chat_multi-choice-send')
+        .forEach(el => el.classList.remove('is-disabled'));
+    }
+    /* ────────────────────────────────────── */
+
+
     // --- Begin Deepgram Transcription Integration ---
     let dgConnection;
     let mediaStream;
@@ -1480,118 +1504,104 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
 
     }
 
-
-    function renderOptions(options, isEnd) {
-      if (options.length === 0) return;
+    /* ───────────────────────────────────────────────────────────
+       renderOptions –  draws each multi‑choice block
+       – New busy‑lock logic prevents double‑clicks               
+    ──────────────────────────────────────────────────────────────── */
+    function renderOptions (options, isEnd) {
+      if (!options.length) return;
     
-      // Create a container for the multi-choice block
+      /* outer wrappers */
       const chatBlockWrapper = document.createElement("div");
       chatBlockWrapper.className = "chat_block-wrapper is-multi-choice-options";
-      if (isEnd) {
-        chatBlockWrapper.classList.add("is-end");
-      }
+      if (isEnd) chatBlockWrapper.classList.add("is-end");
     
       const chatBlock = document.createElement("div");
       chatBlock.className = "chat_block is-multi-choice-options";
     
-      options.forEach((optionText) => {
-        // Create a container for the option buttons and set it as a flex container
+      /* one row per option */
+      options.forEach(optionText => {
+        /* row container */
         const optionContainer = document.createElement("div");
         optionContainer.className = "chat_multi-choice-container";
         optionContainer.style.display = "flex";
         optionContainer.style.alignItems = "center";
-        optionContainer.style.justifyContent = "flex-start";
     
-        // Create the main clickable option button (Left side)
+        /* left button – puts text in the textarea */
         const optionDiv = document.createElement("div");
         optionDiv.className = "chat_multi-choice-option";
         optionDiv.style.width = "60%";
-        const optionHeading = document.createElement("span");
-        optionHeading.className = "chat-button-text";
-        optionHeading.style.fontWeight = "bold";
-        optionHeading.textContent = optionText;
-        optionDiv.appendChild(optionHeading);
-    
-        // Event listener for the main button: append text to textarea and mark as chosen
+        optionDiv.innerHTML = `<span class="chat-button-text" style="font-weight:bold;">${optionText}</span>`;
         optionDiv.addEventListener("click", () => {
-          const userInput = document.getElementById("chat-user-input");
-          userInput.value += `${optionText}\n`;
+          document.getElementById("chat-user-input").value += `${optionText}\n`;
           adjustHeight();
           optionDiv.classList.add("is-chosen");
         });
     
-        // Create the send button (Right side)
+        /* right ▶︎ button – actually sends the option */
         const sendBtn = document.createElement("div");
         sendBtn.className = "chat_multi-choice-send";
-        sendBtn.style.width = "47px";
-        sendBtn.style.height = "100%";
-        sendBtn.style.display = "flex";
-        sendBtn.style.alignItems = "center";
-        sendBtn.style.justifyContent = "center";
+        sendBtn.style.cssText = "width:47px;height:100%;display:flex;align-items:center;justify-content:center;";
+        sendBtn.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true"
+               width="100%" height="100%" viewBox="0 0 24 24"
+               class="iconify iconify--heroicons">
+            <path fill="none" stroke="currentColor" stroke-width="1.5"
+                  stroke-linecap="round" stroke-linejoin="round"
+                  d="M6 12L3.269 3.125A59.8 59.8 0 0 1 21.486 12
+                     a59.8 59.8 0 0 1-18.217 8.875zm0 0h7.5"/>
+          </svg>`;
     
-        // Set inner HTML with the provided SVG icon
-        sendBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--heroicons" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24">
-          <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 12L3.269 3.125A59.8 59.8 0 0 1 21.486 12a59.8 59.8 0 0 1-18.217 8.875zm0 0h7.5"></path>
-        </svg>`;
+        sendBtn.addEventListener("click", event => {
+          event.stopPropagation();
     
-        // STEP 4: Replace the multi-choice sendBtn logic:
-        
-        sendBtn.addEventListener("click", (event) => {
-          event.stopPropagation(); // Prevent the left button's event from firing
-          sendBtn.classList.add("is-chosen"); // Add the 'is-chosen' combo class
-        
-          // Stop STT if it's on
+          /* guard: already busy?  → ignore click */
+          if (isBusy) return;
+    
+          lockSending();                  // busy lock on
+          sendBtn.classList.add("is-chosen");
+    
+          /* stop STT / TTS just like main send */
           if (isMicOn) {
             stopDeepgramTranscription();
             isMicOn = false;
-            const micBtn = document.getElementById("chat-user-input-mic");
-            if (micBtn) micBtn.classList.remove("is-active");
-            console.log("Stopped mic via multi-choice send.");
+            document.getElementById("chat-user-input-mic")?.classList.remove("is-active");
           }
-        
-          // Stop TTS (optional)
           stopCurrentVoiceOutput();
-        
-          // Render the option as a user message
+    
+          /* render user bubble */
           createChatBlock(true, optionText);
-        
-          // Reset transcripts so we start fresh next time
           finalTranscript = "";
-          lastInterim = "";
-        
-          // Clear the text input area (like the main send button)
-          setTimeout(() => {
-            resetHeight();
-          }, 0);
-        
-          // Immediately send the option as a message to the AI
+          lastInterim     = "";
+          setTimeout(resetHeight, 0);
+    
+          /* async block – talk to the agent */
           (async () => {
-            const { chatInnerWrapper, chatBlockWrapper } = createLoadingBlock();
+            const { chatBlockWrapper } = createLoadingBlock();
             try {
               const agentResponse = await startConversation(optionText);
               conversationWrapper.removeChild(chatBlockWrapper);
               createChatBlock(false, agentResponse);
-            } catch (error) {
+            } catch (err) {
               conversationWrapper.removeChild(chatBlockWrapper);
               createChatBlock(false, "Sorry, something went wrong.");
+            } finally {
+              unlockSending();            // busy lock off
             }
           })();
         });
-
-
-
     
-        // Append both buttons to the container
+        /* assemble row */
         optionContainer.appendChild(optionDiv);
         optionContainer.appendChild(sendBtn);
-        // Append the container to the chat block
         chatBlock.appendChild(optionContainer);
       });
     
-      // Append the chat block to the wrapper and add it to the conversation container
+      /* add to DOM */
       chatBlockWrapper.appendChild(chatBlock);
       conversationWrapper.appendChild(chatBlockWrapper);
     }
+
 
     
     // Function to clean option text
@@ -1718,73 +1728,63 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       return { chatInnerWrapper, chatBlockWrapper };
     }
 
-
-    // STEP 3A: Replace your entire handleSubmit() with this:
-
-    async function handleSubmit() {
-      // 1) If the AI is already processing, do nothing
+    /* ───────────────────────────────────────────────────────────
+       handleSubmit  –  main “Send” button                             
+       – Busy lock is handled by lockSending / unlockSending          
+       – Textarea stays editable while waiting                        
+    ──────────────────────────────────────────────────────────────── */
+    async function handleSubmit () {
+      /* 1. Already waiting for the agent?  Do nothing. */
       if (isBusy) return;
     
-      // 2) Mark the system as busy
-      isBusy = true;
+      /* 2. Activate global busy lock (greys out all send buttons). */
+      lockSending();
     
-      // 3) Stop STT (Deepgram) if the mic is on
+      /* 3. Stop STT + TTS if they’re on. */
       if (isMicOn) {
         stopDeepgramTranscription();
         isMicOn = false;
-        const micBtn = document.getElementById("chat-user-input-mic");
-        if (micBtn) micBtn.classList.remove("is-active");
-        console.log("Stopped mic on submit.");
+        document.getElementById("chat-user-input-mic")?.classList.remove("is-active");
       }
-    
-      // 4) Stop TTS if it’s currently playing (optional, if you want the old code approach)
       stopCurrentVoiceOutput();
     
-      // 5) Disable the user input fields (visual feedback)
-      textarea.disabled = true;
-      userSubmit.disabled = true;
-    
-      // 6) Grab the user's message
+      /* 4. Grab current text.  If empty, unlock and bail out. */
       const message = textarea.value.trim();
       if (!message) {
-        // If empty, unlock so user can try again
-        isBusy = false;
-        textarea.disabled = false;
-        userSubmit.disabled = false;
+        unlockSending();
         return;
       }
     
-      // 7) Render user’s message immediately
+      /* 5. Render the user bubble immediately. */
       createChatBlock(true, message);
     
-      // (New) Reset transcripts so we start fresh next time
+      /* 6. Reset transcripts + textarea. */
       finalTranscript = "";
-      lastInterim = "";
+      lastInterim     = "";
+      resetHeight();
     
-      // 8) Reset the textarea
-      resetHeight(); // Clears + resets textarea
-    
-      // 9) Show the loading block
-      const { chatInnerWrapper, chatBlockWrapper } = createLoadingBlock();
+      /* 7. Show loading block while we wait. */
+      const { chatBlockWrapper } = createLoadingBlock();
     
       try {
-        // 10) Send to AI + wait for response
+        /* 8. Send to agent & await reply. */
         const agentResponse = await startConversation(message);
     
-        // 11) Remove loading block + show AI response
+        /* 9. Swap loading block for agent answer. */
         conversationWrapper.removeChild(chatBlockWrapper);
         createChatBlock(false, agentResponse);
-      } catch (error) {
-        console.error("Error while waiting for AI response:", error);
+    
+      } catch (err) {
+        console.error("Error while waiting for AI response:", err);
         conversationWrapper.removeChild(chatBlockWrapper);
         createChatBlock(false, "Sorry, something went wrong.");
+    
       } finally {
-        // 12) Unlock so user can send next message
-        isBusy = false;
-        textarea.disabled = false;
-        userSubmit.disabled = false;
+        /* 10. Unlock UI so user can send again. */
+        unlockSending();
       }
     }
+
 
 
 
