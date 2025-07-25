@@ -140,6 +140,9 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
 
     const urlParams = new URLSearchParams(window.location.search);
     const conversationID = urlParams.get('conversationID');
+    
+    let hasConversationSaved = false;
+
 
     let airtableRecordId = null;
 
@@ -184,6 +187,28 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
     let isVoiceOn = false;   // For controlling ElevenLabs voice output (TTS)
 
     window.airtableRecordId = null;
+
+    function buildConversationMetadata () {
+      const container = document.getElementById('ai-agent-container') || {};
+      const userName  = container.getAttribute('data-user-name')  || 'Guest';
+      const agentID   = container.getAttribute('data-agent-id')   || 'Unknown Agent';
+      const email     = container.getAttribute('data-user-email') || '';
+      const timeStamp = new Date().toISOString();
+      const altFirmId = getAlternateUserIdFromUrl();     // you already have this helper
+    
+      const meta = {
+        userName,
+        agentID,
+        conversationID: window.conversationId || '',
+        timeStamp,
+        userId: altFirmId ? '' : (typeof userId !== 'undefined' ? userId : ''),
+        email
+      };
+      if (altFirmId) meta['Design-Brief-Firm-ID'] = altFirmId;
+    
+      return meta;
+    }
+
 
     // Helper: Convert Float32Array to 16-bit PCM ArrayBuffer
     function floatTo16BitPCM(input) {
@@ -925,32 +950,30 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
 
 
     async function updateTimeLastEdited(recordId) {
+      /* Row doesn’t exist yet → nothing to update */
+      if (!recordId) return;
+    
       const airtableBaseUrl = 'https://api.airtable.com/v0/app2N6x5jeRnIzSpL/Conversations';
       const airtableHeaders = {
         Authorization: 'Bearer patTeuxUuzgG0ZU8Q.2eb9ff7f31afe3e06f3c128c5b5b832bcc4e4e85bd58a5007a8368f218d28b83',
         'Content-Type': 'application/json',
       };
-    
       try {
         const response = await fetch(`${airtableBaseUrl}/${recordId}`, {
           method: 'PATCH',
           headers: airtableHeaders,
           body: JSON.stringify({
-            fields: {
-              'Time-Last-Edited': new Date().toISOString(), // Current time in GMT
-            },
-          }),
+            fields: { 'Time-Last-Edited': new Date().toISOString() }
+          })
         });
-    
-        if (response.ok) {
-          console.log("Successfully updated Time-Last-Edited:", await response.json());
-        } else {
-          console.error("Error updating Time-Last-Edited:", await response.text());
+        if (!response.ok) {
+          console.error("Error updating Time‑Last‑Edited:", await response.text());
         }
       } catch (error) {
         console.error("Error during PATCH request:", error);
       }
     }
+
 
 
     // Function to fetch profile image from Airtable
@@ -1734,13 +1757,11 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
        – Textarea stays editable while waiting                        
     ──────────────────────────────────────────────────────────────── */
     async function handleSubmit () {
-      /* 1. Already waiting for the agent?  Do nothing. */
+      /* Block double‑sends */
       if (isBusy) return;
-    
-      /* 2. Activate global busy lock (greys out all send buttons). */
       lockSending();
     
-      /* 3. Stop STT + TTS if they’re on. */
+      /* Stop STT / TTS if active */
       if (isMicOn) {
         stopDeepgramTranscription();
         isMicOn = false;
@@ -1748,29 +1769,37 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       }
       stopCurrentVoiceOutput();
     
-      /* 4. Grab current text.  If empty, unlock and bail out. */
+      /* Grab the text */
       const message = textarea.value.trim();
-      if (!message) {
-        unlockSending();
-        return;
-      }
+      if (!message) { unlockSending(); return; }
     
-      /* 5. Render the user bubble immediately. */
+      /* Render user bubble immediately */
       createChatBlock(true, message);
-    
-      /* 6. Reset transcripts + textarea. */
       finalTranscript = "";
       lastInterim     = "";
       resetHeight();
     
-      /* 7. Show loading block while we wait. */
+      /* Show loading dots */
       const { chatBlockWrapper } = createLoadingBlock();
     
       try {
-        /* 8. Send to agent & await reply. */
+        /* Talk to the agent */
         const agentResponse = await startConversation(message);
     
-        /* 9. Swap loading block for agent answer. */
+        /* ──── NEW: create Airtable row after first user message ──── */
+        if (!hasConversationSaved && window.conversationId) {
+          try {
+            const metadata = buildConversationMetadata();
+            await ensureAirtableConversation(metadata);
+            hasConversationSaved = true;                 // one‑time only
+          } catch (err) {
+            console.error("Failed to save conversation to Airtable:", err);
+            /* Chat continues; we’ll retry on the next message */
+          }
+        }
+        /* ─────────────────────────────────────────────────────────── */
+    
+        /* Swap loader for agent answer */
         conversationWrapper.removeChild(chatBlockWrapper);
         createChatBlock(false, agentResponse);
     
@@ -1780,10 +1809,10 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
         createChatBlock(false, "Sorry, something went wrong.");
     
       } finally {
-        /* 10. Unlock UI so user can send again. */
         unlockSending();
       }
     }
+
 
 
 
@@ -1849,65 +1878,33 @@ window.LiveTranscriptionEvents = LiveTranscriptionEvents;
       }
     }
 
-
     const startConversationButton = document.getElementById('start-new-conversation');
+    
     if (startConversationButton) {
       startConversationButton.addEventListener('click', async (event) => {
         event.preventDefault();
-        console.log('Starting a new conversation...');
+        console.log('Starting a new conversation…');
     
-        // Start a new conversation
-        await startInitialConversation(); // Existing function to start the conversation
+        /* 1  Reset chat column and get agent’s welcome reply */
+        await startInitialConversation();
     
-        // Collect metadata for new conversation
+        /* 2  Render the header (no summary yet) */
         const container = document.getElementById('ai-agent-container');
-        const userName = container.getAttribute('data-user-name') || 'Guest';
-        
-        // Render header for new conversation (Summary not available)
+        const userName  = container.getAttribute('data-user-name') || 'Guest';
+    
         renderConversationHeader({
-          clientName: userName,
+          clientName:     userName,
           timeLastEdited: new Date().toLocaleString(),
-          summary: null // No summary yet for a new conversation
+          summary:        null
         });
     
-        // Collect additional metadata for saving to Airtable
-        const agentID = container.getAttribute('data-agent-id') || 'Unknown Agent';
-        const timeStamp = new Date().toISOString(); // Current date/time in ISO format
-        
-        // Step 1: Extract the alternate user ID from the URL using the helper function
-        const alternateUserId = getAlternateUserIdFromUrl();
-        
-        // Step 2: Determine what to save in the metadata object
-        let finalUserId = userId;           // Default to the normal user ID
-        let designBriefFirmId = "";         // Empty by default
-        
-        // If an alternate user ID is provided (via the query parameter)
-        if (alternateUserId) {
-          finalUserId = "";                 // Leave the userId property empty
-          designBriefFirmId = alternateUserId; // Save the alternate firm ID for the new property
-        }
-        
-        // Step 3: Build the metadata object accordingly
-        const metadata = {
-          userName,
-          agentID,
-          conversationID: conversationId || 'Unknown Conversation ID',
-          timeStamp,
-          userId: finalUserId,  // Will be empty if an alternate ID is present
-          email,              // Include the user's email
-        };
-        
-        // If a design brief firm ID exists, add it as a new property in the metadata
-        if (designBriefFirmId) {
-          metadata["Design-Brief-Firm-ID"] = designBriefFirmId;
-        }
-
-        await ensureAirtableConversation(metadata);
-
+        /* 3  Mark that the Airtable row has not been created yet */
+        hasConversationSaved = false;       // global flag added in Step 1
       });
     } else {
       console.error("Button with id 'start-new-conversation' not found.");
     }
+
 
     
     document.addEventListener("click", (event) => {
